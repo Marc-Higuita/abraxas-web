@@ -1,0 +1,821 @@
+[
+{
+"id": "caras/boca-ojo-01",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-01.png",
+"cat": "caras",
+"w": 165,
+"h": 119
+},
+{
+"id": "caras/boca-ojo-02",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-02.png",
+"cat": "caras",
+"w": 162,
+"h": 117
+},
+{
+"id": "caras/boca-ojo-03",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-03.png",
+"cat": "caras",
+"w": 165,
+"h": 114
+},
+{
+"id": "caras/boca-ojo-04",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-04.png",
+"cat": "caras",
+"w": 162,
+"h": 110
+},
+{
+"id": "caras/boca-ojo-05",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-05.png",
+"cat": "caras",
+"w": 154,
+"h": 291
+},
+{
+"id": "caras/boca-ojo-06",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-06.png",
+"cat": "caras",
+"w": 164,
+"h": 120
+},
+{
+"id": "caras/boca-ojo-07",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-07.png",
+"cat": "caras",
+"w": 162,
+"h": 169
+},
+{
+"id": "caras/boca-ojo-08",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-08.png",
+"cat": "caras",
+"w": 164,
+"h": 74
+},
+{
+"id": "caras/boca-ojo-09",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-09.png",
+"cat": "caras",
+"w": 157,
+"h": 79
+},
+{
+"id": "caras/boca-ojo-10",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-10.png",
+"cat": "caras",
+"w": 201,
+"h": 251
+},
+{
+"id": "caras/boca-ojo-11",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-11.png",
+"cat": "caras",
+"w": 169,
+"h": 111
+},
+{
+"id": "caras/boca-ojo-12",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-12.png",
+"cat": "caras",
+"w": 143,
+"h": 125
+},
+{
+"id": "caras/boca-ojo-13",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-13.png",
+"cat": "caras",
+"w": 142,
+"h": 382
+},
+{
+"id": "caras/boca-ojo-14",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-14.png",
+"cat": "caras",
+"w": 170,
+"h": 92
+},
+{
+"id": "caras/boca-ojo-15",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-15.png",
+"cat": "caras",
+"w": 172,
+"h": 123
+},
+{
+"id": "caras/boca-ojo-16",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-16.png",
+"cat": "caras",
+"w": 164,
+"h": 121
+},
+{
+"id": "caras/boca-ojo-17",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-17.png",
+"cat": "caras",
+"w": 170,
+"h": 100
+},
+{
+"id": "caras/boca-ojo-18",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-18.png",
+"cat": "caras",
+"w": 175,
+"h": 107
+},
+{
+"id": "caras/boca-ojo-19",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-19.png",
+"cat": "caras",
+"w": 186,
+"h": 100
+},
+{
+"id": "caras/boca-ojo-20",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-20.png",
+"cat": "caras",
+"w": 175,
+"h": 105
+},
+{
+"id": "caras/boca-ojo-21",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-21.png",
+"cat": "caras",
+"w": 188,
+"h": 121
+},
+{
+"id": "caras/boca-ojo-22",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-22.png",
+"cat": "caras",
+"w": 214,
+"h": 120
+},
+{
+"id": "caras/boca-ojo-23",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-23.png",
+"cat": "caras",
+"w": 110,
+"h": 210
+},
+{
+"id": "caras/boca-ojo-24",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-24.png",
+"cat": "caras",
+"w": 99,
+"h": 192
+},
+{
+"id": "caras/boca-ojo-25",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-25.png",
+"cat": "caras",
+"w": 176,
+"h": 85
+},
+{
+"id": "caras/boca-ojo-26",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-26.png",
+"cat": "caras",
+"w": 186,
+"h": 91
+},
+{
+"id": "caras/boca-ojo-27",
+"src": "/assets/room-04/cutouts/caras/boca-ojo-27.png",
+"cat": "caras",
+"w": 204,
+"h": 113
+},
+{
+"id": "caras/fragmento-rostro-01",
+"src": "/assets/room-04/cutouts/caras/fragmento-rostro-01.png",
+"cat": "caras",
+"w": 121,
+"h": 121
+},
+{
+"id": "caras/fragmento-rostro-02",
+"src": "/assets/room-04/cutouts/caras/fragmento-rostro-02.png",
+"cat": "caras",
+"w": 127,
+"h": 230
+},
+{
+"id": "caras/fragmento-rostro-03",
+"src": "/assets/room-04/cutouts/caras/fragmento-rostro-03.png",
+"cat": "caras",
+"w": 128,
+"h": 134
+},
+{
+"id": "caras/mirada-01",
+"src": "/assets/room-04/cutouts/caras/mirada-01.png",
+"cat": "caras",
+"w": 382,
+"h": 164
+},
+{
+"id": "caras/mirada-02",
+"src": "/assets/room-04/cutouts/caras/mirada-02.png",
+"cat": "caras",
+"w": 359,
+"h": 212
+},
+{
+"id": "caras/mirada-03",
+"src": "/assets/room-04/cutouts/caras/mirada-03.png",
+"cat": "caras",
+"w": 383,
+"h": 201
+},
+{
+"id": "caras/mirada-04",
+"src": "/assets/room-04/cutouts/caras/mirada-04.png",
+"cat": "caras",
+"w": 370,
+"h": 227
+},
+{
+"id": "caras/mirada-05",
+"src": "/assets/room-04/cutouts/caras/mirada-05.png",
+"cat": "caras",
+"w": 387,
+"h": 176
+},
+{
+"id": "caras/mirada-06",
+"src": "/assets/room-04/cutouts/caras/mirada-06.png",
+"cat": "caras",
+"w": 437,
+"h": 219
+},
+{
+"id": "caras/cara-muneca-01",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-01.png",
+"cat": "caras",
+"w": 220,
+"h": 255
+},
+{
+"id": "caras/cara-muneca-02",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-02.png",
+"cat": "caras",
+"w": 291,
+"h": 282
+},
+{
+"id": "caras/cara-muneca-03",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-03.png",
+"cat": "caras",
+"w": 130,
+"h": 168
+},
+{
+"id": "caras/cara-muneca-04",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-04.png",
+"cat": "caras",
+"w": 100,
+"h": 120
+},
+{
+"id": "caras/cara-muneca-05",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-05.png",
+"cat": "caras",
+"w": 137,
+"h": 96
+},
+{
+"id": "caras/cara-muneca-06",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-06.png",
+"cat": "caras",
+"w": 91,
+"h": 121
+},
+{
+"id": "caras/cara-muneca-07",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-07.png",
+"cat": "caras",
+"w": 73,
+"h": 184
+},
+{
+"id": "caras/cara-muneca-08",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-08.png",
+"cat": "caras",
+"w": 81,
+"h": 96
+},
+{
+"id": "caras/cara-muneca-09",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-09.png",
+"cat": "caras",
+"w": 97,
+"h": 133
+},
+{
+"id": "caras/cara-muneca-10",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-10.png",
+"cat": "caras",
+"w": 95,
+"h": 106
+},
+{
+"id": "caras/cara-muneca-11",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-11.png",
+"cat": "caras",
+"w": 100,
+"h": 118
+},
+{
+"id": "caras/cara-muneca-12",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-12.png",
+"cat": "caras",
+"w": 55,
+"h": 71
+},
+{
+"id": "caras/cara-muneca-13",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-13.png",
+"cat": "caras",
+"w": 175,
+"h": 217
+},
+{
+"id": "caras/cara-muneca-14",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-14.png",
+"cat": "caras",
+"w": 207,
+"h": 258
+},
+{
+"id": "caras/cara-muneca-15",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-15.png",
+"cat": "caras",
+"w": 62,
+"h": 88
+},
+{
+"id": "caras/cara-muneca-16",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-16.png",
+"cat": "caras",
+"w": 154,
+"h": 148
+},
+{
+"id": "caras/cara-muneca-17",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-17.png",
+"cat": "caras",
+"w": 74,
+"h": 99
+},
+{
+"id": "caras/cara-muneca-18",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-18.png",
+"cat": "caras",
+"w": 87,
+"h": 127
+},
+{
+"id": "caras/cara-muneca-19",
+"src": "/assets/room-04/cutouts/caras/cara-muneca-19.png",
+"cat": "caras",
+"w": 48,
+"h": 112
+},
+{
+"id": "caras/cabeza-rubia-01",
+"src": "/assets/room-04/cutouts/caras/cabeza-rubia-01.png",
+"cat": "caras",
+"w": 377,
+"h": 385
+},
+{
+"id": "cuerpos/bailarina-01",
+"src": "/assets/room-04/cutouts/cuerpos/bailarina-01.png",
+"cat": "cuerpos",
+"w": 295,
+"h": 345
+},
+{
+"id": "cuerpos/bailarina-02",
+"src": "/assets/room-04/cutouts/cuerpos/bailarina-02.png",
+"cat": "cuerpos",
+"w": 351,
+"h": 172
+},
+{
+"id": "cuerpos/bailarina-03",
+"src": "/assets/room-04/cutouts/cuerpos/bailarina-03.png",
+"cat": "cuerpos",
+"w": 341,
+"h": 155
+},
+{
+"id": "cuerpos/bailarina-04",
+"src": "/assets/room-04/cutouts/cuerpos/bailarina-04.png",
+"cat": "cuerpos",
+"w": 266,
+"h": 280
+},
+{
+"id": "cuerpos/bailarina-05",
+"src": "/assets/room-04/cutouts/cuerpos/bailarina-05.png",
+"cat": "cuerpos",
+"w": 285,
+"h": 273
+},
+{
+"id": "cuerpos/bailarina-06",
+"src": "/assets/room-04/cutouts/cuerpos/bailarina-06.png",
+"cat": "cuerpos",
+"w": 137,
+"h": 520
+},
+{
+"id": "cuerpos/bailarina-07",
+"src": "/assets/room-04/cutouts/cuerpos/bailarina-07.png",
+"cat": "cuerpos",
+"w": 136,
+"h": 520
+},
+{
+"id": "cuerpos/bailarina-08",
+"src": "/assets/room-04/cutouts/cuerpos/bailarina-08.png",
+"cat": "cuerpos",
+"w": 287,
+"h": 423
+},
+{
+"id": "cuerpos/muneca-01",
+"src": "/assets/room-04/cutouts/cuerpos/muneca-01.png",
+"cat": "cuerpos",
+"w": 341,
+"h": 397
+},
+{
+"id": "cuerpos/muneca-02",
+"src": "/assets/room-04/cutouts/cuerpos/muneca-02.png",
+"cat": "cuerpos",
+"w": 336,
+"h": 325
+},
+{
+"id": "cuerpos/muneca-03",
+"src": "/assets/room-04/cutouts/cuerpos/muneca-03.png",
+"cat": "cuerpos",
+"w": 319,
+"h": 356
+},
+{
+"id": "cuerpos/muneca-04",
+"src": "/assets/room-04/cutouts/cuerpos/muneca-04.png",
+"cat": "cuerpos",
+"w": 520,
+"h": 137
+},
+{
+"id": "cuerpos/muneca-05",
+"src": "/assets/room-04/cutouts/cuerpos/muneca-05.png",
+"cat": "cuerpos",
+"w": 520,
+"h": 144
+},
+{
+"id": "cuerpos/torso-brazos-01",
+"src": "/assets/room-04/cutouts/cuerpos/torso-brazos-01.png",
+"cat": "cuerpos",
+"w": 520,
+"h": 520
+},
+{
+"id": "cuerpos/unicornio-01",
+"src": "/assets/room-04/cutouts/cuerpos/unicornio-01.png",
+"cat": "cuerpos",
+"w": 283,
+"h": 520
+},
+{
+"id": "cuerpos/maniqui-01",
+"src": "/assets/room-04/cutouts/cuerpos/maniqui-01.png",
+"cat": "cuerpos",
+"w": 359,
+"h": 520
+},
+{
+"id": "cuerpos/silueta-estampada-01",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-01.png",
+"cat": "cuerpos",
+"w": 105,
+"h": 346
+},
+{
+"id": "cuerpos/silueta-estampada-02",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-02.png",
+"cat": "cuerpos",
+"w": 115,
+"h": 346
+},
+{
+"id": "cuerpos/silueta-estampada-03",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-03.png",
+"cat": "cuerpos",
+"w": 113,
+"h": 341
+},
+{
+"id": "cuerpos/silueta-estampada-04",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-04.png",
+"cat": "cuerpos",
+"w": 114,
+"h": 345
+},
+{
+"id": "cuerpos/silueta-estampada-05",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-05.png",
+"cat": "cuerpos",
+"w": 114,
+"h": 312
+},
+{
+"id": "cuerpos/silueta-estampada-06",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-06.png",
+"cat": "cuerpos",
+"w": 76,
+"h": 350
+},
+{
+"id": "cuerpos/silueta-estampada-07",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-07.png",
+"cat": "cuerpos",
+"w": 94,
+"h": 354
+},
+{
+"id": "cuerpos/silueta-estampada-08",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-08.png",
+"cat": "cuerpos",
+"w": 114,
+"h": 354
+},
+{
+"id": "cuerpos/silueta-estampada-09",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-09.png",
+"cat": "cuerpos",
+"w": 113,
+"h": 354
+},
+{
+"id": "cuerpos/silueta-estampada-10",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-10.png",
+"cat": "cuerpos",
+"w": 114,
+"h": 356
+},
+{
+"id": "cuerpos/silueta-estampada-11",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-11.png",
+"cat": "cuerpos",
+"w": 117,
+"h": 356
+},
+{
+"id": "cuerpos/silueta-estampada-12",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-12.png",
+"cat": "cuerpos",
+"w": 77,
+"h": 355
+},
+{
+"id": "cuerpos/silueta-estampada-13",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-13.png",
+"cat": "cuerpos",
+"w": 108,
+"h": 354
+},
+{
+"id": "cuerpos/silueta-estampada-14",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-14.png",
+"cat": "cuerpos",
+"w": 113,
+"h": 354
+},
+{
+"id": "cuerpos/silueta-estampada-15",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-15.png",
+"cat": "cuerpos",
+"w": 112,
+"h": 344
+},
+{
+"id": "cuerpos/silueta-estampada-16",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-16.png",
+"cat": "cuerpos",
+"w": 116,
+"h": 340
+},
+{
+"id": "cuerpos/silueta-estampada-17",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-17.png",
+"cat": "cuerpos",
+"w": 114,
+"h": 337
+},
+{
+"id": "cuerpos/silueta-estampada-18",
+"src": "/assets/room-04/cutouts/cuerpos/silueta-estampada-18.png",
+"cat": "cuerpos",
+"w": 76,
+"h": 98
+},
+{
+"id": "cuerpos/cuerpa-01",
+"src": "/assets/room-04/cutouts/cuerpos/cuerpa-01.png",
+"cat": "cuerpos",
+"w": 367,
+"h": 520
+},
+{
+"id": "naturaleza/pez-01",
+"src": "/assets/room-04/cutouts/naturaleza/pez-01.png",
+"cat": "naturaleza",
+"w": 268,
+"h": 106
+},
+{
+"id": "naturaleza/pez-02",
+"src": "/assets/room-04/cutouts/naturaleza/pez-02.png",
+"cat": "naturaleza",
+"w": 204,
+"h": 124
+},
+{
+"id": "naturaleza/pez-03",
+"src": "/assets/room-04/cutouts/naturaleza/pez-03.png",
+"cat": "naturaleza",
+"w": 170,
+"h": 103
+},
+{
+"id": "naturaleza/pez-04",
+"src": "/assets/room-04/cutouts/naturaleza/pez-04.png",
+"cat": "naturaleza",
+"w": 520,
+"h": 206
+},
+{
+"id": "naturaleza/pez-05",
+"src": "/assets/room-04/cutouts/naturaleza/pez-05.png",
+"cat": "naturaleza",
+"w": 165,
+"h": 104
+},
+{
+"id": "naturaleza/pez-06",
+"src": "/assets/room-04/cutouts/naturaleza/pez-06.png",
+"cat": "naturaleza",
+"w": 266,
+"h": 118
+},
+{
+"id": "naturaleza/pez-07",
+"src": "/assets/room-04/cutouts/naturaleza/pez-07.png",
+"cat": "naturaleza",
+"w": 270,
+"h": 117
+},
+{
+"id": "signos/signo-01",
+"src": "/assets/room-04/cutouts/signos/signo-01.png",
+"cat": "signos",
+"w": 151,
+"h": 142
+},
+{
+"id": "signos/signo-02",
+"src": "/assets/room-04/cutouts/signos/signo-02.png",
+"cat": "signos",
+"w": 152,
+"h": 144
+},
+{
+"id": "signos/signo-03",
+"src": "/assets/room-04/cutouts/signos/signo-03.png",
+"cat": "signos",
+"w": 412,
+"h": 409
+},
+{
+"id": "signos/signo-04",
+"src": "/assets/room-04/cutouts/signos/signo-04.png",
+"cat": "signos",
+"w": 65,
+"h": 159
+},
+{
+"id": "signos/signo-05",
+"src": "/assets/room-04/cutouts/signos/signo-05.png",
+"cat": "signos",
+"w": 89,
+"h": 188
+},
+{
+"id": "signos/signo-06",
+"src": "/assets/room-04/cutouts/signos/signo-06.png",
+"cat": "signos",
+"w": 83,
+"h": 211
+},
+{
+"id": "signos/signo-07",
+"src": "/assets/room-04/cutouts/signos/signo-07.png",
+"cat": "signos",
+"w": 308,
+"h": 268
+},
+{
+"id": "signos/signo-08",
+"src": "/assets/room-04/cutouts/signos/signo-08.png",
+"cat": "signos",
+"w": 327,
+"h": 316
+},
+{
+"id": "signos/signo-09",
+"src": "/assets/room-04/cutouts/signos/signo-09.png",
+"cat": "signos",
+"w": 428,
+"h": 514
+},
+{
+"id": "signos/signo-10",
+"src": "/assets/room-04/cutouts/signos/signo-10.png",
+"cat": "signos",
+"w": 359,
+"h": 434
+},
+{
+"id": "papeles/estampilla-01",
+"src": "/assets/room-04/cutouts/papeles/estampilla-01.png",
+"cat": "papeles",
+"w": 429,
+"h": 520
+},
+{
+"id": "papeles/nota-estrella-01",
+"src": "/assets/room-04/cutouts/papeles/nota-estrella-01.png",
+"cat": "papeles",
+"w": 520,
+"h": 238
+},
+{
+"id": "papeles/papel-rasgado-01",
+"src": "/assets/room-04/cutouts/papeles/papel-rasgado-01.png",
+"cat": "papeles",
+"w": 275,
+"h": 520
+},
+{
+"id": "papeles/papel-acuarela-01",
+"src": "/assets/room-04/cutouts/papeles/papel-acuarela-01.png",
+"cat": "papeles",
+"w": 416,
+"h": 520
+},
+{
+"id": "papeles/nota-cinta-01",
+"src": "/assets/room-04/cutouts/papeles/nota-cinta-01.png",
+"cat": "papeles",
+"w": 419,
+"h": 458
+},
+{
+"id": "papeles/cinta-rosa-01",
+"src": "/assets/room-04/cutouts/papeles/cinta-rosa-01.png",
+"cat": "papeles",
+"w": 520,
+"h": 182
+},
+{
+"id": "papeles/tira-rasgada-01",
+"src": "/assets/room-04/cutouts/papeles/tira-rasgada-01.png",
+"cat": "papeles",
+"w": 588,
+"h": 270
+},
+{
+"id": "papeles/papel-rayado-01",
+"src": "/assets/room-04/cutouts/papeles/papel-rayado-01.png",
+"cat": "papeles",
+"w": 646,
+"h": 263
+},
+{
+"id": "papeles/papel-cuadriculado-01",
+"src": "/assets/room-04/cutouts/papeles/papel-cuadriculado-01.png",
+"cat": "papeles",
+"w": 900,
+"h": 292
+}
+]

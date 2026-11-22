@@ -5,7 +5,8 @@ import { BooksSection } from "./scenes/Books/BooksSection";
 import { TimelineSection } from "./scenes/Timeline/TimelineSection";
 import { CollectiveSection } from "./scenes/CollectiveCollage/CollectiveSection";
 import { MusicSection } from "./scenes/Particles/MusicSection";
-import { Hud, Overlays } from "./components/Hud";
+import { Hud, Overlays, RevealObserver } from "./components/Hud";
+import { CursorFX } from "@/components/abx/CursorFX";
 import { Interlude } from "./components/Interlude";
 import { useDeviceCapabilities } from "./hooks/useDevice";
 
@@ -21,19 +22,21 @@ export function Room04() {
       <main>
         <PhotoRoomSection />
         <DocumentarySection />
-        <Interlude tone="negro" text="La imagen en movimiento se vuelve superficie editorial. Detrás, sus libros." />
+        <Interlude tone="negro" quote="Aquí las fotos no se toman, se hacen." source="a Centrópolis, 2020" />
         <BooksSection />
-        <Interlude tone="papel" text="Los recortes que salieron de los libros se ordenan como documentos de una vida." />
+        <Interlude tone="papel" quote="Yo amo lo que hago porque es como el mundo: todo está adherido…" source="a Centrópolis, 2020" />
         <TimelineSection />
-        <Interlude tone="negro" text="Los documentos se vuelven materiales. Dejas de mirar el collage para construir uno." />
+        <Interlude tone="kraft" quote="Todo es trans: ¿tu cuerpo qué te dice?" source="frase citada en el video del equipo (2:36)" />
         <CollectiveSection />
         <MusicSection />
         <footer style={{ padding: "48px max(16px, 5vw)", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", fontSize: 14, color: "var(--espejo)" }}>
-          <span>Museo Abraxas · Sala 04 · Vida y obra · Contenidos provisionales identificados en cada sección.</span>
+          <span>Museo Abraxas · Sala 04 · Vida y obra · Universidad de Antioquia</span>
           <img src="/assets/brand/isotipo-papel.png" alt="" width={32} height={40} />
         </footer>
       </main>
       <Overlays />
+      <RevealObserver />
+      <CursorFX />
     </>
   );
 }

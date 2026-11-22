@@ -10,6 +10,8 @@ import type { RoomPhase } from "./PhotoRoomAssembly";
 import photosData from "../../data/room-photos.json";
 import type { RoomPhoto } from "../../types";
 import s from "./photoroom.module.css";
+import { Sticker } from "@/components/abx/Ticket";
+import { Icon } from "@/components/abx/Icon";
 
 const PhotoRoomCanvas = dynamic(() => import("./PhotoRoomAssembly").then((m) => m.PhotoRoomCanvas), { ssr: false });
 const PHOTOS = photosData as RoomPhoto[];
@@ -42,7 +44,7 @@ export function PhotoRoomSection() {
 
   return (
     <section ref={section} id="habitacion" className={s.section} aria-labelledby="act1-title" style={{ height: reduced ? "220vh" : "420vh" }}>
-      <div className={s.sticky}>
+      <div className={s.sticky} data-cursor="ver">
         {webgl ? (
           <PhotoRoomCanvas progress={progress} onPhase={setPhase} onLoad={onLoad} active={inView} />
         ) : (
@@ -50,17 +52,22 @@ export function PhotoRoomSection() {
         )}
         <div className={s.overlay}>
           <header ref={head} className={s.head}>
-            <span className="tag tag-bermellon">04 · Vida y obra</span>
-            <h1 id="act1-title" className="t-display">Una vida no cabe en una sola imagen.</h1>
+            <div className={s.stickers}>
+              <Sticker tone="bermellon" rotate={-5}>Sala 04</Sticker>
+              <Sticker tone="lima" shape="pill" rotate={4}>Vida y obra</Sticker>
+              <Sticker tone="lila" shape="pill" rotate={-2}>640 fotografías</Sticker>
+            </div>
+            <h1 id="act1-title" className={s.title}>Una vida no cabe en una sola imagen<span className={s.dot}>.</span></h1>
             <p className={s.question}>¿Cuántas imágenes hacen falta para contar una vida?</p>
           </header>
           <div ref={hint} className={s.foot}>
             <p className={s.caption} aria-live="polite">
+              <span className={s.capIcon}><Icon name="espejo" size={20} accent="var(--oro)" /></span>
               <span className="t-label">01 · La habitación fragmentada</span>
               <span>{phase === "loading" ? `${CAPTION.loading} · ${load.n}/${load.of}` : CAPTION[phase]}</span>
             </p>
             {phase === "assembled" && (
-              <p className={s.hint}>Mueve el cursor para mirar · toca una foto para abrir su ficha · desplázate para entrar</p>
+              <p className={s.hint}><Icon name="mano" size={18} /> Mira alrededor · toca una foto · baja para entrar</p>
             )}
           </div>
         </div>

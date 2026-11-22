@@ -2,18 +2,19 @@
 export const DOCUMENTARY = {
   /** Sube el MP4 a public/assets/room-04/videos/ con este nombre (H.264, ~1080p, 6–8 Mbps). */
   src: "/assets/room-04/videos/abraxas.mp4",
-  poster: "/assets/room-04/portrait/abraxas-entrevista.jpg",
+  poster: "/assets/room-04/misc/video-poster.jpg",
   /** Subtítulos WebVTT opcionales. */
-  captions: "/assets/room-04/videos/abraxas.es.vtt",
-  title: "La imagen que habla",
-  description: "Video documental de Abraxas. Título, fecha, créditos y fuente se completan cuando el equipo incorpore el archivo final.",
-  date: "Por definir",
-  credits: "Por definir",
-  source: "Archivo del equipo Sala 04",
+  title: "Abraxas",
+  description: "Animación documental en collage hecha por el equipo de la Sala 04 a partir de la investigación sobre su vida.",
+  duration: "2:51",
+  credits: "Equipo Sala 04",
+  source: "Video del equipo · subtítulos incrustados",
 };
 
 export const PLAYLIST = {
-  url: process.env.NEXT_PUBLIC_SPOTIFY_PLAYLIST_URL ?? "",
+  url: process.env.NEXT_PUBLIC_SPOTIFY_PLAYLIST_URL || "https://open.spotify.com/playlist/6iPRIeMYZaxInN2HIaHVZq",
+  uri: "spotify:playlist:6iPRIeMYZaxInN2HIaHVZq",
+  qr: "/assets/room-04/misc/spotify-qr.svg",
   title: "Playlist inspirada en Abraxas",
 };
 
