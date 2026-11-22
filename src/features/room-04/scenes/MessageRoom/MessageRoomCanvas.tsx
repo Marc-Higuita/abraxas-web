@@ -219,14 +219,24 @@ function usePieceImage(src: string | null) {
   useEffect(() => {
     if (!src) return;
     let alive = true;
-    const l = new THREE.TextureLoader();
-    l.setCrossOrigin("anonymous");
-    l.load(src, (tex) => {
-      if (!alive) { tex.dispose(); return; }
+    const im = new Image();
+    im.crossOrigin = "anonymous";
+    im.decoding = "async";
+    im.onload = () => {
+      if (!alive) return;
+      // se dibuja en un canvas propio: evita texturas negras con PNG/WebP transparentes en algunos drivers
+      const max = 1024, k = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+      const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(im.naturalWidth * k));
+      c.height = Math.max(1, Math.round(im.naturalHeight * k));
+      c.getContext("2d")!.drawImage(im, 0, 0, c.width, c.height);
+      const tex = new THREE.CanvasTexture(c);
       tex.colorSpace = THREE.SRGBColorSpace;
-      const im = tex.image as HTMLImageElement;
-      setState({ tex, aspect: im.width / im.height || 0.7 });
-    }, undefined, () => alive && setState(null));
+      tex.anisotropy = 4;
+      setState({ tex, aspect: c.width / c.height || 0.7 });
+    };
+    im.onerror = () => alive && setState(null);
+    im.src = src;
     return () => { alive = false; };
   }, [src]);
   useEffect(() => () => state?.tex.dispose(), [state]);
