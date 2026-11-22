@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export async function GET(req: Request) {
   const auth = await requireAdmin(req);
   if ("error" in auth) return NextResponse.json({ error: auth.error }, { status: auth.error === "not-configured" ? 503 : 401 });
-  const status = new URL(req.url).searchParams.get("status") ?? "pending";
+  const status = new URL(req.url).searchParams.get("status") ?? "approved";
   const { data, error } = await auth.sb
     .from("visitor_collages")
     .select("id, message, signature, created_at, image_path, status")

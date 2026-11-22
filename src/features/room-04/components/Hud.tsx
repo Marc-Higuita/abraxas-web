@@ -77,7 +77,7 @@ export function Hud() {
 }
 
 /** Diálogo accesible: foco al abrir, Escape para cerrar, foco devuelto al cerrar. */
-export function Dialog({ open, onClose, title, children, wide }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; wide?: boolean }) {
+export function Dialog({ open, onClose, title, children, wide, bare }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; wide?: boolean; bare?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
@@ -99,7 +99,7 @@ export function Dialog({ open, onClose, title, children, wide }: { open: boolean
   if (!open) return null;
   return (
     <div className={s.backdrop} onClick={onClose}>
-      <div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title} className={`${s.dialog} tx-paper ${wide ? s.wide : ""}`} onClick={(e) => e.stopPropagation()}>
+      <div ref={ref} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title} className={bare ? s.lightbox : `${s.dialog} tx-paper ${wide ? s.wide : ""}`} onClick={(e) => e.stopPropagation()}>
         <span className={s.close}><Ticket size="sm" tone="negro" icon="cerrar" onClick={onClose} aria-label="Cerrar" /></span>
         {children}
       </div>
@@ -114,6 +114,8 @@ export function Overlays() {
   const setIndex = useRoom((st) => st.setIndex);
   const ficha = useRoom((st) => st.ficha);
   const openFicha = useRoom((st) => st.openFicha);
+  // fotografía de la habitación: se ve casi a pantalla completa, con solo su número de collage
+  const isPhoto = !!ficha?.image && (/^Collage\s*#/i.test(ficha.title) || (ficha.image.includes("/room-04/photos/") && !ficha.body));
   const tones = ["lima", "naranja", "lila", "amarillo", "ultramar", "magenta", "papel"] as const;
   const icons = ["espejo", "ojo", "x", "libro", "tarjeton", "tijeras", "disco"] as const;
   return (
@@ -151,8 +153,14 @@ export function Overlays() {
           </div>
         </div>
       </Dialog>
-      <Dialog open={!!ficha} onClose={() => openFicha(null)} title={ficha?.title ?? "Ficha"} wide>
-        {ficha && (
+      <Dialog open={!!ficha} onClose={() => openFicha(null)} title={ficha?.title ?? "Ficha"} wide bare={isPhoto}>
+        {ficha && isPhoto && (
+          <figure className={s.lbFigure}>
+            <img src={ficha.image} alt={ficha.title} className={s.lbImg} />
+            <figcaption className={s.lbCap}><Sticker tone="lima" rotate={-4}>{ficha.title}</Sticker></figcaption>
+          </figure>
+        )}
+        {ficha && !isPhoto && (
           <div className={s.ficha}>
             {ficha.image && <div className={s.fichaImg}><img src={ficha.image} alt={ficha.title} /></div>}
             <div>

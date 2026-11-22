@@ -36,14 +36,14 @@ export function PhotoRoomSection() {
   const [webgl] = useState(() => hasWebGL());
 
   const progress = useScrollProgress(section, (p) => {
-    if (fade.current) fade.current.style.opacity = String(Math.max(0, (p - 0.86) / 0.14));
+    if (fade.current) fade.current.style.opacity = String(Math.max(0, (p - 0.9) / 0.1));
     if (head.current) head.current.style.opacity = String(Math.max(0, 1 - Math.max(0, p - 0.12) * 6));
-    if (hint.current) hint.current.style.opacity = String(p < 0.25 ? 1 : Math.max(0, 1 - (p - 0.25) * 6));
+    if (hint.current) hint.current.style.opacity = String(p < 0.2 ? 1 : Math.max(0, 1 - (p - 0.2) * 6));
   });
   const onLoad = useCallback((n: number, of: number) => setLoad({ n, of }), []);
 
   return (
-    <section ref={section} id="habitacion" className={s.section} aria-labelledby="act1-title" style={{ height: reduced ? "220vh" : "420vh" }}>
+    <section ref={section} id="habitacion" className={s.section} aria-labelledby="act1-title" style={{ height: reduced ? "200vh" : "300vh" }}>
       <div className={s.sticky} data-cursor="ver">
         {webgl ? (
           <PhotoRoomCanvas progress={progress} onPhase={setPhase} onLoad={onLoad} active={inView} />
@@ -55,7 +55,7 @@ export function PhotoRoomSection() {
             <div className={s.stickers}>
               <Sticker tone="bermellon" rotate={-5}>Sala 04</Sticker>
               <Sticker tone="lima" shape="pill" rotate={4}>Vida y obra</Sticker>
-              <Sticker tone="lila" shape="pill" rotate={-2}>640 fotografías</Sticker>
+              <Sticker tone="lila" shape="pill" rotate={-2}>1.176 fotografías</Sticker>
             </div>
             <h1 id="act1-title" className={s.title}>Una vida no cabe en una sola imagen<span className={s.dot}>.</span></h1>
             <p className={s.question}>¿Cuántas imágenes hacen falta para contar una vida?</p>
@@ -79,13 +79,13 @@ export function PhotoRoomSection() {
         <ul>
           {PHOTOS.filter((p) => p.note).map((p) => (
             <li key={p.id}>
-              <button onClick={() => openFicha({ title: p.note ?? p.description, image: `/assets/room-04/photos/${p.id}.jpg`, meta: [p.description] })}>
+              <button onClick={() => openFicha({ title: `Collage #${p.collage ?? p.seq}`, image: `/assets/room-04/photos/${p.id}.jpg`, body: p.note ?? undefined })}>
                 {p.note}
               </button>
             </li>
           ))}
         </ul>
-        <Link href="/salas/04/archivo">Ver el archivo completo de 640 fotografías</Link>
+        <Link href="/salas/04/archivo">Ver el archivo de fotografías</Link>
       </div>
     </section>
   );

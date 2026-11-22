@@ -1,21 +1,47 @@
-.section { position: relative; color: var(--negro); overflow: clip; }
-.corner { position: absolute; top: 24px; right: 24px; width: min(280px, 30vw); height: auto; transform: scaleX(-1); pointer-events: none; }
-.sticky { position: sticky; top: 0; min-height: 100svh; display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr); align-items: center; gap: clamp(24px, 4vw, 64px); padding: 110px max(16px, 5vw) 48px; }
-.head { position: relative; z-index: 1; }
-.tags { display: flex; gap: 8px; margin-bottom: 22px; }
-.quote { font-family: var(--font-caos); font-weight: 500; font-size: clamp(36px, 4.6vw, 76px); line-height: .98; letter-spacing: -.03em; margin: 0 0 18px; text-wrap: balance; }
-.cite { margin: 0; font-size: 15px; color: rgba(18, 17, 16, .72); }
-.frame { position: relative; z-index: 2; background: var(--negro); border: 8px solid var(--papel); border-radius: 6px; box-shadow: 14px 16px 0 rgba(18, 17, 16, .85), 0 30px 60px rgba(0, 0, 0, .35); aspect-ratio: 848 / 480; transform-origin: 50% 50%; will-change: transform; margin-left: -3vw; }
+/* 02 · La imagen que habla — video al centro, capas detrás y delante, entrada de puerta */
+.section { position: relative; color: var(--negro); overflow: clip; background-color: var(--kraft, #c9a878); }
+.sticky { position: sticky; top: 0; height: 100svh; display: grid; place-items: center; overflow: hidden; }
+.stage { --open: 1; --settle: 1; position: relative; width: min(1180px, 92vw); height: 100%; display: grid; place-items: center; }
+
+/* capas de fondo */
+.back, .front { position: absolute; inset: 0; pointer-events: none; }
+.back { z-index: 1; }
+.front { z-index: 4; }
+.paper { position: absolute; display: block; box-shadow: 0 10px 30px rgba(18, 17, 16, .18); }
+.paperLima { width: 34%; height: 44%; left: -2%; top: 14%; background: var(--lima); transform: rotate(calc(-7deg * var(--settle))) translateX(calc((1 - var(--settle)) * -60px));
+  clip-path: polygon(0 4%, 12% 0, 30% 3%, 52% 0, 75% 4%, 100% 1%, 98% 30%, 100% 62%, 97% 100%, 70% 97%, 40% 100%, 14% 96%, 0 100%, 2% 60%); }
+.paperPapel { width: 40%; height: 38%; right: -3%; bottom: 8%; background: var(--papel); transform: rotate(calc(5deg * var(--settle))) translateX(calc((1 - var(--settle)) * 60px));
+  background-image: repeating-linear-gradient(0deg, transparent 0 22px, rgba(35, 64, 168, .18) 22px 23px);
+  clip-path: polygon(2% 0, 100% 3%, 97% 40%, 100% 100%, 0 97%, 3% 52%); }
+.shard { position: absolute; object-fit: cover; box-shadow: 0 14px 34px rgba(18, 17, 16, .35); border: 5px solid var(--papel); }
+.shardA { width: 19%; aspect-ratio: 3 / 4; right: 2%; top: 7%; transform: rotate(calc(9deg * var(--settle))) translateY(calc((1 - var(--settle)) * -80px)); }
+.shardB { width: 16%; aspect-ratio: 3 / 4; left: 5%; bottom: 6%; transform: rotate(calc(-11deg * var(--settle))) translateY(calc((1 - var(--settle)) * 80px)); }
+.oval { position: absolute; width: 26%; height: auto; left: 30%; top: -4%; opacity: .8; transform: rotate(-12deg); }
+.stitchBack { position: absolute; left: -4%; right: -4%; width: 108%; height: 14px; top: 78%; transform: rotate(-3deg); }
+
+.labels { position: absolute; z-index: 5; top: max(96px, 13svh); left: 4%; display: flex; gap: 8px; align-items: center; }
+
+/* el video: protagonista, centrado; dos hojas de puerta que se abren */
+.frame { position: relative; z-index: 3; width: min(880px, 78vw); max-height: 70svh; aspect-ratio: 848 / 480; background: var(--negro); border: 9px solid var(--papel); border-radius: 4px;
+  box-shadow: 16px 18px 0 rgba(18, 17, 16, .9), 0 40px 90px rgba(0, 0, 0, .45);
+  transform: scale(calc(.9 + .1 * var(--open))) rotate(calc(-1.2deg * var(--settle))); transition: transform 120ms linear; }
+.leaf { position: absolute; top: -9px; bottom: -9px; width: calc(50% + 9px); z-index: 6; pointer-events: none; background: var(--kraft, #c9a878);
+  background-image: radial-gradient(rgba(18, 17, 16, .14) 1px, transparent 1.3px); background-size: 7px 7px;
+  box-shadow: inset 0 0 0 2px rgba(18, 17, 16, .25); backface-visibility: hidden; }
+.leafL { left: -9px; transform-origin: 0 50%; transform: perspective(1200px) rotateY(calc(-105deg * var(--open))); opacity: calc(1 - var(--open) * .85); }
+.leafR { right: -9px; transform-origin: 100% 50%; transform: perspective(1200px) rotateY(calc(105deg * var(--open))); opacity: calc(1 - var(--open) * .85); }
 .video { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--negro); }
-.tape { position: absolute; width: 120px; height: 34px; background: rgba(246, 220, 140, .72); box-shadow: 0 2px 4px rgba(0, 0, 0, .15); z-index: 3; mix-blend-mode: multiply; }
-.tapeA { top: -18px; left: 12%; transform: rotate(-8deg); }
-.tapeB { bottom: -14px; right: 10%; transform: rotate(6deg); background: rgba(245, 188, 217, .8); }
-.bigPlay { position: absolute; inset: 0; margin: auto; width: 112px; height: 112px; border-radius: 50%; border: 0; background: var(--lima); color: var(--negro); font-size: 34px; display: grid; place-items: center; box-shadow: 6px 6px 0 var(--negro); transition: transform 300ms var(--ease-spring); cursor: pointer; }
+
+.bigPlay { position: absolute; inset: 0; margin: auto; z-index: 2; width: 104px; height: 104px; border-radius: 50%; border: 0; background: var(--lima); color: var(--negro); display: grid; place-items: center; box-shadow: 6px 6px 0 var(--negro); transition: transform 300ms var(--ease-spring); cursor: pointer; }
+.bigPlay svg { transform: translateX(3px); }
 .bigPlay:hover { transform: scale(1.08) rotate(-6deg); }
-.bigPlay span { transform: translateX(3px); }
-.controls { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 14px; background: rgba(18, 17, 16, .78); backdrop-filter: blur(8px); color: var(--papel); opacity: 0; transform: translateY(8px); transition: opacity 200ms, transform 200ms; }
+.bigPlay:focus-visible { outline: 2px dashed var(--papel); outline-offset: 6px; }
+
+/* controles discretos */
+.controls { position: absolute; left: 10px; right: 10px; bottom: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; border-radius: 14px; background: rgba(18, 17, 16, .78); backdrop-filter: blur(8px); color: var(--papel); opacity: 0; transform: translateY(8px); transition: opacity 200ms, transform 200ms; }
 .frame:hover .controls, .frame:focus-within .controls { opacity: 1; transform: none; }
-.range { flex: 1; height: 40px; appearance: none; background: transparent; }
+.range { flex: 1; height: 40px; appearance: none; background: transparent; min-width: 60px; }
+.range:focus-visible { outline: 1.5px dashed var(--lima); outline-offset: 2px; border-radius: 6px; }
 .range::-webkit-slider-runnable-track { height: 6px; border-radius: 6px; background: linear-gradient(90deg, var(--lima) var(--p), rgba(243, 238, 227, .25) var(--p)); }
 .range::-webkit-slider-thumb { appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--papel); margin-top: -6px; border: 2px solid var(--negro); }
 .range::-moz-range-track { height: 6px; border-radius: 6px; background: rgba(243, 238, 227, .25); }
@@ -24,10 +50,25 @@
 .pending { position: relative; height: 100%; }
 .pending img { width: 100%; height: 100%; object-fit: cover; }
 .pending p { position: absolute; left: 16px; bottom: 16px; margin: 0; background: var(--papel); padding: 8px 12px; border-radius: 8px; }
-.credit { grid-column: 2; margin: 0; font-size: 14px; color: rgba(18, 17, 16, .72); }
+
+/* capas delante del video (no tapan el centro) */
+.tape { position: absolute; width: 130px; height: 34px; background: rgba(246, 220, 140, .78); box-shadow: 0 2px 4px rgba(0, 0, 0, .15); mix-blend-mode: multiply; opacity: var(--settle); }
+.tapeA { top: calc(50% - min(35svh, 22vw) - 14px); left: 22%; transform: rotate(-9deg); }
+.tapeB { bottom: calc(50% - min(35svh, 22vw) - 12px); right: 20%; transform: rotate(7deg); background: rgba(245, 188, 217, .85); }
+.tapeC { top: calc(50% - 20px); right: calc(50% - min(440px, 39vw) - 50px); transform: rotate(84deg); }
+.eye { position: absolute; width: clamp(110px, 15vw, 210px); left: calc(50% - min(440px, 39vw) - 70px); top: 60%; transform: rotate(calc(-14deg * var(--settle))) translateX(calc((1 - var(--settle)) * -120px)); filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, .35)); }
+.mask { position: absolute; width: clamp(90px, 11vw, 160px); right: calc(50% - min(440px, 39vw) - 60px); top: 10%; transform: rotate(calc(12deg * var(--settle))) translateY(calc((1 - var(--settle)) * -120px)); filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, .35)); }
+
 @media (max-width: 900px) {
-  .sticky { grid-template-columns: minmax(0, 1fr); padding-top: 92px; }
-  .frame { margin-left: 0; }
-  .credit { grid-column: 1; }
-  .controls { opacity: 1; transform: none; }
+  .frame { width: 92vw; border-width: 6px; box-shadow: 8px 10px 0 rgba(18, 17, 16, .9); }
+  .controls { opacity: 1; transform: none; flex-wrap: wrap; }
+  .time { display: none; }
+  .shardA, .shardB, .oval { display: none; }
+  .eye { width: 96px; left: 2%; top: 68%; }
+  .mask { width: 80px; right: 2%; top: 16%; }
+  .labels { top: 84px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .frame { transition: none; }
+  .leaf { display: none; }
 }

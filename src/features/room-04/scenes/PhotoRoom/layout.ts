@@ -61,17 +61,23 @@ export function scatterPose(p: RoomPhoto, i: number, n: number): Pose {
   return { pos, quat: new THREE.Quaternion().setFromEuler(euler), scale: 0.72 + rnd() * 0.25 };
 }
 
-export const TUNNEL_PER_RING = 26;
-export const TUNNEL_GAP = 0.82;
-export const tunnelLength = (n: number) => 1.6 + Math.ceil(n / TUNNEL_PER_RING) * TUNNEL_GAP + 1.5;
+export const TUNNEL_PER_RING = 30;
+export const TUNNEL_GAP = 0.6;
+/** Túnel corto y decidido: 11 anillos; el resto de piezas se desprende al formarse. */
+export const TUNNEL_RINGS = 15;
+export const TUNNEL_MAX = TUNNEL_PER_RING * TUNNEL_RINGS;
+export const TUNNEL_START = 1.6;
+/** Distancia de la puerta al centro de la habitación, sobre el eje de la mirada. */
+export const DOOR_D = TUNNEL_START + TUNNEL_RINGS * TUNNEL_GAP + 0.5;
 
 /** Túnel: anillos de fotos alrededor de la mirada, sin huecos; el visitante los atraviesa. */
 export function tunnelPose(roll: number, i: number): Pose {
   const ring = Math.floor(i / TUNNEL_PER_RING);
   const k = i % TUNNEL_PER_RING;
   const ang = (k / TUNNEL_PER_RING) * Math.PI * 2 + ring * 0.37;
-  const rr = 2.25 + ((i * 7) % 5) * 0.03;
-  const d = 1.6 + ring * TUNNEL_GAP;
+  // profundidad variable: unas piezas sobresalen y otras se hunden, como papel pegado a mano
+  const rr = 2.2 + ((i * 7) % 5) * 0.045 + (ring % 2) * 0.04;
+  const d = TUNNEL_START + ring * TUNNEL_GAP + ((i * 13) % 7) * 0.02;
   const yaw = toRad(BASE_YAW_DEG);
   const local = new THREE.Vector3(Math.cos(ang) * rr, Math.sin(ang) * rr, -d);
   const pos = local.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), -yaw);
@@ -80,7 +86,49 @@ export function tunnelPose(roll: number, i: number): Pose {
   const q = new THREE.Quaternion().setFromRotationMatrix(m);
   q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI));
   q.multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), toRad(roll * 1.5)));
-  return { pos, quat: q, scale: 0.95 };
+  return { pos, quat: q, scale: 1.12 };
+}
+
+export interface DoorTile { photo: number; x: number; y: number; z: number; w: number; h: number; rot: number }
+
+/**
+ * Muro final del túnel con un vano de puerta, y las dos hojas de la puerta, todo hecho con fotos.
+ * Coordenadas locales: x a la derecha, y arriba, z hacia la cámara (la puerta está en z = 0).
+ */
+export const DOOR_W = 1.25; // ancho de cada hoja
+export const DOOR_H = 3.4;
+export const DOOR_Y = -0.15; // centro vertical del vano
+export function buildDoor(photos: RoomPhoto[]) {
+  const rnd = seeded(203);
+  const wallIdx = photos.map((p, i) => ({ p, i })).filter((x) => x.p.type !== "techo" && x.p.type !== "piso").map((x) => x.i);
+  const pick = () => wallIdx[Math.floor(rnd() * wallIdx.length)];
+  const wall: DoorTile[] = [];
+  const halfW = DOOR_W + 0.06;
+  const top = DOOR_Y + DOOR_H / 2 + 0.06;
+  const bot = DOOR_Y - DOOR_H / 2 - 0.06;
+  for (let y = -3.3; y <= 3.4; y += 0.62) {
+    for (let x = -3.6; x <= 3.7; x += 0.5) {
+      const xx = x + (rnd() - 0.5) * 0.18;
+      const yy = y + (rnd() - 0.5) * 0.14;
+      const inside = Math.abs(xx) < halfW + 0.25 && yy > bot - 0.3 && yy < top + 0.25;
+      if (inside) continue;
+      wall.push({ photo: pick(), x: xx, y: yy, z: rnd() * 0.04, w: 0, h: 0.95 + rnd() * 0.35, rot: (rnd() - 0.5) * 0.25 });
+    }
+  }
+  // marco: tiras de fotos alrededor del vano, más pequeñas, que sí pueden entrar al borde
+  for (let y = bot; y <= top; y += 0.45) {
+    for (const sx of [-1, 1]) wall.push({ photo: pick(), x: sx * (halfW + 0.22), y, z: 0.06, w: 0, h: 0.55, rot: (rnd() - 0.5) * 0.3 });
+  }
+  for (let x = -halfW - 0.2; x <= halfW + 0.2; x += 0.42) wall.push({ photo: pick(), x, y: top + 0.2, z: 0.06, w: 0, h: 0.5, rot: (rnd() - 0.5) * 0.3 });
+  // hojas: cuadrícula de fragmentos que cubre toda la hoja (coordenadas relativas a la bisagra)
+  const leaf = (): DoorTile[] => {
+    const out: DoorTile[] = [];
+    for (let y = -DOOR_H / 2 + 0.3; y <= DOOR_H / 2 - 0.25; y += 0.5) {
+      for (let x = 0.24; x <= DOOR_W - 0.2; x += 0.42) out.push({ photo: pick(), x: x + (rnd() - 0.5) * 0.06, y: y + (rnd() - 0.5) * 0.06, z: 0.03 + rnd() * 0.02, w: 0, h: 0.62, rot: (rnd() - 0.5) * 0.22 });
+    }
+    return out;
+  };
+  return { wall, left: leaf(), right: leaf() };
 }
 
 export interface FillItem { photo: number; pose: Pose; roll: number }
@@ -106,11 +154,13 @@ export function buildFill(photos: RoomPhoto[], density = 1): FillItem[] {
   const colW = 0.8 / density;
   const cols = Math.ceil((Math.PI * 2 * r) / colW);
   const rowH = 0.95 / Math.sqrt(density);
+  const recent: number[] = [];
   for (let y = -3.15; y <= 3.2; y += rowH) {
     for (let c = 0; c < cols; c++) {
       const deg = (c / cols) * 360 + (Math.round(y * 10) % 2) * (180 / cols);
-      const cand = nearest(deg, 5);
-      const pick = cand[Math.floor(rnd() * cand.length)];
+      const cand = nearest(deg, 8).filter((x) => !recent.includes(x.i));
+      const pick = cand.length ? cand[Math.floor(rnd() * Math.min(5, cand.length))] : nearest(deg, 1)[0];
+      recent.push(pick.i); if (recent.length > 6) recent.shift();
       const t = toRad(deg);
       const roll = (rnd() - 0.5) * 10;
       const pos = new THREE.Vector3(Math.sin(t) * (r + rnd() * 0.05), y + (rnd() - 0.5) * 0.2, -Math.cos(t) * (r + rnd() * 0.05));

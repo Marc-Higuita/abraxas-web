@@ -1,14 +1,15 @@
 import { create } from "zustand";
 
-export type ActId = "habitacion" | "video" | "libros" | "transformaciones" | "collage" | "musica";
+export type ActId = "habitacion" | "video" | "libros" | "abraxas" | "transformaciones" | "collage" | "mensajes";
 
 export const ACTS: { id: ActId; n: string; title: string }[] = [
   { id: "habitacion", n: "01", title: "La habitación fragmentada" },
   { id: "video", n: "02", title: "La imagen que habla" },
   { id: "libros", n: "03", title: "Los libros de una vida" },
-  { id: "transformaciones", n: "04", title: "Las transformaciones de Abraxas" },
-  { id: "collage", n: "05", title: "El collage colectivo" },
-  { id: "musica", n: "·", title: "Coda: una playlist para Abraxas" },
+  { id: "abraxas", n: "04", title: "Abraxas, por capas" },
+  { id: "transformaciones", n: "05", title: "Las transformaciones" },
+  { id: "collage", n: "06", title: "Tu figura, tu mensaje" },
+  { id: "mensajes", n: "07", title: "La habitación de los mensajes" },
 ];
 
 export interface Ficha {

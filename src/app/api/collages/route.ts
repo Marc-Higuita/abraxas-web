@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash, randomUUID } from "node:crypto";
 import { serviceClient } from "@/lib/supabase/server";
-import { submissionSchema, containsPersonalData, sanitize, COLLAGE_SCHEMA_VERSION } from "@/lib/collage-schema";
+import { submissionSchema, containsPersonalData, sanitize, imageMeta, COLLAGE_SCHEMA_VERSION } from "@/lib/collage-schema";
 
 export const runtime = "nodejs";
 const PAGE = 24;
@@ -14,7 +14,7 @@ const ipHash = (req: Request) => {
   return createHash("sha256").update(ip + (process.env.RATE_LIMIT_SALT ?? "abraxas")).digest("hex").slice(0, 32);
 };
 
-/** Mural público: solo piezas aprobadas, paginadas, con URLs firmadas de corta duración. */
+/** Habitación de mensajes: piezas publicadas (status approved; las retiradas quedan en rejected), paginadas, con URLs firmadas de corta duración. */
 export async function GET(req: Request) {
   const sb = serviceClient();
   if (!sb) return NextResponse.json({ error: "not-configured" }, { status: 503 });
@@ -29,15 +29,18 @@ export async function GET(req: Request) {
   const paths = (data ?? []).map((d) => d.image_path);
   const signed = paths.length ? await sb.storage.from("collages").createSignedUrls(paths, 3600) : { data: [] };
   const items = (data ?? []).map((d, i) => ({ id: d.id, message: d.message, signature: d.signature, createdAt: d.created_at, image: signed.data?.[i]?.signedUrl ?? null }));
-  return NextResponse.json({ items, page, total: count ?? items.length, pageSize: PAGE }, { headers: { "Cache-Control": "s-maxage=30, stale-while-revalidate=120" } });
+  return NextResponse.json({ items, page, total: count ?? items.length, pageSize: PAGE }, { headers: { "Cache-Control": "s-maxage=5, stale-while-revalidate=30" } });
 }
 
-/** Envío de un collage: validación, anti-spam, límite por IP anonimizada y estado "pending". */
+/**
+ * Publicación de una figura con mensaje: validación, anti-spam y límite por IP anonimizada.
+ * Se publica al instante (status "approved"); el panel de administración puede retirarla después ("rejected").
+ */
 export async function POST(req: Request) {
   const sb = serviceClient();
   if (!sb) return NextResponse.json({ error: "not-configured", message: "El mural todavía no está conectado a la base de datos." }, { status: 503 });
   const len = Number(req.headers.get("content-length") ?? 0);
-  if (len > 1_200_000) return NextResponse.json({ error: "too-large" }, { status: 413 });
+  if (len > 1_500_000) return NextResponse.json({ error: "too-large" }, { status: 413 });
 
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "json" }, { status: 400 }); }
@@ -58,18 +61,21 @@ export async function POST(req: Request) {
   if ((count ?? 0) >= MAX_PER_WINDOW) return NextResponse.json({ error: "rate-limit" }, { status: 429 });
 
   const id = randomUUID();
-  const path = `${id}.jpg`;
+  const { mime, ext } = imageMeta(sub.image);
+  const path = `${id}.${ext}`;
   const buf = Buffer.from(sub.image.split(",")[1], "base64");
-  const up = await sb.storage.from("collages").upload(path, buf, { contentType: "image/jpeg", upsert: false });
+  const up = await sb.storage.from("collages").upload(path, buf, { contentType: mime, upsert: false });
   if (up.error) return NextResponse.json({ error: "storage" }, { status: 500 });
   const { error } = await sb.from("visitor_collages").insert({
     id, composition: sub.composition, image_path: path, message, signature: signature || null,
-    status: "pending", schema_version: COLLAGE_SCHEMA_VERSION, ip_hash: ip,
+    status: "approved", schema_version: COLLAGE_SCHEMA_VERSION, ip_hash: ip,
   });
   if (error) {
     await sb.storage.from("collages").remove([path]);
     return NextResponse.json({ error: "db" }, { status: 500 });
   }
   memory.set(ip, [...recent, now]);
-  return NextResponse.json({ ok: true, id, status: "pending" }, { status: 201 });
+  const signedUrl = await sb.storage.from("collages").createSignedUrl(path, 3600);
+  const piece = { id, message, signature: signature || null, createdAt: new Date(now).toISOString(), image: signedUrl.data?.signedUrl ?? null };
+  return NextResponse.json({ ok: true, id, status: "approved", piece }, { status: 201 });
 }

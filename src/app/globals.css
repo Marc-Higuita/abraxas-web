@@ -154,3 +154,39 @@ button { font: inherit; color: inherit; }
 .reveal.is-in { animation: abx-rise 700ms var(--ease-out) both; animation-delay: var(--d, 0ms); }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; } .reveal.is-in { animation: none; } }
 ::selection { background: var(--lima); color: var(--negro); }
+
+/* ===================== Sistema visual v2.1: estados e hilo ===================== */
+/* Ticket: sombra de papel que se levanta; el talón gira el icono; foco como hilo punteado */
+.ticket { position: relative; filter: drop-shadow(0 0 0 rgba(18,17,16,0)); }
+.ticket::after { content: ""; position: absolute; inset: -5px; border: 1.5px dashed transparent; border-radius: calc(var(--r) + 5px); pointer-events: none; transition: border-color 160ms; }
+.ticket:hover { filter: drop-shadow(3px 4px 0 rgba(18,17,16,.85)); }
+.ticket:hover .abx-icon { animation: abx-icon-wiggle 520ms var(--ease-spring); }
+.ticket:active { filter: drop-shadow(1px 1px 0 rgba(18,17,16,.85)); transition-duration: 80ms; }
+.ticket:focus-visible { outline: none; }
+.ticket:focus-visible::after { border-color: currentColor; }
+.t-negro:focus-visible::after, .t-ultramar:focus-visible::after, .t-magenta:focus-visible::after { border-color: var(--negro); }
+.ticket[aria-pressed="true"] .ticket-stub { box-shadow: inset 0 0 0 2px var(--negro); background-image: radial-gradient(rgba(18,17,16,.18) 1px, transparent 1.3px); background-size: 5px 5px; }
+.ticket:disabled, .ticket[aria-disabled="true"] { opacity: .45; filter: grayscale(.6); cursor: not-allowed; pointer-events: none; }
+.ticket:disabled .ticket-body { text-decoration: line-through 1px; text-decoration-color: rgba(18,17,16,.35); }
+@keyframes abx-icon-wiggle { 0% { transform: none; } 35% { transform: rotate(-12deg) scale(1.12); } 70% { transform: rotate(6deg); } 100% { transform: none; } }
+
+/* Sticker: se despega un poco al pasar el cursor si es interactivo */
+a .sticker, button .sticker, .sticker[role="button"] { transition: transform 260ms var(--ease-spring), box-shadow 200ms; }
+a:hover .sticker, button:hover .sticker, .sticker[role="button"]:hover { transform: rotate(calc(var(--rot) * -0.4)) translateY(-2px); box-shadow: 3px 4px 0 var(--negro); }
+.sticker:focus-visible { outline: 1.5px dashed var(--negro); outline-offset: 4px; }
+
+/* Costura que se cose */
+.stitch-sew .stitch-thread { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.stitch-sew .stitch-needle { opacity: 0; }
+.stitch-sew.is-in { animation: none; opacity: 1; }
+.stitch-sew.is-in .stitch-thread { animation: abx-sew 1400ms var(--ease-out) var(--sew-delay, 0ms) forwards; }
+.stitch-sew.is-in .stitch-needle { animation: abx-needle 1400ms var(--ease-out) var(--sew-delay, 0ms) forwards; }
+@keyframes abx-sew { to { stroke-dashoffset: 0; } }
+@keyframes abx-needle { 0% { opacity: 1; transform: translateX(-100%); } 90% { opacity: 1; } 100% { opacity: 0; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ticket:hover .abx-icon { animation: none; }
+  .stitch-sew .stitch-thread { stroke-dashoffset: 0; }
+  .stitch-sew.is-in .stitch-thread, .stitch-sew.is-in .stitch-needle { animation: none; }
+  .stitch-sew { opacity: 1; }
+}

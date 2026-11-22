@@ -5,7 +5,7 @@ export const DOCUMENTARY = {
   poster: "/assets/room-04/misc/video-poster.jpg",
   /** Subtítulos WebVTT opcionales. */
   title: "Abraxas",
-  description: "Animación documental en collage hecha por el equipo de la Sala 04 a partir de la investigación sobre su vida.",
+  description: "",
   duration: "2:51",
   credits: "Equipo Sala 04",
   source: "Video del equipo · subtítulos incrustados",

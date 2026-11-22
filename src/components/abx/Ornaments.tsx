@@ -51,3 +51,20 @@ export function DottedCorner({ className = "", color = "currentColor" }: { class
   for (let i = 0; i < 60; i++) pts.push(<circle key={`h${i}`} cx={70 + i * 4} cy={8 + Math.sin(i / 5) * 3} r={1} />);
   return <svg viewBox="0 0 320 320" className={className} fill={color} aria-hidden="true">{pts}</svg>;
 }
+
+/**
+ * Costura que se "cose" sola al entrar en pantalla: puntadas en zigzag con hilo continuo.
+ * Animación por stroke-dashoffset (clase .stitch-sew en globals.css); quieta con reduced-motion.
+ */
+export function StitchLine({ className = "", color = "currentColor", width = 320, height = 14, delay = 0 }: { className?: string; color?: string; width?: number; height?: number; delay?: number }) {
+  const step = 12;
+  let zig = `M0 ${height / 2}`;
+  for (let x = 0; x < width; x += step) zig += ` L${x + step / 2} ${(x / step) % 2 ? 2 : height - 2} L${x + step} ${height / 2}`;
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className={`stitch-sew reveal ${className}`} aria-hidden="true" style={{ ["--sew-delay" as string]: `${delay}ms` }}>
+      <path d={`M0 ${height / 2} H${width}`} stroke={color} strokeWidth="1" strokeDasharray="4 5" opacity="0.45" fill="none" />
+      <path className="stitch-thread" d={zig} stroke={color} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" pathLength={1} />
+      <circle className="stitch-needle" cx={width} cy={height / 2} r="2.4" fill={color} />
+    </svg>
+  );
+}

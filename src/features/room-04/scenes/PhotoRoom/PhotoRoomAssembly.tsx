@@ -6,13 +6,15 @@ import photosData from "../../data/room-photos.json";
 import type { RoomPhoto } from "../../types";
 import { useRoom } from "../../store";
 import {
-  BASE_YAW_DEG, PHOTO_H, buildFill, easeInOut, finalPose, headingDir, scatterPose, smooth, tunnelLength, tunnelPose, type Pose,
+  BASE_YAW_DEG, DOOR_D, DOOR_H, DOOR_W, DOOR_Y, PHOTO_H, TUNNEL_MAX, TUNNEL_PER_RING, buildDoor, buildFill, easeInOut, finalPose,
+  headingDir, scatterPose, smooth, tunnelPose, type DoorTile, type Pose,
 } from "./layout";
 
 const ALL = photosData as RoomPhoto[];
 const ASSEMBLY_DELAY = 5;
 const ASSEMBLY_DURATION = 3.6;
 const BG = "#2a2119";
+const KRAFT = "#c9a878";
 
 export type RoomPhase = "loading" | "scattered" | "assembling" | "assembled";
 
@@ -50,7 +52,7 @@ export function PhotoRoomCanvas(props: Props) {
   );
 }
 
-interface Item { photo: number; s: Pose; f: Pose; t: Pose; main: boolean; delay: number }
+interface Item { photo: number; s: Pose; f: Pose; t: Pose; main: boolean; delay: number; ring: number }
 
 function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
   const photos = useMemo(() => pickPhotos(low), [low]);
@@ -65,16 +67,21 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
   );
   const items = useMemo<Item[]>(() => {
     const n = photos.length;
-    const main: Item[] = photos.map((p, i) => ({ photo: i, main: true, s: scatterPose(p, i, n), f: finalPose(p, i), t: tunnelPose(p.roll, 0), delay: (i / n) * 0.35 }));
+    const main: Item[] = photos.map((p, i) => ({ photo: i, main: true, s: scatterPose(p, i, n), f: finalPose(p, i), t: tunnelPose(p.roll, 0), delay: (i / n) * 0.35, ring: -1 }));
     const fill: Item[] = buildFill(photos, low ? 0.55 : 1).map((fi, k) => ({
-      photo: fi.photo, main: false, f: fi.pose, s: { ...fi.pose, scale: 0 }, t: tunnelPose(fi.roll, 0), delay: 0.35 + (((k * 37) % 100) / 100) * 0.5,
+      photo: fi.photo, main: false, f: fi.pose, s: { ...fi.pose, scale: 0 }, t: tunnelPose(fi.roll, 0), delay: 0.35 + (((k * 37) % 100) / 100) * 0.5, ring: -1,
     }));
     const all = [...main, ...fill];
-    // reparte todas las piezas en los anillos del túnel, mezclando principales y relleno
+    // reparte piezas en los anillos del túnel; las que sobran se desprenden mientras el túnel se forma
     const order = all.map((_, i) => i).sort((a, b) => ((a * 7919) % 997) - ((b * 7919) % 997));
-    order.forEach((idx, k) => { all[idx].t = tunnelPose(photos[all[idx].photo].roll, k); });
+    order.forEach((idx, k) => {
+      const it = all[idx];
+      if (k < TUNNEL_MAX) { it.t = tunnelPose(photos[it.photo].roll, k); it.ring = Math.floor(k / TUNNEL_PER_RING); }
+      else it.t = { pos: it.f.pos.clone().multiplyScalar(1.12), quat: it.f.quat.clone(), scale: 0 };
+    });
     return all;
   }, [photos, low]);
+  const door = useMemo(() => buildDoor(photos), [photos]);
   const geo = useMemo(() => photos.map((p) => new THREE.PlaneGeometry(PHOTO_H * p.aspect, PHOTO_H)), [photos]);
   useEffect(() => () => { materials.forEach((m) => { m.map?.dispose(); m.dispose(); }); geo.forEach((g) => g.dispose()); }, [materials, geo]);
 
@@ -112,14 +119,11 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
   const tmpPos = useMemo(() => new THREE.Vector3(), []);
   const tmpQuat = useMemo(() => new THREE.Quaternion(), []);
   const camDir = useMemo(() => headingDir(BASE_YAW_DEG), []);
-  const tunnelLen = tunnelLength(items.length);
   const yawBase = THREE.MathUtils.degToRad(BASE_YAW_DEG);
   const look = useRef({ yaw: 0, pitch: 0 });
-  // al final del túnel espera el video: su primer fotograma como tapa
-  const endTex = useMemo(() => { const tx = new THREE.TextureLoader().load("/assets/room-04/misc/video-poster.jpg"); tx.colorSpace = THREE.SRGBColorSpace; return tx; }, []);
-  useEffect(() => () => endTex.dispose(), [endTex]);
-  const endPos = useMemo(() => camDir.clone().multiplyScalar(tunnelLen + 0.4), [camDir, tunnelLen]);
-
+  const doorL = useRef<THREE.Group>(null);
+  const doorR = useRef<THREE.Group>(null);
+  const tunnelAxisQ = useMemo(() => new THREE.Quaternion(), []);
   useFrame((_, dt) => {
     const now = performance.now() / 1000;
     let a = 0;
@@ -129,9 +133,13 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
       setPhase(a <= 0 ? "scattered" : a < 1 ? "assembling" : "assembled");
     }
     const p = progress.current;
-    const zoom = smooth(0, 0.25, p);
-    const tb = reduced ? 0 : smooth(0.25, 0.45, p);
-    const travel = reduced ? 0 : smooth(0.4, 0.97, p);
+    // guion: acercarse (0–.22) · la habitación se vuelve túnel (.2–.36) · recorrerlo (.32–.76)
+    // · la puerta se abre (.7–.86) · cruzarla hacia la luz kraft (.8–1)
+    const zoom = smooth(0, 0.22, p);
+    const tb = reduced ? 0 : smooth(0.2, 0.3, p);
+    const travel = reduced ? 0 : smooth(0.28, 0.72, p);
+    const open = reduced ? 0 : smooth(0.66, 0.8, p);
+    const pass = reduced ? 0 : smooth(0.76, 0.92, p);
 
     for (let i = 0; i < items.length; i++) {
       const m = meshes.current[i];
@@ -145,6 +153,12 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
         tmpPos.lerp(it.t.pos, tb);
         tmpQuat.slerp(it.t.quat, tb);
         scale = THREE.MathUtils.lerp(scale, it.t.scale, tb);
+        if (it.ring >= 0) {
+          // parallax: los anillos giran apenas en sentidos opuestos mientras se avanza
+          tunnelAxisQ.setFromAxisAngle(camDir, (it.ring % 2 ? 1 : -1) * (0.08 + it.ring * 0.012) * travel * tb);
+          tmpPos.applyQuaternion(tunnelAxisQ);
+          tmpQuat.premultiply(tunnelAxisQ);
+        }
       }
       if (hover.current === i && tb < 0.05) scale *= 1.07;
       m.position.copy(tmpPos);
@@ -156,41 +170,62 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
     const settled = a >= 1 ? 1 - tb : 0.3;
     look.current.yaw = THREE.MathUtils.damp(look.current.yaw, -pointer.x * 0.18 * settled, 3, dt);
     look.current.pitch = THREE.MathUtils.damp(look.current.pitch, pointer.y * 0.1 * settled, 3, dt);
-    camera.position.copy(camDir).multiplyScalar(zoom * 1.6 + travel * (tunnelLen - 3.6));
+    const along = zoom * 1.6 + travel * (DOOR_D - 2.3 - 1.6) + pass * 3.6;
+    camera.position.copy(camDir).multiplyScalar(along);
+    // un leve balanceo al caminar por el túnel
+    if (travel > 0 && travel < 1 && !reduced) camera.position.y += Math.sin(travel * Math.PI * 6) * 0.03;
+    const ang = easeInOut(open) * 1.85;
+    if (doorL.current) doorL.current.rotation.y = ang;
+    if (doorR.current) doorR.current.rotation.y = -ang;
     camera.rotation.set(look.current.pitch, -yawBase + look.current.yaw, 0, "YXZ");
     const cam = camera as THREE.PerspectiveCamera;
     const narrow = size.width < size.height;
-    const fov = THREE.MathUtils.lerp(narrow ? 74 : 46, narrow ? 58 : 36, zoom) + tb * 18;
+    const fov = THREE.MathUtils.lerp(narrow ? 74 : 46, narrow ? 60 : 36, zoom) + tb * (narrow ? 12 : 18) - pass * 6;
     if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
   });
 
-  const interactive = () => phaseRef.current === "assembled" && progress.current < 0.25;
+  const interactive = () => phaseRef.current === "assembled" && progress.current < 0.2;
   const onClick = (e: ThreeEvent<MouseEvent>, i: number) => {
     e.stopPropagation();
     if (!interactive()) return;
     const ph = photos[items[i].photo];
-    openFicha({
-      title: ph.note ?? ph.description,
-      image: `/assets/room-04/photos/${ph.id}.jpg`,
-      body: ph.note ? ph.description : undefined,
-      meta: [
-        `Archivo ${ph.id} · foto #${ph.seq}`,
-        `Rumbo de la cámara: ${Math.round(ph.heading)}°`,
-        items[i].main ? (ph.matched ? "Altura y giro calculados al emparejar esta foto con la anterior de la misma pared" : "Ubicada por rumbo de brújula") : "Fragmento repetido de la misma pared para completar el collage",
-      ],
-    });
+    // la ficha muestra la foto en grande y solo su número
+    openFicha({ title: `Collage #${ph.collage ?? ph.seq}`, image: `/assets/room-04/photos/${ph.id}.jpg` });
   };
 
   return (
     <group>
-      <mesh position={endPos} rotation={[0, -yawBase, 0]}>
-        <planeGeometry args={[6.4, 3.62]} />
-        <meshBasicMaterial map={endTex} toneMapped={false} />
-      </mesh>
-      <mesh position={endPos.clone().add(camDir.clone().multiplyScalar(0.05))} rotation={[0, -yawBase, 0]}>
-        <planeGeometry args={[7.2, 4.4]} />
-        <meshBasicMaterial color="#f3eee3" toneMapped={false} />
-      </mesh>
+      {!reduced && (
+        <group position={camDir.clone().multiplyScalar(DOOR_D)} rotation={[0, -yawBase, 0]}>
+          {/* luz kraft al otro lado: empalma con la sección del video */}
+          <mesh position={[0, 0, -2.4]}>
+            <planeGeometry args={[40, 30]} />
+            <meshBasicMaterial color={KRAFT} toneMapped={false} fog={false} />
+          </mesh>
+          <Tiles tiles={door.wall} geo={geo} materials={materials} />
+          {/* marco de madera */}
+          {[[-DOOR_W - 0.05, DOOR_Y, 0.11, 0.1, DOOR_H + 0.2], [DOOR_W + 0.05, DOOR_Y, 0.11, 0.1, DOOR_H + 0.2], [0, DOOR_Y + DOOR_H / 2 + 0.05, 0.11, DOOR_W * 2 + 0.2, 0.1]].map(([x, y, z, w, h], k) => (
+            <mesh key={k} position={[x, y, z]}>
+              <boxGeometry args={[w, h, 0.12]} />
+              <meshBasicMaterial color="#3a2618" />
+            </mesh>
+          ))}
+          <group ref={doorL} position={[-DOOR_W, DOOR_Y, 0]}>
+            <mesh position={[DOOR_W / 2, 0, 0]}>
+              <boxGeometry args={[DOOR_W, DOOR_H, 0.05]} />
+              <meshBasicMaterial color="#4a3221" />
+            </mesh>
+            <Tiles tiles={door.left} geo={geo} materials={materials} />
+          </group>
+          <group ref={doorR} position={[DOOR_W, DOOR_Y, 0]} scale={[-1, 1, 1]}>
+            <mesh position={[DOOR_W / 2, 0, 0]}>
+              <boxGeometry args={[DOOR_W, DOOR_H, 0.05]} />
+              <meshBasicMaterial color="#4a3221" side={THREE.DoubleSide} />
+            </mesh>
+            <Tiles tiles={door.right} geo={geo} materials={materials} mirrored />
+          </group>
+        </group>
+      )}
       {items.map((it, i) => (
         <mesh
           key={i}
@@ -204,6 +239,18 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
         />
       ))}
     </group>
+  );
+}
+
+/** Fragmentos fijos (muro y hojas de la puerta) que reutilizan geometría y textura de las fotos. */
+function Tiles({ tiles, geo, materials, mirrored }: { tiles: DoorTile[]; geo: THREE.PlaneGeometry[]; materials: THREE.MeshBasicMaterial[]; mirrored?: boolean }) {
+  return (
+    <>
+      {tiles.map((t, k) => (
+        <mesh key={k} geometry={geo[t.photo]} material={materials[t.photo]} position={[t.x, t.y, t.z]} rotation={[0, 0, t.rot]}
+          scale={[mirrored ? -t.h / PHOTO_H : t.h / PHOTO_H, t.h / PHOTO_H, 1]} />
+      ))}
+    </>
   );
 }
 

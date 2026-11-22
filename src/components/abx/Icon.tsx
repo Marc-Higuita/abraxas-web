@@ -8,7 +8,7 @@ import type { SVGProps } from "react";
 export type IconName =
   | "x" | "tijeras" | "ojo" | "espejo" | "labios" | "mano" | "corazon" | "destello" | "mariposa" | "triangulo"
   | "balanza" | "libro" | "tarjeton" | "disco" | "menu" | "atras" | "info" | "sonido" | "silencio" | "movimiento"
-  | "quieto" | "cerrar" | "play" | "pausa" | "pantalla" | "subtitulos" | "mas" | "menos" | "flecha" | "lupa" | "cinta" | "qr";
+  | "quieto" | "cerrar" | "play" | "pausa" | "pantalla" | "subtitulos" | "mas" | "menos" | "flecha" | "lupa" | "cinta" | "qr" | "aguja" | "sobre";
 
 const P: Record<IconName, React.ReactNode> = {
   x: (<><path d="M6 4l12 15M18 4L6 19" /><path d="M2 21h5l3-3h12" className="acc-line" /></>),
@@ -42,6 +42,8 @@ const P: Record<IconName, React.ReactNode> = {
   flecha: (<><path d="M5 12h14M13 6l6 6-6 6" /></>),
   lupa: (<><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5L21 21" /><circle cx="10.5" cy="10.5" r="2.2" className="acc" /></>),
   cinta: (<><path d="M4 8l14-3 2 9-14 3z" /><path d="M7 7.4l2 9M15 5.7l2 9" className="acc-line" /></>),
+  aguja: (<><path d="M20 4L7.5 16.5" /><ellipse cx="18.3" cy="5.7" rx="1" ry="2.2" transform="rotate(45 18.3 5.7)" /><path d="M7.5 16.5c-2 2-3.5 3.5-4 4 2.2-.4 4.4-1.6 5.6-3.2" className="acc-line" /><path d="M12 4.5c3 1 3 4 0 5s-3 4 0 5" className="acc-line" /></>),
+  sobre: (<><rect x="3" y="5.5" width="18" height="13" rx="1.6" /><path d="M3.5 6.5l8.5 6.5 8.5-6.5" /><path d="M12 16.2c-1.2-.9-2.4-1.6-2.4-2.7a1.2 1.2 0 012.4-.4 1.2 1.2 0 012.4.4c0 1.1-1.2 1.8-2.4 2.7z" className="acc" /></>),
   qr: (<><rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1.2" /><rect x="14" y="3.5" width="6.5" height="6.5" rx="1.2" /><rect x="3.5" y="14" width="6.5" height="6.5" rx="1.2" /><circle cx="15.5" cy="15.5" r="1.3" className="acc" /><circle cx="19.5" cy="19.5" r="1.3" className="acc" /><circle cx="19.5" cy="15.5" r="1" className="acc" /><circle cx="15.5" cy="19.5" r="1" className="acc" /></>),
 };
 

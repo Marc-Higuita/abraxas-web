@@ -47,3 +47,11 @@
   .infoGrid, .ficha { grid-template-columns: minmax(0, 1fr); }
   .infoOval { max-width: 220px; }
 }
+/* Foto de la habitación a pantalla casi completa */
+.lightbox { position: relative; outline: none; width: min(96vw, 1400px); height: calc(100svh - 32px); display: grid; place-items: center; animation: lb-in 420ms var(--ease-out) both; }
+.lightbox .close { top: 0; right: 0; }
+@keyframes lb-in { from { opacity: 0; transform: scale(.94) rotate(-1.2deg); } }
+.lbFigure { position: relative; margin: 0; height: 100%; width: 100%; display: grid; place-items: center; }
+.lbImg { max-width: 100%; max-height: calc(100svh - 48px); width: auto; height: auto; object-fit: contain; display: block; border: 6px solid var(--papel); border-radius: 4px; box-shadow: 0 30px 80px rgba(0, 0, 0, .6); background: var(--negro); }
+.lbCap { position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%); }
+@media (prefers-reduced-motion: reduce) { .lightbox { animation: none; } }

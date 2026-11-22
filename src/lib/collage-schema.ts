@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 export const COLLAGE_SCHEMA_VERSION = 1;
-export const MAX_IMAGE_BYTES = 700_000;
+/** Figura exportada (PNG con transparencia, JPEG o WebP). */
+export const MAX_IMAGE_BYTES = 1_000_000;
+export const IMAGE_MIME = ["image/png", "image/jpeg", "image/webp"] as const;
 
 const element = z.object({
   id: z.string().max(40),
@@ -20,10 +22,10 @@ const element = z.object({
 });
 
 export const submissionSchema = z.object({
-  composition: z.object({ version: z.literal(COLLAGE_SCHEMA_VERSION), size: z.number().max(2000), elements: z.array(element).min(1).max(60) }),
+  composition: z.object({ version: z.literal(COLLAGE_SCHEMA_VERSION), size: z.number().max(2000), height: z.number().max(3000).optional(), kind: z.enum(["figura", "collage"]).optional(), elements: z.array(element).min(1).max(60) }),
   image: z
     .string()
-    .regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/, "Imagen inválida")
+    .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/, "Imagen inválida")
     .refine((s) => (s.length * 3) / 4 < MAX_IMAGE_BYTES, "La imagen es demasiado grande"),
   message: z.string().trim().min(2, "Escribe un mensaje breve").max(240),
   signature: z.string().trim().max(40).optional().default(""),
@@ -32,6 +34,12 @@ export const submissionSchema = z.object({
   /** campo trampa contra bots: debe llegar vacío */
   website: z.string().max(0).optional().default(""),
 });
+
+/** Tipo MIME y extensión del dataURL ya validado. */
+export function imageMeta(dataUrl: string) {
+  const mime = (dataUrl.slice(5, dataUrl.indexOf(";")) as (typeof IMAGE_MIME)[number]);
+  return { mime, ext: mime === "image/png" ? "png" : mime === "image/webp" ? "webp" : "jpg" };
+}
 
 export type Submission = z.infer<typeof submissionSchema>;
 export type CollageElement = z.infer<typeof element>;

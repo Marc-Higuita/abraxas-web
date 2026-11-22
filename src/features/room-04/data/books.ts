@@ -5,7 +5,8 @@ import type { Book } from "../types";
  * (Prohibido perder es un escaneo: texto obtenido por OCR y revisado a mano frente a la imagen de la página).
  * Para agregar o cambiar citas no hace falta tocar los componentes 3D.
  */
-const page = (book: string) => (p: number) => `/assets/room-04/books/${book}-p${String(p).padStart(3, "0")}.jpg`;
+/** Páginas escaneadas: el número del archivo es el número de página del PDF. */
+const page = (book: string) => (p: number) => `/assets/room-04/books/pages/${book}/p-${String(p).padStart(3, "0")}.webp`;
 
 export const BOOKS: Book[] = [
   {
@@ -18,6 +19,8 @@ export const BOOKS: Book[] = [
     color: "#1e1a14",
     spine: "#d4a12a",
     thickness: 0.34,
+    aspect: 700 / 990,
+    pageCount: 137,
     pageImage: page("prohibido"),
     sourceNote:
       "PDF escaneado aportado por el equipo (137 páginas). Año aproximado: la página 3 reproduce un aviso del 48 aniversario del Instituto de Crédito Territorial (1939–1987). Por verificar.",
@@ -46,6 +49,8 @@ export const BOOKS: Book[] = [
     color: "#2340a8",
     spine: "#f3eee3",
     thickness: 0.42,
+    aspect: 700 / 955,
+    pageCount: 229,
     pageImage: page("tesis"),
     sourceNote:
       "Ensayo para optar al título de Especialista en Cultura Política: Pedagogía de Derechos Humanos. Universidad Autónoma Latinoamericana, Medellín, noviembre de 2001. Director: Héctor Ortiz Caras. Sus ilustraciones son fragmentos de la serie Récords Guinness Collage.",
@@ -61,19 +66,20 @@ export const BOOKS: Book[] = [
     ],
   },
   {
-    id: "tercero",
-    title: "El derecho: realidad, ficción o estafa",
-    author: "Abraxas Aguilar Betancur",
+    id: "poemario",
+    title: "Poemario",
+    author: "Abraxas",
     status: "pendiente",
-    cover: "/assets/room-04/books/derecho-cover-photo.jpg",
-    coverNote:
-      "Fotografía del ejemplar encontrado en la oficina (foto #617 del archivo). No es una portada rediseñada.",
-    color: "#121110",
-    spine: "#c9cdd3",
-    thickness: 0.3,
-    pageImage: () => "",
+    cover: "/assets/room-04/books/poemario-cover.jpg",
+    coverNote: "Fotografía del ejemplar físico de portada verde; no es una portada rediseñada.",
+    color: "#55562b",
+    spine: "#3f4020",
+    thickness: 0.26,
+    aspect: 560 / 820,
+    pageCount: 0,
+    pageImage: page("poemario"),
     sourceNote:
-      "Identificado en el archivo fotográfico (fotos #617, #618, #632) y en una carpeta manuscrita que menciona «Realidad, ficción o estafa» (#587). Falta el PDF: cuando llegue, se agrega en este archivo y aparecen sus fragmentos. Alternativa del equipo: el «Poemario Abraxas».",
+      "Poemario de portada verde. El equipo está digitalizando el ejemplar: cuando llegue el PDF se exportan sus páginas a /assets/room-04/books/pages/poemario/ y se ajusta pageCount en este archivo. Sus citas se agregarán solo después de verificarlas contra la página.",
     quotes: [],
   },
 ];

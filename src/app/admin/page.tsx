@@ -12,7 +12,7 @@ export default function Admin() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [items, setItems] = useState<Item[]>([]);
-  const [status, setStatus] = useState("pending");
+  const [status, setStatus] = useState("approved");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function Admin() {
       <p className="t-meta" style={{ color: "var(--gris)" }}>{session.user.email} · <button className="btn btn-sm" style={{ color: "var(--negro)" }} onClick={() => sb.auth.signOut()}>Salir</button></p>
       <div style={{ display: "flex", gap: 8, margin: "16px 0" }}>
         {["pending", "approved", "rejected"].map((s) => (
-          <button key={s} className={`btn btn-sm ${status === s ? "btn-oro" : ""}`} style={{ color: "var(--negro)" }} onClick={() => setStatus(s)}>{{ pending: "Pendientes", approved: "Aprobadas", rejected: "Rechazadas" }[s]}</button>
+          <button key={s} className={`btn btn-sm ${status === s ? "btn-oro" : ""}`} style={{ color: "var(--negro)" }} onClick={() => setStatus(s)}>{{ pending: "Pendientes", approved: "Publicadas", rejected: "Retiradas" }[s]}</button>
         ))}
       </div>
       {error && <p role="alert" style={{ color: "var(--bermellon)" }}>{error}</p>}
@@ -72,7 +72,7 @@ export default function Admin() {
             <p><strong>{i.signature || "Anónimo"}</strong> · {new Date(i.created_at).toLocaleString("es-CO")}</p>
             <p>{i.message}</p>
             {status !== "approved" && <button className="btn btn-sm btn-oro" onClick={() => act(i.id, "approved")}>Aprobar</button>}{" "}
-            {status !== "rejected" && <button className="btn btn-sm" style={{ color: "var(--negro)" }} onClick={() => act(i.id, "rejected")}>Rechazar</button>}
+            {status !== "rejected" && <button className="btn btn-sm" style={{ color: "var(--negro)" }} onClick={() => act(i.id, "rejected")}>Retirar</button>}
           </li>
         ))}
       </ul>

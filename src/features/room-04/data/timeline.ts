@@ -1,10 +1,16 @@
-import type { TimelineEvent } from "../types";
+import type { Source, TimelineEvent } from "../types";
 import { SOURCES as S } from "./sources";
+
+/** Animación documental del equipo (subtítulos transcritos por OCR). Fuente secundaria: investigación del equipo. */
+const VIDEO = (t: string): Source => ({ id: `video-${t}`, kind: "documento", label: `Video del equipo Sala 04, ${t}` });
+/** Fotograma del video del equipo, guardado en public/assets/room-04/timeline. */
+const FRAME = (t: string, caption: string) => ({ id: `timeline/v-${t.replace(":", "-")}`, caption: `${caption} (fotograma del video del equipo, ${t})` });
 
 /**
  * Cronología de trabajo. Cada hito declara su estado de verificación y su certeza.
  * Las fechas aproximadas se muestran como aproximadas: no se convierten en fechas exactas.
- * Imágenes: ids del archivo fotográfico (src/features/room-04/data/archive.json).
+ * Imágenes: ids del archivo fotográfico (src/features/room-04/data/archive.json) o "timeline/<archivo>" para fotogramas del video del equipo.
+ * Los hitos sin año seguro se ordenan según el relato del video y se rotulan «sin fecha verificada».
  */
 export const TIMELINE: TimelineEvent[] = [
   {
@@ -22,32 +28,116 @@ export const TIMELINE: TimelineEvent[] = [
     certainty: "baja",
   },
   {
+    id: "infancia",
+    title: "Una casa sin ternura",
+    dateLabel: "infancia · sin fecha verificada",
+    sortYear: 1958,
+    precision: "desconocida",
+    description:
+      "El video del equipo cuenta que en su casa no existió la ternura: familia paterna conservadora, la materna en la otra orilla, y entre ambas la guerra. Su padre se lo llevó a una finca y lo criaron tres tías; a los cinco años entró a la escuela y sus padres volvieron a unirse.",
+    dimensions: ["vida"],
+    images: [FRAME("0:03", "«En casa de Abraxas no existió la ternura»"), FRAME("0:14", "«Lo criaron tres tías solteronas»")],
+    sources: [VIDEO("0:02–0:18")],
+    verification: "por-verificar",
+    certainty: "baja",
+  },
+  {
+    id: "seminario",
+    title: "Seminario: dudar del pecado original",
+    dateLabel: "sin fecha verificada",
+    sortYear: 1964,
+    precision: "desconocida",
+    description:
+      "Quiso ser misionero. Según el video, la beca del seminario quedó para él cuando un primo se ahogó. Estudió filosofía y teología hasta que peleó con el cura por su tesis: «¿Puedo dudar filosóficamente del pecado original?».",
+    dimensions: ["pensamiento", "vida"],
+    images: [FRAME("0:31", "«Seminario: filosofía, teología»")],
+    sources: [VIDEO("0:20–0:34"), S.centropolis2020],
+    verification: "por-verificar",
+    certainty: "media",
+  },
+  {
+    id: "teatro",
+    title: "Teatro y la toma de la universidad",
+    dateLabel: "sin fecha verificada",
+    sortYear: 1968,
+    precision: "desconocida",
+    description:
+      "En la UNAULA dirigió teatro, conoció a Adriana y fundó el Teatro Experimental Universitario. En pleno paro lideró la toma que abrió la universidad, según el video del equipo.",
+    dimensions: ["arte", "politica"],
+    images: [FRAME("0:51", "Teatro, paro y toma de la universidad")],
+    sources: [VIDEO("0:44–0:52")],
+    verification: "por-verificar",
+    certainty: "baja",
+  },
+  {
     id: "formacion",
     title: "Teología y derecho",
     dateLabel: "fecha por verificar",
-    sortYear: 1972,
+    sortYear: 1969,
     precision: "desconocida",
     description:
       "Centrópolis menciona diplomas que muestran estudios de teología. Se graduó de Abogado en la Universidad Autónoma Latinoamericana: en la oficina cuelga un diploma reexpedido a nombre de Abraxas Aguilar Betancur. La formación de seminario y las fechas están por contrastar.",
     dimensions: ["pensamiento", "vida"],
-    images: [{ id: "parte4-img_09331", caption: "Diploma de Abogado, Universidad Autónoma Latinoamericana (foto #50)" }],
-    sources: [S.centropolis2020, S.diploma],
+    images: [{ id: "parte4-img_09331", caption: "Diploma de Abogado, Universidad Autónoma Latinoamericana (foto #50)" }, FRAME("0:44", "«Derecho en la UNAULA»")],
+    sources: [S.centropolis2020, S.diploma, VIDEO("0:42")],
     verification: "por-verificar",
     certainty: "media",
   },
   {
     id: "concejo",
     title: "Concejal de Medellín",
-    dateLabel: "década de 1970",
-    sortYear: 1975,
+    dateLabel: "1970–1972 · según el video del equipo",
+    sortYear: 1970,
     precision: "decada",
     description:
-      "Telemedellín y Voz de América la ubican como concejal de Medellín en los años setenta; Centrópolis habla de varios periodos. Faltan actas o registros del Concejo para fijar los años.",
+      "El video del equipo la sitúa como concejal de Medellín por la ANAPO, junto a Carlos Ardila Lülle, de 1970 a 1972. Telemedellín y Voz de América la ubican en el Concejo en los años setenta; Centrópolis habla de varios periodos. Faltan actas del Concejo para fijar los años.",
     dimensions: ["politica"],
-    images: [],
-    sources: [S.voa2024, S.telemedellin2026, S.centropolis2020],
+    images: [FRAME("0:56", "Concejo de Medellín, ANAPO")],
+    sources: [VIDEO("0:54"), S.voa2024, S.telemedellin2026, S.centropolis2020],
     verification: "documentado",
     certainty: "media",
+  },
+  {
+    id: "telefonia",
+    title: "Las líneas telefónicas de Antioquia",
+    dateLabel: "sin fecha verificada",
+    sortYear: 1973,
+    precision: "desconocida",
+    description:
+      "El video la presenta como precursora de las ondas electromagnéticas en Antioquia: trazó los puntos cardinales de las líneas telefónicas. Falta un documento que lo respalde.",
+    dimensions: ["pensamiento"],
+    images: [FRAME("1:05", "Mapa de las líneas telefónicas")],
+    sources: [VIDEO("1:02–1:06")],
+    verification: "por-verificar",
+    certainty: "baja",
+  },
+  {
+    id: "asoma",
+    title: "ASOMA y los peajes de las motos",
+    dateLabel: "sin fecha verificada",
+    sortYear: 1976,
+    precision: "desconocida",
+    description:
+      "Lideró ASOMA, la Asociación de Motociclistas de Antioquia, y en su gestión logró quitar los peajes para motociclistas, según el video del equipo.",
+    dimensions: ["politica"],
+    images: [FRAME("1:10", "«Lideró ASOMA»")],
+    sources: [VIDEO("1:08–1:14")],
+    verification: "por-verificar",
+    certainty: "baja",
+  },
+  {
+    id: "otero-soto",
+    title: "El año desaparecido",
+    dateLabel: "sin fecha verificada",
+    sortYear: 1979,
+    precision: "desconocida",
+    description:
+      "Fue abogado en Transportes Otero Soto. Las mafias del transporte lo obligaron a desaparecer un año; todos creyeron que hacía teatro en Francia.",
+    dimensions: ["vida", "politica"],
+    images: [FRAME("1:18", "Transportes Otero Soto"), FRAME("1:24", "«Todos creyeron que hacía teatro en Francia»")],
+    sources: [VIDEO("1:16–1:20")],
+    verification: "por-verificar",
+    certainty: "baja",
   },
   {
     id: "collage-inicio",
@@ -58,11 +148,26 @@ export const TIMELINE: TimelineEvent[] = [
     description:
       "Según contó a Voz de América, su pasión por el collage comenzó en 1982 en su casa anterior, en Villa Hermosa. Empezó llenando agendas de imágenes.",
     dimensions: ["arte"],
-    images: [],
+    images: [FRAME("1:26", "«En 1982, empezó a recortar el mundo: collage»")],
     quotes: ["«Yo llenaba las agendas de estas imágenes» — a Voz de América, 2024"],
-    sources: [S.voa2024],
+    sources: [S.voa2024, VIDEO("1:24")],
     verification: "documentado",
     certainty: "media",
+  },
+  {
+    id: "viviendas",
+    title: "«Viviendas sin cuota inicial»",
+    dateLabel: "gobierno de Belisario Betancur (1982–1986) · año sin verificar",
+    sortYear: 1983,
+    precision: "aproximada",
+    description:
+      "Volvió con Belisario Betancur, aliado con la ANAPO. Con María Eugenia, del Instituto de Crédito Territorial, creó «Viviendas sin cuota inicial»: más de setenta mil casas para familias paisas, según el video del equipo.",
+    dimensions: ["politica"],
+    images: [FRAME("1:34", "Instituto de Crédito Territorial"), FRAME("1:29", "Belisario Betancur + ANAPO")],
+    sources: [VIDEO("1:28–1:36")],
+    verification: "por-verificar",
+    certainty: "baja",
+    related: ["prohibido-perder"],
   },
   {
     id: "prohibido-perder",
@@ -78,6 +183,19 @@ export const TIMELINE: TimelineEvent[] = [
     verification: "por-verificar",
     certainty: "media",
     related: ["tesis"],
+  },
+  {
+    id: "control-fiscal",
+    title: "«El control fiscal en Colombia»",
+    dateLabel: "1995",
+    sortYear: 1995,
+    precision: "año",
+    description: "Según el video del equipo, en 1995 publicó «El control fiscal en Colombia», «un plan adelantado a su época». Falta localizar un ejemplar.",
+    dimensions: ["pensamiento", "politica"],
+    images: [FRAME("1:55", "Portada evocada de «El control fiscal en Colombia»")],
+    sources: [VIDEO("1:54–2:00")],
+    verification: "por-verificar",
+    certainty: "media",
   },
   {
     id: "guinness",
@@ -103,10 +221,10 @@ export const TIMELINE: TimelineEvent[] = [
     sortYear: 1998,
     precision: "dia",
     description:
-      "Aparece como Jorge Hernán Betancur en la primera vuelta presidencial, por el Movimiento Unitario Metapolítico: 14.605 votos (0,14 %) según la base de datos de Georgetown; otras fuentes registran 13.892. Centrópolis menciona el apoyo del movimiento Regina 11.",
+      "Aparece como Jorge Hernán Betancur en la primera vuelta presidencial, por el Movimiento Unitario Metapolítico: 14.605 votos (0,14 %) según la base de datos de Georgetown; otras fuentes registran 13.892. Centrópolis y el video del equipo mencionan a Regina 11. El video suma dos aspiraciones a la Alcaldía y dos a la Gobernación.",
     dimensions: ["politica"],
-    images: [{ id: "parte5-img_10041", caption: "Tarjetón presidencial pegado en la pared política (foto #82)" }],
-    sources: [S.pdba1998, S.wiki1998, S.centropolis2020, S.tarjetonAlcaldia],
+    images: [{ id: "parte5-img_10041", caption: "Tarjetón presidencial pegado en la pared política (foto #82)" }, FRAME("1:40", "Candidaturas")],
+    sources: [S.pdba1998, S.wiki1998, S.centropolis2020, S.tarjetonAlcaldia, VIDEO("1:38")],
     verification: "verificado",
     certainty: "alta",
   },
@@ -160,8 +278,9 @@ export const TIMELINE: TimelineEvent[] = [
     description:
       "Centrópolis recoge que ella se «trans-formó» en mujer. Toma el nombre Abraxas, el de una divinidad antigua en la que se reconcilian los contrarios. El proceso se cuenta aquí en sus palabras y con la fecha pendiente de su propio relato.",
     dimensions: ["vida", "pensamiento"],
-    images: [],
-    sources: [S.centropolis2020, S.elcolombiano2025],
+    images: [FRAME("2:08", "«Abraxas transiciona»")],
+    quotes: ["«Todo es trans: ¿Tu cuerpo qué te dice?» — citada en el video del equipo, 2:36"],
+    sources: [S.centropolis2020, S.elcolombiano2025, VIDEO("2:02–2:08")],
     verification: "por-verificar",
     certainty: "baja",
   },
@@ -188,8 +307,8 @@ export const TIMELINE: TimelineEvent[] = [
     description:
       "La casa museo, en la calle La Paz cerca de Balboa, es declarada patrimonio cultural del municipio. Centrópolis (2020) lo sitúa «unos cuatro años» antes. Casa arrendada de dos patios y seis cuartos, con todas sus paredes cubiertas de collage.",
     dimensions: ["patrimonio"],
-    images: [{ id: "parte5-img_11991", caption: "Vista general de la oficina (foto #179)" }],
-    sources: [S.centropolis2020, S.voa2024],
+    images: [{ id: "parte5-img_11991", caption: "Vista general de la oficina (foto #179)" }, FRAME("2:14", "La casa collage")],
+    sources: [S.centropolis2020, S.voa2024, VIDEO("2:12")],
     verification: "documentado",
     certainty: "media",
   },

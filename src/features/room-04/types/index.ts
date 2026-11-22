@@ -11,6 +11,8 @@ export interface Source {
 export interface RoomPhoto {
   id: string;
   seq: number;
+  /** Número visible del fragmento en la ficha ("Collage #n"). */
+  collage?: number;
   type: "pared" | "friso" | "techo" | "piso" | "mobiliario" | "documento" | "biblioteca" | "objeto";
   wall: "A" | "B" | "C" | "D" | null;
   /** Rumbo de brújula de la cámara (EXIF GPSImgDirection). */
@@ -60,7 +62,7 @@ export interface Quote {
 }
 
 export interface Book {
-  id: "prohibido" | "tesis" | "tercero";
+  id: "prohibido" | "tesis" | "poemario";
   title: string;
   subtitle?: string;
   author: string;
@@ -73,6 +75,10 @@ export interface Book {
   thickness: number;
   pdfPath?: string;
   pageImage: (p: number) => string;
+  /** Páginas escaneadas disponibles (1..pageCount). 0 = documento todavía sin digitalizar. */
+  pageCount: number;
+  /** Proporción ancho/alto de la cubierta. */
+  aspect: number;
   quotes: Quote[];
   sourceNote: string;
 }
