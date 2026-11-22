@@ -5,8 +5,9 @@ import { Html, MeshReflectorMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { PublishedPiece } from "../../lib/pieces";
-import { CARD_H, THREADS, slots } from "./layout";
-import { CubeProvider, Installation, Mirrors, onMirror } from "./Decor";
+import { CARD_H, PORTALS, ROOM, THREADS, slots, type Portal } from "./layout";
+import { CubeProvider, Installation, MirrorMat, Mirrors, WallArt, onMirror } from "./Decor";
+import { InfinityMirror } from "./InfinityMirror";
 import s from "./messageroom.module.css";
 
 interface Props {
@@ -20,6 +21,8 @@ interface Props {
   progress: MutableRefObject<number>;
   playing: boolean;
   onPlayer: () => void;
+  portal: string | null;
+  onPortal: (id: string) => void;
 }
 
 const BG = "#1c1714";
@@ -29,20 +32,25 @@ export function MessageRoomCanvas(props: Props) {
     <Canvas
       dpr={props.low ? 1 : [1, 1.6]}
       frameloop={props.active ? "always" : "never"}
-      camera={{ fov: 50, position: [0, 0.15, 4.4], near: 0.1, far: 40 }}
+      camera={{ fov: 52, position: [0, 0.2, 5.6], near: 0.1, far: 48 }}
       gl={{ antialias: !props.low }}
-      onCreated={({ gl, scene }) => { gl.setClearColor(BG); scene.fog = new THREE.Fog(BG, 8, 17); }}
+      onCreated={({ gl, scene }) => { gl.setClearColor(BG); scene.fog = new THREE.Fog(BG, 10, 26); }}
       onPointerMissed={() => props.onSelect(null)}
     >
       <CubeProvider low={props.low}>
       <Env />
-      <ambientLight intensity={0.55} color="#ffe2c0" />
-      <spotLight position={[0, 4.5, 2.5]} angle={0.75} penumbra={0.8} intensity={38} color="#ffd9a8" decay={2} />
-      <pointLight position={[-4, 1, -2]} intensity={6} color="#e07bf0" decay={2} />
-      <pointLight position={[4, 0.5, 0]} intensity={5} color="#a8e6e8" decay={2} />
+      {/* luz por zonas: entrada cálida, pasillo medio lila/cian, fondo con su propio foco */}
+      <ambientLight intensity={0.45} color="#ffe2c0" />
+      <spotLight position={[0, 4.4, 2.8]} angle={0.8} penumbra={0.85} intensity={34} color="#ffd9a8" decay={2} />
+      <pointLight position={[-4.6, 1.2, -3.6]} intensity={7} color="#e07bf0" decay={2} distance={9} />
+      <pointLight position={[4.6, 0.8, -3.8]} intensity={6} color="#a8e6e8" decay={2} distance={9} />
+      <BackSpot />
+      <pointLight position={[0, 0.5, -9.6]} intensity={3} color="#f2b90f" decay={2} distance={6} />
       <Architecture low={props.low} />
       <Mirrors />
+      <Portals portal={props.portal} onPortal={props.onPortal} low={props.low} />
       <Suspense fallback={null}><Installation reduced={props.reduced} low={props.low} /></Suspense>
+      <Suspense fallback={null}><WallArt reduced={props.reduced} low={props.low} /></Suspense>
       <Threads />
       {slots().map((s, i) => {
         const p = props.pieces[i];
@@ -53,6 +61,19 @@ export function MessageRoomCanvas(props: Props) {
       <Rig {...props} />
       </CubeProvider>
     </Canvas>
+  );
+}
+
+/** Foco del fondo: ilumina el archivo y el espejo del muro de retratos. */
+function BackSpot() {
+  const light = useRef<THREE.SpotLight>(null);
+  const target = useRef<THREE.Object3D>(null);
+  useEffect(() => { if (light.current && target.current) light.current.target = target.current; }, []);
+  return (
+    <>
+      <object3D ref={target} position={[0, 0.4, -10.9]} />
+      <spotLight ref={light} position={[0, 4.2, -6.5]} angle={0.75} penumbra={0.9} intensity={30} color="#ffcf8a" decay={1.8} distance={10} />
+    </>
   );
 }
 
@@ -71,7 +92,7 @@ function Env() {
 }
 
 /** Cámara: el scroll acerca, el puntero gira un poco (arrastre limitado), y al elegir una pieza la trae al frente. */
-function Rig({ pieces, selected, progress, reduced }: Props) {
+function Rig({ pieces, selected, progress, reduced, portal }: Props) {
   const { camera, gl } = useThree();
   const drag = useRef({ on: false, x: 0, y: 0, yaw: 0, pitch: 0 });
   const tgt = useMemo(() => new THREE.Vector3(), []);
@@ -90,27 +111,45 @@ function Rig({ pieces, selected, progress, reduced }: Props) {
       d.x = e.clientX; d.y = e.clientY;
     };
     const up = () => { d.on = false; };
+    const vis = () => { if (document.hidden) d.on = false; };
     el.addEventListener("pointerdown", down);
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
-    return () => { el.removeEventListener("pointerdown", down); window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+    window.addEventListener("pointercancel", up);
+    window.addEventListener("blur", up);
+    document.addEventListener("visibilitychange", vis);
+    return () => {
+      el.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      window.removeEventListener("blur", up);
+      document.removeEventListener("visibilitychange", vis);
+    };
   }, [gl]);
 
   useFrame((st, dt) => {
     const k = 1 - Math.pow(0.002, dt);
     const i = selected ? pieces.findIndex((p) => p.id === selected) : -1;
-    if (i >= 0) {
+    const pt = portal ? PORTALS.find((x) => x.id === portal) : null;
+    if (pt) {
+      // frente al espejo portal: la cámara se acerca hasta que el espejo llena el cuadro
+      const n = new THREE.Vector3(Math.sin(pt.rotY), 0, Math.cos(pt.rotY));
+      tgt.set(pt.pos[0] + n.x * 1.9, pt.pos[1], pt.pos[2] + n.z * 1.9);
+      lookT.set(pt.pos[0], pt.pos[1], pt.pos[2]);
+    } else if (i >= 0) {
       const s = all[i];
       tgt.set(s.x * 0.85, s.y - 0.95, s.z + 2.1);
       lookT.set(s.x, s.y - 0.8, s.z);
     } else {
       const p = reduced ? 1 : progress.current;
-      const z = 5.6 - p * 1.3;
+      const z = 5.9 - p * 1.6;
       const { yaw, pitch } = drag.current;
       const mx = reduced ? 0 : st.pointer.x * 0.12;
       const my = reduced ? 0 : st.pointer.y * 0.06;
-      tgt.set(Math.sin(yaw + mx) * z * 0.5, 0.15 + pitch * 3 + my, z);
-      lookT.set(0, 0.25, -2.5);
+      tgt.set(Math.sin(yaw + mx) * 3.2, 0.2 + pitch * 3 + my, z);
+      // mirar hacia el fondo lejano: la perspectiva hace visible la profundidad
+      lookT.set(Math.sin(yaw + mx) * 1.2, 0.3 + pitch * 1.5, -7.5);
     }
     camera.position.lerp(tgt, k);
     look.lerp(lookT, k);
@@ -121,43 +160,39 @@ function Rig({ pieces, selected, progress, reduced }: Props) {
 
 function Architecture({ low }: { low: boolean }) {
   const wall = useMemo(() => new THREE.MeshStandardMaterial({ color: "#3a2c22", roughness: 0.92 }), []);
+  const wallDeep = useMemo(() => new THREE.MeshStandardMaterial({ color: "#2e231c", roughness: 0.95 }), []);
   const frame = useMemo(() => new THREE.MeshStandardMaterial({ color: "#d4a12a", metalness: 0.85, roughness: 0.3 }), []);
+  const { halfW, front, back, floor, ceil } = ROOM;
+  const len = front - back, mid = (front + back) / 2, h = ceil - floor, cy = (ceil + floor) / 2;
   return (
     <group>
-      {/* paredes */}
-      <mesh position={[0, 1, -6.2]} material={wall}><planeGeometry args={[16, 8]} /></mesh>
-      <mesh position={[-6.5, 1, -1]} rotation={[0, Math.PI / 2, 0]} material={wall}><planeGeometry args={[14, 8]} /></mesh>
-      <mesh position={[6.5, 1, -1]} rotation={[0, -Math.PI / 2, 0]} material={wall}><planeGeometry args={[14, 8]} /></mesh>
-      <mesh position={[0, 4.4, -1]} rotation={[Math.PI / 2, 0, 0]}><planeGeometry args={[16, 14]} /><meshStandardMaterial color="#241b15" /></mesh>
+      {/* paredes: una habitación larga, el fondo queda a 17 m de la entrada */}
+      <mesh position={[0, cy, back]} material={wallDeep}><planeGeometry args={[halfW * 2, h]} /></mesh>
+      <mesh position={[-halfW, cy, mid]} rotation={[0, Math.PI / 2, 0]} material={wall}><planeGeometry args={[len, h]} /></mesh>
+      <mesh position={[halfW, cy, mid]} rotation={[0, -Math.PI / 2, 0]} material={wall}><planeGeometry args={[len, h]} /></mesh>
+      <mesh position={[0, ceil, mid]} rotation={[Math.PI / 2, 0, 0]}><planeGeometry args={[halfW * 2, len]} /><meshStandardMaterial color="#241b15" /></mesh>
+      {/* vigas del techo: marcan el ritmo de la profundidad */}
+      {[-1, -4, -7, -10].map((z) => (
+        <mesh key={z} position={[0, ceil - 0.12, z]}><boxGeometry args={[halfW * 2, 0.22, 0.28]} /><meshStandardMaterial color="#1a1410" roughness={0.9} /></mesh>
+      ))}
 
       {/* piso espejado: reflejo real de toda la instalación */}
-      <mesh position={[0, -2.2, -1]} rotation={[-Math.PI / 2, 0, 0]} onUpdate={onMirror}>
-        <planeGeometry args={[16, 14]} />
+      <mesh position={[0, floor, mid]} rotation={[-Math.PI / 2, 0, 0]} onUpdate={onMirror}>
+        <planeGeometry args={[halfW * 2, len]} />
         <MeshReflectorMaterial resolution={low ? 256 : 768} blur={low ? [200, 60] : [320, 90]} mixBlur={0.9} mixStrength={low ? 1.4 : 2.2} roughness={0.75} depthScale={1} minDepthThreshold={0.4} maxDepthThreshold={1.3} color="#2a211b" metalness={0.5} mirror={0.55} />
       </mesh>
 
-      {/* espejo ovalado en la pared izquierda, marco punteado dorado */}
-      <group position={[-6.45, 0.6, -2.4]} rotation={[0, Math.PI / 2, 0]}>
-        <mesh scale={[1, 1.35, 1]} onUpdate={onMirror}>
-          <circleGeometry args={[1.25, 64]} />
-          {low ? <meshStandardMaterial color="#c9cdd3" metalness={1} roughness={0.08} /> : <MeshReflectorMaterial resolution={512} mirror={1} blur={[0, 0]} mixBlur={0} mixStrength={1} color="#d8dce2" metalness={0} roughness={0} />}
-        </mesh>
-        <DottedRing r={1.32} sy={1.35} material={frame} n={64} />
-      </group>
-
-      {/* espejo alto en el fondo: duplica los hilos y alarga la habitación */}
-      <group position={[3.4, 0.7, -6.15]}>
-        <mesh onUpdate={onMirror}>
-          <planeGeometry args={[1.9, 3.6]} />
-          {low ? <meshStandardMaterial color="#c9cdd3" metalness={1} roughness={0.1} /> : <MeshReflectorMaterial resolution={512} mirror={1} blur={[0, 0]} mixBlur={0} mixStrength={1} color="#d8dce2" metalness={0} roughness={0} />}
-        </mesh>
-        {[[0, 1.86, 2.06, 0.1], [0, -1.86, 2.06, 0.1], [-1.0, 0, 0.1, 3.82], [1.0, 0, 0.1, 3.82]].map(([x, y, w, h], i) => (
-          <mesh key={i} position={[x, y, 0.03]} material={frame}><boxGeometry args={[w, h, 0.06]} /></mesh>
-        ))}
-      </group>
+      {/* dos marcos dorados que cruzan el pasillo: planos de profundidad hacia el fondo */}
+      {[-7.6, -9.4].map((z, k) => (
+        <group key={z} position={[0, 0, z]}>
+          {[[-3.4 + k * 0.4, 1.1, 0.14, 6.6], [3.4 - k * 0.4, 1.1, 0.14, 6.6], [0, 4.35, 6.94 - k * 0.8, 0.14]].map(([x, y, w, hh], i) => (
+            <mesh key={i} position={[x, y, 0]} material={frame}><boxGeometry args={[w, hh, 0.12]} /></mesh>
+          ))}
+        </group>
+      ))}
 
       {/* paneles de vidrio de pie: refractan las piezas que cuelgan detrás */}
-      {(low ? [[-3.3, -0.5, -1.9, 0.5]] : [[-3.3, -0.5, -1.9, 0.5], [2.7, -0.6, -3.5, -0.4]]).map(([x, y, z, ry], i) => (
+      {(low ? [[-3.0, -0.6, -2.6, 0.5]] : [[-3.0, -0.6, -2.6, 0.5], [3.0, -0.6, -6.8, -0.4]]).map(([x, y, z, ry], i) => (
         <group key={i} position={[x, y, z]} rotation={[0, ry, 0]}>
           <mesh>
             <boxGeometry args={[1.5, 3.2, 0.06]} />
@@ -166,6 +201,50 @@ function Architecture({ low }: { low: boolean }) {
           <mesh position={[0, -1.66, 0]} material={frame}><boxGeometry args={[1.6, 0.12, 0.2]} /></mesh>
         </group>
       ))}
+    </group>
+  );
+}
+
+/**
+ * Espejos portal. Los dos laterales están enfrentados y usan reflejo infinito; el del fondo
+ * refleja la habitación con el mapa de entorno. Tocar cualquiera abre su collage.
+ */
+function Portals({ portal, onPortal, low }: { portal: string | null; onPortal: (id: string) => void; low: boolean }) {
+  const [hover, setHover] = useState<string | null>(null);
+  const frame = useMemo(() => new THREE.MeshStandardMaterial({ color: "#d4a12a", metalness: 0.9, roughness: 0.25 }), []);
+  const ev = (p: Portal) => ({
+    onClick: (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onPortal(p.id); },
+    onPointerOver: (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHover(p.id); document.body.style.cursor = "pointer"; },
+    onPointerOut: () => { setHover((h) => (h === p.id ? null : h)); document.body.style.cursor = ""; },
+  });
+  useEffect(() => () => { document.body.style.cursor = ""; }, []);
+  return (
+    <group>
+      {PORTALS.map((p) => {
+        const [w, h] = p.size;
+        const border = (
+          <>
+            {[[0, h / 2 + 0.07, w + 0.28, 0.14], [0, -h / 2 - 0.07, w + 0.28, 0.14], [-w / 2 - 0.07, 0, 0.14, h], [w / 2 + 0.07, 0, 0.14, h]].map(([x, y, bw, bh], i) => (
+              <mesh key={i} position={[x, y, 0.04]} material={frame}><boxGeometry args={[bw, bh, 0.1]} /></mesh>
+            ))}
+            {portal !== p.id && (
+              <Html position={[0, -h / 2 - 0.35, 0.1]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
+                <span className={`${s.portalTag} ${hover === p.id ? s.portalTagOn : ""}`}>{hover === p.id ? "Entrar al collage" : "Espejo · toca para entrar"}</span>
+              </Html>
+            )}
+          </>
+        );
+        return p.infinite ? (
+          <InfinityMirror key={p.id} size={p.size} position={p.pos} rotation={[0, p.rotY, 0]} res={low ? 256 : 512} every={low ? 3 : 1} iters={low ? 2 : 5} hover={hover === p.id} {...ev(p)}>
+            {border}
+          </InfinityMirror>
+        ) : (
+          <group key={p.id} position={p.pos} rotation={[0, p.rotY, 0]}>
+            <mesh onUpdate={onMirror} {...ev(p)}><planeGeometry args={p.size} /><MirrorMat /></mesh>
+            {border}
+          </group>
+        );
+      })}
     </group>
   );
 }
@@ -253,6 +332,7 @@ function HangingPiece({ piece, slot, fresh, reduced, onSelect, index }: { piece:
   const [hover, setHover] = useState(false);
   const anim = useRef({ y: fresh && !reduced ? 4 : 0, v: 0, sway: fresh && !reduced ? 0.35 : 0.05, phase: index * 1.37 });
   useEffect(() => () => msg.dispose(), [msg]);
+  useEffect(() => () => { document.body.style.cursor = ""; }, []);
 
   const aspect = img?.aspect ?? 0.72;
   const h = CARD_H, w = Math.min(h * aspect, 1.35);
@@ -329,6 +409,7 @@ function Player({ playing, onClick, reduced }: { playing: boolean; onClick: () =
   }, []);
   useEffect(() => () => { label.dispose(); grooves.dispose(); }, [label, grooves]);
   useEffect(() => { if (spot.current && root.current) spot.current.target = root.current; }, []);
+  useEffect(() => () => { document.body.style.cursor = ""; }, []);
 
   useFrame((st, dt) => {
     speed.current = THREE.MathUtils.lerp(speed.current, playing ? 3.5 : 0, Math.min(dt * 2, 1));
@@ -346,10 +427,12 @@ function Player({ playing, onClick, reduced }: { playing: boolean; onClick: () =
   const tap = (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(); };
 
   return (
-    <group position={[1.95, -1.12, 0.95]} rotation={[0.12, -0.5, 0]}>
-      <spotLight ref={spot} position={[0.6, 3.2, 1.6]} angle={0.42} penumbra={0.7} intensity={26} color="#ffcf8a" decay={1.6} distance={9} />
-      <pointLight position={[0, 0.9, 0.6]} intensity={2.2} color="#ffd9a8" decay={2} distance={3} />
-      <group ref={root} scale={1.45} onClick={tap} onPointerOver={over} onPointerOut={out}>
+    <group position={[1.15, -1.2, 2.3]} rotation={[0.16, -0.32, 0]}>
+      <spotLight ref={spot} position={[0.3, 3.4, 1.4]} angle={0.4} penumbra={0.6} intensity={hover ? 48 : 36} color="#ffcf8a" decay={1.5} distance={9} />
+      <pointLight position={[0, 1.0, 0.8]} intensity={hover ? 4 : 2.8} color="#ffd9a8" decay={2} distance={3.5} />
+      {/* contraluz frío: separa el tocadiscos del fondo oscuro */}
+      <pointLight position={[-0.6, 0.6, -1.4]} intensity={2.4} color="#a8e6e8" decay={2} distance={3} />
+      <group ref={root} scale={1.6} onClick={tap} onPointerOver={over} onPointerOut={out}>
         {/* mueble de nogal con pata dorada */}
         <mesh position={[0, -0.62, 0]}><boxGeometry args={[1.3, 1.0, 1.02]} /><meshStandardMaterial color="#4a2f1c" roughness={0.55} metalness={0.05} /></mesh>
         <mesh position={[0, -0.62, 0.515]}><planeGeometry args={[1.1, 0.8]} /><meshStandardMaterial color="#c9a878" roughness={0.9} /></mesh>
@@ -377,7 +460,7 @@ function Player({ playing, onClick, reduced }: { playing: boolean; onClick: () =
         {/* botón */}
         <mesh position={[0.5, 0.0, 0.36]}><cylinderGeometry args={[0.07, 0.07, 0.05, 24]} /><meshStandardMaterial color={playing ? "#d9f24a" : "#d9341f"} emissive={playing ? "#556b00" : "#5a1208"} emissiveIntensity={1.2} /></mesh>
         <Html position={[0, 0.62, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
-          <span className={`${s.playTag} ${playing ? s.playTagOn : ""}`}>{playing ? "Sonando · toca para pausar" : "Toca para escuchar"}</span>
+          <span className={`${s.playTag} ${playing ? s.playTagOn : ""} ${hover ? s.playTagHover : ""}`}>{playing ? "Sonando · toca para pausar" : "Toca para escuchar"}</span>
         </Html>
       </group>
     </group>

@@ -27,6 +27,8 @@
 .pendiente { background: #d8d2c6; }
 .desc { margin: 0 0 8px; font-size: 15px; line-height: 1.45; max-height: 9.2em; overflow: auto; }
 .src { margin: 0 0 12px; font-size: 12px; color: #6b645a; }
+.more { display: none; }
+.moreBody[hidden] { display: none; }
 
 .nav { position: absolute; left: max(16px, 4vw); bottom: 34px; display: flex; align-items: center; gap: 10px; z-index: 2; }
 .count { font-family: var(--font-caos); font-size: 15px; font-variant-numeric: tabular-nums; min-width: 64px; text-align: center; }
@@ -43,9 +45,17 @@
   .head { top: 64px; gap: 8px; }
   .filters { margin-left: 0; flex-wrap: nowrap; overflow-x: auto; max-width: 100%; padding-bottom: 4px; }
   .chip { min-height: 34px; flex: none; }
-  .card { left: 12px; right: 12px; width: auto; bottom: 84px; padding: 14px 16px; }
-  .card h3 { font-size: 20px; }
-  .desc { font-size: 14px; max-height: 6.2em; }
+  /* tarjeta compacta y desplegable: plegada ocupa una franja baja y deja ver las fotografías */
+  .card { left: 10px; right: 10px; width: auto; bottom: 76px; padding: 10px 14px 10px; display: grid; grid-template-columns: 1fr auto; column-gap: 10px; align-items: center; transform: none; }
+  .card::before { width: 64px; height: 16px; top: -8px; }
+  .date { grid-column: 1; gap: 8px; }
+  .big { font-size: 22px; }
+  .dateLabel { font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card h3 { grid-column: 1; font-size: 17px; margin: 0; }
+  .more { display: inline-flex; grid-column: 2; grid-row: 1 / span 2; align-self: center; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #121110; background: var(--lima); color: #121110; font: 600 13px/1 var(--font-caos), sans-serif; cursor: pointer; }
+  .more:focus-visible { outline: 2px solid var(--ultramar); outline-offset: 2px; }
+  .moreBody { grid-column: 1 / -1; margin-top: 8px; max-height: 38svh; overflow: auto; }
+  .desc { font-size: 14px; max-height: none; }
   .hint { display: none; }
   .nav { left: auto; right: 12px; bottom: 30px; }
 }

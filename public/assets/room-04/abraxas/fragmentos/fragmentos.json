@@ -68,5 +68,60 @@
   "w": 578,
   "h": 760,
   "src": "DSC_0244.JPG"
+ },
+ "cara-gafas": {
+  "w": 136,
+  "h": 144,
+  "src": "ABRAXAS-web-3.jpg"
+ },
+ "mano-mesa": {
+  "w": 135,
+  "h": 130,
+  "src": "ABRAXAS-web-3.jpg"
+ },
+ "cara-arbol": {
+  "w": 530,
+  "h": 530,
+  "src": "DSC_0540.JPG"
+ },
+ "camisa-bronce": {
+  "w": 570,
+  "h": 760,
+  "src": "DSC_0540.JPG"
+ },
+ "papa-noel": {
+  "w": 760,
+  "h": 689,
+  "src": "DSC_0540.JPG"
+ },
+ "cara-taller": {
+  "w": 590,
+  "h": 610,
+  "src": "DSC_0263.JPG"
+ },
+ "camisa-flores": {
+  "w": 720,
+  "h": 760,
+  "src": "DSC_0263.JPG"
+ },
+ "figura-guinness": {
+  "w": 240,
+  "h": 600,
+  "src": "../../../app/public/assets/room-04/portrait/abraxas-libro-guinness.jpg"
+ },
+ "cartel-guinness": {
+  "w": 349,
+  "h": 760,
+  "src": "../../../app/public/assets/room-04/portrait/abraxas-libro-guinness.jpg"
+ },
+ "figura-entrevista": {
+  "w": 290,
+  "h": 670,
+  "src": "../../../app/public/assets/room-04/portrait/abraxas-entrevista.jpg"
+ },
+ "figura-pasillo": {
+  "w": 314,
+  "h": 760,
+  "src": "DSC_0248.JPG"
  }
 }

@@ -1,10 +1,11 @@
 "use client";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Html, MeshTransmissionMaterial } from "@react-three/drei";
+import { Html, MeshTransmissionMaterial, useFBO } from "@react-three/drei";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { useRoom } from "../../store";
+import { sound } from "@/lib/audio/useSound";
 import { PORTRAIT_FACTS, factFicha, type PortraitFact } from "./facts";
 import s from "./abraxas.module.css";
 
@@ -39,16 +40,29 @@ const RATIO: Record<string, number> = {
   "pelo-rosa": 53 / 136, "cara-roja": 236 / 208, "ojos-tira": 66 / 233, "boca-tira": 72 / 144, "cara-blanca": 256 / 200,
   "cara-risa": 112 / 112, "torso-tigre": 222 / 314, "blusa-serpiente": 412 / 372, "camisa-satin": 455 / 575, manos: 162 / 459,
   "brazo-baile": 244 / 125, "libro-manos": 273 / 482, "espejo-baile": 534 / 352, "risa-hojas": 760 / 578,
+  "cara-gafas": 144 / 136, "mano-mesa": 130 / 135, "cara-arbol": 530 / 530, "camisa-bronce": 760 / 570, "papa-noel": 689 / 760,
+  "cara-taller": 610 / 590, "camisa-flores": 760 / 720, "figura-guinness": 600 / 240, "cartel-guinness": 760 / 349,
+  "figura-entrevista": 670 / 290, "figura-pasillo": 760 / 314,
 };
 
 // De atrás hacia adelante. La figura: tres rostros de distintos años, el cuerpo de tres camisas, manos y libro.
 const FRAGS: Frag[] = [
+  // fondo: Abraxas de cuerpo entero en otros momentos (pasillo, entrevista, el libro Guinness) y el Papá Noel del patio
+  { id: "figura-pasillo", x: -0.2, y: 0.45, w: 0.95, z: -1.5, rot: 0.03, bend: 0.05, inner: true, alt: "Abraxas de pie en el pasillo de la casa" },
+  { id: "cartel-guinness", x: -1.6, y: 0.35, w: 1.12, z: -1.32, rot: -0.07, bend: 0.06, inner: true, alt: "El libro de collage Guinness de 1997" },
+  { id: "figura-entrevista", x: 1.6, y: 0.2, w: 1.02, z: -1.22, rot: 0.06, bend: 0.06, inner: true, alt: "Abraxas durante una entrevista, con blusa amarilla" },
+  { id: "figura-guinness", x: 1.3, y: -1.62, w: 0.74, z: -1.02, rot: -0.05, bend: 0.05, inner: true, alt: "Abraxas junto al libro Guinness" },
+  { id: "papa-noel", x: -1.28, y: -1.78, w: 1.18, z: -0.72, rot: 0.07, bend: 0.07, inner: true, alt: "El Papá Noel del patio de la casa" },
+  { id: "cara-taller", x: 0.98, y: 1.05, w: 1.02, z: -0.44, rot: 0.05, bend: 0.09, inner: true, alt: "Rostro de Abraxas en el taller, con el pelo rojo" },
   { id: "espejo-baile", x: 1.2, y: 0.85, w: 1.7, z: -0.95, rot: 0.06, bend: 0.06, inner: true, alt: "Abraxas bailando frente a los espejos de la casa" },
   { id: "risa-hojas", x: -1.3, y: -0.2, w: 1.25, z: -0.8, rot: -0.09, bend: 0.08, inner: true, alt: "Abraxas riendo entre hojas" },
   { id: "cara-blanca", x: -0.62, y: 1.48, w: 1.2, z: -0.55, rot: -0.07, bend: 0.1, inner: true, alt: "Rostro de Abraxas con el pelo blanco" },
   { id: "cara-risa", x: 0.66, y: 1.62, w: 0.82, z: -0.32, rot: 0.08, bend: 0.08, inner: true, alt: "Abraxas sonriendo, con el pelo rosado" },
+  { id: "camisa-flores", x: -0.98, y: -1.42, w: 1.38, z: -0.26, rot: 0.06, bend: 0.06, alt: "Camisa de flores naranjas" },
   { id: "camisa-satin", x: 0.55, y: -1.1, w: 1.75, z: -0.12, rot: -0.04, bend: 0.06, alt: "Camisa de satín café" },
+  { id: "camisa-bronce", x: 1.12, y: -0.92, w: 1.12, z: -0.04, rot: -0.07, bend: 0.06, alt: "Camisa de brillo bronce" },
   { id: "blusa-serpiente", x: -0.62, y: -0.66, w: 1.45, z: 0.04, rot: 0.08, bend: 0.07, alt: "Blusa estampada de serpiente" },
+  { id: "cara-arbol", x: 0.08, y: 0.5, w: 0.95, z: 0.1, rot: 0.04, bend: 0.06, alt: "Cuello de la camisa bronce" },
   { id: "torso-tigre", x: 0.05, y: -0.04, w: 1.9, z: 0.18, rot: -0.03, bend: 0.05, alt: "Camisa de tigre" },
   { id: "pelo-rosa", x: 0.02, y: 2.18, w: 1.12, z: 0.36, rot: -0.05, bend: 0.12, alt: "Pelo rosado" },
   { id: "cara-roja", x: 0, y: 1.36, w: 1.36, z: 0.46, rot: 0.01, bend: 0.1, alt: "Rostro de Abraxas con el pelo rojo" },
@@ -57,6 +71,8 @@ const FRAGS: Frag[] = [
   { id: "brazo-baile", x: -1.48, y: -0.32, w: 0.72, z: 0.56, rot: 0.36, bend: 0.06, alt: "Brazo extendido" },
   { id: "libro-manos", x: 0.1, y: -1.86, w: 1.8, z: 0.6, rot: -0.03, bend: 0.06, alt: "Manos con el libro «El derecho: realidad, ficción o estafa»" },
   { id: "manos", x: 0.18, y: -0.58, w: 1.7, z: 0.78, rot: 0.02, bend: 0.05, alt: "Manos entrelazadas" },
+  { id: "cara-gafas", x: -1.1, y: 1.9, w: 0.62, z: 0.86, rot: -0.12, bend: 0.04, alt: "Abraxas con gafas en su escritorio" },
+  { id: "mano-mesa", x: 1.3, y: -2.05, w: 0.72, z: 0.92, rot: 0.1, bend: 0.04, alt: "La mano de Abraxas sobre la mesa" },
 ];
 
 interface Props {
@@ -134,7 +150,10 @@ function Scene({ narrow, touch, active, enter }: { narrow: boolean; touch: boole
   const build = useRef(reduced ? 1 : 0);
   const clockBuild = useRef(0);
   const { camera, size } = useThree();
-  const frags = useMemo(() => (low ? FRAGS.filter((f) => !f.inner || f.id === "cara-blanca") : narrow ? FRAGS.filter((f) => f.id !== "risa-hojas") : FRAGS), [low, narrow]);
+  const sfx = useRef({ built: false, open: false });
+  // las lupas y el espejo viven en la capa 2: la cámara principal los ve, la del espejo no (sin realimentación)
+  useEffect(() => { camera.layers.enable(2); }, [camera]);
+  const frags = useMemo(() => (low ? FRAGS.filter((f) => !f.inner || f.id === "cara-blanca" || f.id === "cara-taller") : narrow ? FRAGS.filter((f) => !["risa-hojas", "figura-guinness", "papa-noel"].includes(f.id)) : FRAGS), [low, narrow]);
 
   // Encuadre: en anchas cabe la figura con las miniaturas; en angostas, solo la figura.
   useEffect(() => {
@@ -153,6 +172,7 @@ function Scene({ narrow, touch, active, enter }: { narrow: boolean; touch: boole
     if (active) clockBuild.current = Math.min(1, clockBuild.current + d / 3.2);
     const target = reduced ? 1 : Math.max(clamp01((enter.current ?? 0) * 1.15), clockBuild.current * 0.999);
     build.current += (target - build.current) * (reduced ? 1 : 1 - Math.exp(-d * 4));
+    if (active && !sfx.current.built && build.current > 0.12) { sfx.current.built = true; sound.play("collage-ensambla"); }
     const t = state.clock.elapsedTime;
     // en táctil, sin interacción reciente, el puntero vaga solo en un bucle lento
     if (touch && !reduced && t - p.lastInput > 3.5 && build.current > 0.95) {
@@ -162,6 +182,9 @@ function Scene({ narrow, touch, active, enter }: { narrow: boolean; touch: boole
     const k = 1 - Math.exp(-d * 7);
     p.p.lerp(p.target, k);
     p.hover += (p.hoverTarget - p.hover) * (1 - Math.exp(-d * 4));
+    // una "apertura" de capas = un sonido (el gestor evita repetirlo seguido)
+    if (!touch && p.hover > 0.6 && !sfx.current.open && build.current > 0.95) { sfx.current.open = true; sound.play("fotos-fragmentan"); }
+    if (p.hover < 0.2) sfx.current.open = false;
     if (group.current) {
       const g = group.current;
       const tx = reduced ? 0 : touch ? Math.sin(t * 0.2) * 0.1 : state.pointer.x * 0.28;
@@ -190,6 +213,7 @@ function Scene({ narrow, touch, active, enter }: { narrow: boolean; touch: boole
         ))}
         <Strips ptr={ptr} build={build} low={low} />
         <Lenses ptr={ptr} build={build} count={low || narrow ? 1 : 2} reduced={reduced} low={low} />
+        {!narrow && <InfiniteMirror build={build} group={group} low={low} reduced={reduced} />}
         {!narrow && PORTRAIT_FACTS.map((f, i) => <Fact key={f.id} fact={f} i={i} build={build} reduced={reduced} onOpen={() => openFicha(factFicha(f))} />)}
         {/* superficie invisible que recibe el puntero sobre la figura */}
         <mesh
@@ -334,9 +358,22 @@ function Lenses({ ptr, build, count, reduced, low }: { ptr: React.RefObject<Poin
   const state = useRef(defs.map((d) => ({ x: d.rest.x, y: d.rest.y, vx: 0, vy: 0 })));
   const lensRefs = useRef<(THREE.Group | null)[]>([]);
   const threadRefs = useRef<(THREE.Mesh | null)[]>([]);
+  // lente biconvexa real: perfil torneado con canto plano (no una esfera aplastada)
   const lensGeo = useMemo(() => {
-    const g = new THREE.SphereGeometry(R, 64, 32);
-    g.scale(1, 1, 0.22);
+    const pts: THREE.Vector2[] = [];
+    const T = 0.11, EDGE = 0.018;
+    for (let i = 0; i <= 24; i++) {
+      const r = (i / 24) * R;
+      pts.push(new THREE.Vector2(r, EDGE + T * (1 - (r / R) ** 2)));
+    }
+    pts.push(new THREE.Vector2(R, -EDGE));
+    for (let i = 24; i >= 0; i--) {
+      const r = (i / 24) * R;
+      pts.push(new THREE.Vector2(r, -EDGE - T * (1 - (r / R) ** 2)));
+    }
+    const g = new THREE.LatheGeometry(pts, 72);
+    g.rotateX(Math.PI / 2);
+    g.computeVertexNormals();
     return g;
   }, []);
   useEffect(() => () => lensGeo.dispose(), [lensGeo]);
@@ -382,22 +419,22 @@ function Lenses({ ptr, build, count, reduced, low }: { ptr: React.RefObject<Poin
     <group>
       {defs.map((_, i) => (
         <group key={i}>
-          <mesh ref={(el) => { threadRefs.current[i] = el; }}>
+          <mesh ref={(el) => { threadRefs.current[i] = el; }} layers={2}>
             <cylinderGeometry args={[0.006, 0.006, 1, 6]} />
             <meshStandardMaterial color="#efe6d2" roughness={0.9} />
           </mesh>
           <group ref={(el) => { lensRefs.current[i] = el; }}>
             {/* vidrio */}
-            <mesh geometry={lensGeo} renderOrder={5}>
+            <mesh geometry={lensGeo} renderOrder={5} layers={2}>
               {low ? (
                 <meshPhysicalMaterial transmission={1} thickness={0.6} ior={1.52} roughness={0.02} clearcoat={1} clearcoatRoughness={0.05} envMapIntensity={1.2} color="#ffffff" attenuationColor="#fff7e0" attenuationDistance={2} />
               ) : (
                 <MeshTransmissionMaterial
                   transmission={1}
-                  thickness={0.9}
-                  ior={1.55}
-                  roughness={0.015}
-                  chromaticAberration={0.08}
+                  thickness={1.1}
+                  ior={1.52}
+                  roughness={0.012}
+                  chromaticAberration={0.06}
                   anisotropicBlur={0.06}
                   distortion={0.08}
                   distortionScale={0.4}
@@ -407,30 +444,160 @@ function Lenses({ ptr, build, count, reduced, low }: { ptr: React.RefObject<Poin
                   envMapIntensity={1.4}
                   samples={6}
                   resolution={512}
-                  backside={false}
+                  backside
+                  backsideThickness={0.4}
                   attenuationColor="#fff6dc"
                   attenuationDistance={2.5}
                 />
               )}
             </mesh>
             {/* aro de latón */}
-            <mesh>
+            <mesh layers={2}>
               <torusGeometry args={[R, 0.045, 18, 72]} />
               <meshStandardMaterial color="#c99a2e" metalness={1} roughness={0.22} envMapIntensity={1.6} />
             </mesh>
             {/* argolla donde se ata el hilo */}
-            <mesh position={[0, R + 0.06, 0]}>
+            <mesh position={[0, R + 0.06, 0]} layers={2}>
               <torusGeometry args={[0.05, 0.014, 10, 24]} />
               <meshStandardMaterial color="#c99a2e" metalness={1} roughness={0.25} />
             </mesh>
             {/* brillo de espejo en el borde del vidrio */}
-            <mesh position={[-R * 0.32, R * 0.36, R * 0.13]} rotation={[0, 0, 0.7]}>
+            <mesh position={[-R * 0.32, R * 0.36, 0.14]} rotation={[0, 0, 0.7]} layers={2}>
               <planeGeometry args={[0.32, 0.06]} />
               <meshBasicMaterial color="#ffffff" transparent opacity={0.35} depthWrite={false} toneMapped={false} />
             </mesh>
           </group>
         </group>
       ))}
+    </group>
+  );
+}
+
+
+/* ------------------ Espejo de mano con reflejos que se repiten hacia el infinito -------------- */
+
+const TUNNEL_VS = /* glsl */ `
+varying vec2 vUv;
+void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`;
+// Túnel de espejos optimizado: se captura el retrato una vez (render target pequeño) y se repite
+// en óvalos anidados que se encogen hacia un punto de fuga que se mueve con la cámara y el cursor.
+const TUNNEL_FS = /* glsl */ `
+uniform sampler2D map;
+uniform vec2 vanish;
+uniform float time;
+uniform float show;
+varying vec2 vUv;
+const int LEVELS = 9;
+const float SHRINK = 0.74;
+void main() {
+  vec2 p = vUv * 2.0 - 1.0;
+  if (dot(p, p) > 1.0) discard;
+  int level = 0;
+  float sc = 1.0;
+  vec2 c = vec2(0.0);
+  for (int i = 1; i < LEVELS; i++) {
+    float s = pow(SHRINK, float(i));
+    vec2 ci = vanish * (1.0 - s);
+    if (length(p - ci) < s) { level = i; sc = s; c = ci; }
+  }
+  vec2 q = (p - c) / sc;            // coordenadas dentro del óvalo de ese nivel
+  float r = length(q);
+  float lv = float(level);
+  vec3 col;
+  if (r > 0.9 && level > 0) {
+    // marco reflejado: canto dorado con sombra hacia adentro
+    float t = (r - 0.9) / 0.1;
+    col = mix(vec3(0.83, 0.63, 0.16), vec3(0.32, 0.22, 0.06), t) * (0.9 - 0.25 * t);
+  } else {
+    // cada reflejo invierte la imagen: los niveles impares se ven al derecho
+    float flip = mod(lv, 2.0) < 0.5 ? 1.0 : -1.0;
+    vec2 uv = vec2(0.5 - 0.5 * q.x * flip, 0.5 + 0.5 * q.y);
+    col = pow(max(texture2D(map, uv).rgb, vec3(0.0)), vec3(1.0 / 2.2)) * 1.3; // la captura es lineal
+  }
+  // los espejos reales se oscurecen y verdean en cada rebote
+  col *= pow(0.86, lv);
+  col = mix(col, col * vec3(0.86, 1.0, 0.93), clamp(lv / 6.0, 0.0, 1.0));
+  // brillo diagonal del vidrio
+  float streak = smoothstep(0.08, 0.0, abs(p.x * 0.7 + p.y * 0.7 - 0.35 + sin(time * 0.3) * 0.05));
+  col += streak * 0.12;
+  // fresnel suave en el borde
+  col += pow(clamp(length(p), 0.0, 1.0), 6.0) * 0.18;
+  // la aparición se hace con la escala del espejo; aquí el vidrio es opaco (evita el orden de transparencias)
+  gl_FragColor = vec4(col * (0.6 + 0.4 * show), 1.0);
+}
+`;
+
+function InfiniteMirror({ build, group, low, reduced }: { build: React.RefObject<number>; group: React.RefObject<THREE.Group | null>; low: boolean; reduced: boolean }) {
+  const res = low ? 160 : 320;
+  const fbo = useFBO(res, res, { samples: 0 });
+  const capCam = useMemo(() => {
+    const c = new THREE.PerspectiveCamera(44, 1, 0.1, 40);
+    c.layers.set(0);
+    return c;
+  }, []);
+  const frame = useRef<THREE.Group>(null);
+  const POS = new THREE.Vector3(-1.85, -2.45, 1.25);
+  const uniforms = useMemo(
+    () => ({ map: { value: fbo.texture }, vanish: { value: new THREE.Vector2(0.15, 0.1) }, time: { value: 0 }, show: { value: 0 } }),
+    [fbo],
+  );
+  const tick = useRef(0);
+  const tmp = useMemo(() => ({ a: new THREE.Vector3(), b: new THREE.Vector3() }), []);
+
+  useFrame((state, dt) => {
+    const show = clamp01((build.current - 0.85) / 0.15);
+    uniforms.show.value = show;
+    uniforms.time.value = state.clock.elapsedTime;
+    const g = group.current;
+    if (frame.current && show <= 0) frame.current.scale.setScalar(0.0001);
+    if (!g || show <= 0) return;
+    // el punto de fuga sigue (con suavidad) el giro de la escultura y el cursor
+    const vx = reduced ? 0.15 : THREE.MathUtils.clamp(-g.rotation.y * 1.6 + state.pointer.x * 0.18 + 0.12, -0.55, 0.55);
+    const vy = reduced ? 0.1 : THREE.MathUtils.clamp(g.rotation.x * 1.6 + state.pointer.y * 0.12 + 0.08, -0.5, 0.5);
+    uniforms.vanish.value.lerp(new THREE.Vector2(vx, vy), 1 - Math.exp(-Math.min(dt, 0.05) * 5));
+    if (frame.current) {
+      frame.current.scale.setScalar(easeOut(show));
+      if (!reduced) frame.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.5) * 0.04 - 0.18;
+    }
+    // captura del retrato desde el espejo (cada pocos fotogramas, a baja resolución)
+    tick.current++;
+    if (tick.current % (low ? 6 : 3) !== 0) return;
+    // el espejo "ve" la escultura de frente y algo de lado, como quien se mira de reojo
+    g.localToWorld(tmp.a.set(POS.x * 0.7, POS.y * 0.25 + 0.4, 6.6));
+    g.localToWorld(tmp.b.set(0, 0.2, 0));
+    capCam.position.copy(tmp.a);
+    capCam.lookAt(tmp.b);
+    const gl = state.gl;
+    const prev = gl.getRenderTarget();
+    gl.setRenderTarget(fbo);
+    gl.setClearColor(0x0a0806, 1);
+    gl.clear();
+    gl.render(state.scene, capCam);
+    gl.setRenderTarget(prev);
+    gl.setClearColor(0x000000, 0);
+  });
+
+  return (
+    <group ref={frame} position={POS.toArray()} rotation={[0, 0.32, -0.18]} scale={0.0001}>
+      {/* vidrio con el túnel de reflejos */}
+      <mesh scale={[0.62, 0.78, 1]} layers={2} renderOrder={6}>
+        <circleGeometry args={[1, 64]} />
+        <shaderMaterial vertexShader={TUNNEL_VS} fragmentShader={TUNNEL_FS} uniforms={uniforms} toneMapped={false} />
+      </mesh>
+      {/* marco de latón y mango */}
+      <mesh scale={[0.62, 0.78, 1]} layers={2}>
+        <torusGeometry args={[1, 0.055, 16, 80]} />
+        <meshStandardMaterial color="#c99a2e" metalness={1} roughness={0.25} envMapIntensity={1.5} />
+      </mesh>
+      <mesh position={[0, -1.08, -0.02]} layers={2}>
+        <cylinderGeometry args={[0.05, 0.07, 0.62, 16]} />
+        <meshStandardMaterial color="#7d5a10" metalness={0.9} roughness={0.35} />
+      </mesh>
+      <mesh position={[0, 0, -0.03]} scale={[0.66, 0.82, 1]} layers={2}>
+        <circleGeometry args={[1, 48]} />
+        <meshStandardMaterial color="#3a2a12" metalness={0.6} roughness={0.5} />
+      </mesh>
     </group>
   );
 }

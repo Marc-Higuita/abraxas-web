@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber"
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { SHEET_W, SHEET_H, type El } from "./board";
+import { sound } from "@/lib/audio/useSound";
 
 /** Escala hoja → mundo: la hoja del visitante mide 3 × 4 unidades sobre la mesa. */
 const K = 3 / SHEET_W;
@@ -86,24 +87,58 @@ function Rig({ narrow }: { narrow: boolean }) {
   return null;
 }
 
+type Gesture =
+  | { kind: "move"; dx: number; dy: number; moved: number; lx: number; ly: number }
+  | { kind: "scale"; d0: number; sx: number; sy: number }
+  | { kind: "rotate"; a0: number; r0: number };
+
+const HANDLE = new THREE.CircleGeometry(1, 28);
+const RING = new THREE.RingGeometry(0.62, 1, 28);
+
 function Piece({ el, i, api, sheet, reduced }: { el: El; i: number; api: BoardApi; sheet: React.RefObject<THREE.Group | null>; reduced: boolean }) {
   const g = useRef<THREE.Group>(null);
   const t = useMemo(() => tex(el.src), [el.src]);
   const sel = api.selected === el.id;
-  const drag = useRef<{ dx: number; dy: number } | null>(null);
+  const gesture = useRef<Gesture | null>(null);
   const lift = useRef(api.arrived.has(el.id) ? 0 : reduced ? 0 : 1.6);
   const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), []);
   const hit = useMemo(() => new THREE.Vector3(), []);
+  const elRef = useRef(el);
+  elRef.current = el;
+  const { gl } = useThree();
 
   useEffect(() => { api.arrived.add(el.id); }, [api.arrived, el.id]);
 
+  /* Un arrastre nunca queda colgado: si el puntero sale de la ventana, se pierde el foco o la pestaña se oculta, se suelta. */
+  useEffect(() => {
+    const end = () => {
+      if (!gesture.current) return;
+      const wasMove = gesture.current.kind === "move" && gesture.current.moved > 4;
+      gesture.current = null;
+      gl.domElement.style.cursor = "";
+      if (wasMove) sound.play("recorte-pegar");
+    };
+    const vis = () => { if (document.hidden) end(); };
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    window.addEventListener("blur", end);
+    document.addEventListener("visibilitychange", vis);
+    return () => {
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+      window.removeEventListener("blur", end);
+      document.removeEventListener("visibilitychange", vis);
+    };
+  }, [gl]);
+
   useFrame((_, dt) => {
     if (!g.current) return;
-    const target = drag.current ? 0.32 : sel ? 0.06 : 0;
+    const dragging = gesture.current?.kind === "move";
+    const target = dragging ? 0.32 : sel ? 0.06 : 0;
     lift.current += (target - lift.current) * Math.min(1, dt * (reduced ? 30 : 9));
     const z = i * 0.004 + lift.current;
     g.current.position.set((el.x - SHEET_W / 2) * K, -(el.y - SHEET_H / 2) * K, z);
-    g.current.rotation.set(drag.current && !reduced ? 0.08 : 0, drag.current && !reduced ? -0.06 : 0, -THREE.MathUtils.degToRad(el.rotation));
+    g.current.rotation.set(dragging && !reduced ? 0.08 : 0, dragging && !reduced ? -0.06 : 0, -THREE.MathUtils.degToRad(el.rotation));
     const sh = g.current.children[0] as THREE.Mesh;
     sh.position.set(0.03 + lift.current * 0.25, -0.04 - lift.current * 0.3, -z + 0.001);
     (sh.material as THREE.MeshBasicMaterial).opacity = 0.32 - Math.min(0.2, lift.current * 0.35);
@@ -117,48 +152,127 @@ function Piece({ el, i, api, sheet, reduced }: { el: El; i: number; api: BoardAp
     return { x: hit.x / K + SHEET_W / 2, y: -hit.y / K + SHEET_H / 2 };
   };
 
+  const capture = (e: ThreeEvent<PointerEvent>) => {
+    e.stopPropagation();
+    (e.target as unknown as Element)?.setPointerCapture?.(e.pointerId);
+  };
+
+  const startMove = (e: ThreeEvent<PointerEvent>) => {
+    if (e.button !== undefined && e.button > 0) return;
+    capture(e);
+    if (api.selected !== el.id) sound.play("recorte-tomar");
+    api.select(el.id);
+    const p = toSheet(e);
+    if (!p) return;
+    api.begin();
+    gesture.current = { kind: "move", dx: p.x - el.x, dy: p.y - el.y, moved: 0, lx: p.x, ly: p.y };
+    gl.domElement.style.cursor = "grabbing";
+  };
+  const startScale = (e: ThreeEvent<PointerEvent>) => {
+    capture(e);
+    const p = toSheet(e);
+    if (!p) return;
+    api.begin();
+    gesture.current = { kind: "scale", d0: Math.max(4, Math.hypot(p.x - el.x, p.y - el.y)), sx: el.scaleX, sy: el.scaleY };
+  };
+  const startRotate = (e: ThreeEvent<PointerEvent>) => {
+    capture(e);
+    const p = toSheet(e);
+    if (!p) return;
+    api.begin();
+    gesture.current = { kind: "rotate", a0: Math.atan2(p.y - el.y, p.x - el.x), r0: el.rotation };
+  };
+  const onMove = (e: ThreeEvent<PointerEvent>) => {
+    const gs = gesture.current;
+    if (!gs) return;
+    e.stopPropagation();
+    const p = toSheet(e);
+    if (!p) return;
+    const cur = elRef.current;
+    if (gs.kind === "move") {
+      gs.moved += Math.hypot(p.x - gs.lx, p.y - gs.ly);
+      if (Math.hypot(p.x - gs.lx, p.y - gs.ly) > 3) sound.play("recorte-arrastrar");
+      gs.lx = p.x; gs.ly = p.y;
+      api.patch(el.id, {
+        x: THREE.MathUtils.clamp(p.x - gs.dx, -80, SHEET_W + 80),
+        y: THREE.MathUtils.clamp(p.y - gs.dy, -80, SHEET_H + 80),
+      });
+    } else if (gs.kind === "scale") {
+      const f = Math.hypot(p.x - cur.x, p.y - cur.y) / gs.d0;
+      const k = THREE.MathUtils.clamp(gs.sx * f, 0.08, 6) / gs.sx;
+      api.patch(el.id, { scaleX: gs.sx * k, scaleY: gs.sy * k });
+    } else {
+      const a = Math.atan2(p.y - cur.y, p.x - cur.x);
+      api.patch(el.id, { rotation: gs.r0 + ((a - gs.a0) * 180) / Math.PI });
+    }
+  };
+  const onUp = (e: ThreeEvent<PointerEvent>) => {
+    const gs = gesture.current;
+    gesture.current = null;
+    (e.target as unknown as Element)?.releasePointerCapture?.(e.pointerId);
+    gl.domElement.style.cursor = "";
+    if (gs?.kind === "move" && gs.moved > 4) sound.play("recorte-pegar");
+  };
+
   const w = el.w * el.scaleX * K;
   const h = el.h * el.scaleY * K;
+  const hr = 0.075; // radio de las manijas en el mundo
+  const corners: [number, number, string][] = [[-1, 1, "nwse-resize"], [1, 1, "nesw-resize"], [1, -1, "nwse-resize"], [-1, -1, "nesw-resize"]];
+  const handleEvents = (start: (e: ThreeEvent<PointerEvent>) => void, cursor: string) => ({
+    onPointerDown: start,
+    onPointerMove: onMove,
+    onPointerUp: onUp,
+    onPointerOver: (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); if (!gesture.current) gl.domElement.style.cursor = cursor; },
+    onPointerOut: () => { if (!gesture.current) gl.domElement.style.cursor = ""; },
+  });
+
   return (
     <group ref={g}>
       <mesh scale={[w * 1.02, h * 1.02, 1]} renderOrder={i * 2}>
         <planeGeometry />
         <meshBasicMaterial color="#1a1208" map={t} transparent opacity={0.3} depthWrite={false} />
       </mesh>
-      <mesh
-        scale={[w, h, 1]}
-        renderOrder={i * 2 + 1}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          (e.target as Element)?.setPointerCapture?.(e.pointerId);
-          api.select(el.id);
-          const p = toSheet(e);
-          if (!p) return;
-          api.begin();
-          drag.current = { dx: p.x - el.x, dy: p.y - el.y };
-        }}
-        onPointerMove={(e) => {
-          if (!drag.current) return;
-          e.stopPropagation();
-          const p = toSheet(e);
-          if (!p) return;
-          api.patch(el.id, {
-            x: THREE.MathUtils.clamp(p.x - drag.current.dx, -80, SHEET_W + 80),
-            y: THREE.MathUtils.clamp(p.y - drag.current.dy, -80, SHEET_H + 80),
-          });
-        }}
-        onPointerUp={(e) => { drag.current = null; (e.target as Element)?.releasePointerCapture?.(e.pointerId); }}
-        onPointerOver={() => { document.body.style.cursor = "grab"; }}
-        onPointerOut={() => { document.body.style.cursor = ""; }}
-      >
+      <mesh scale={[w, h, 1]} renderOrder={i * 2 + 1} {...handleEvents(startMove, "grab")}>
         <planeGeometry />
         <meshBasicMaterial map={t} transparent alphaTest={0.04} toneMapped={false} />
       </mesh>
       {sel && (
-        <lineSegments renderOrder={999} scale={[w + 0.06, h + 0.06, 1]}>
-          <edgesGeometry args={[new THREE.PlaneGeometry()]} />
-          <lineDashedMaterial color="#d4a12a" dashSize={0.03} gapSize={0.02} depthTest={false} />
-        </lineSegments>
+        <group>
+          <lineSegments renderOrder={999} scale={[w + 0.06, h + 0.06, 1]}>
+            <edgesGeometry args={[new THREE.PlaneGeometry()]} />
+            <lineDashedMaterial color="#d4a12a" dashSize={0.03} gapSize={0.02} depthTest={false} />
+          </lineSegments>
+          {/* esquinas: escalar arrastrando, proporción fija */}
+          {corners.map(([sx, sy, cur], k) => (
+            <group key={k} position={[sx * (w / 2 + 0.03), sy * (h / 2 + 0.03), 0.02]}>
+              <mesh geometry={HANDLE} scale={hr * 1.9} renderOrder={1001} {...handleEvents(startScale, cur)}>
+                <meshBasicMaterial transparent opacity={0} depthTest={false} />
+              </mesh>
+              <mesh geometry={HANDLE} scale={hr} renderOrder={1000}>
+                <meshBasicMaterial color="#f6f1e6" depthTest={false} toneMapped={false} />
+              </mesh>
+              <mesh geometry={RING} scale={hr} renderOrder={1001}>
+                <meshBasicMaterial color="#d4a12a" depthTest={false} toneMapped={false} />
+              </mesh>
+            </group>
+          ))}
+          {/* manija de giro sobre el borde superior */}
+          <group position={[0, h / 2 + 0.28, 0.02]}>
+            <mesh position={[0, -0.13, 0]} scale={[0.008, 0.24, 1]} renderOrder={1000}>
+              <planeGeometry />
+              <meshBasicMaterial color="#d4a12a" depthTest={false} toneMapped={false} />
+            </mesh>
+            <mesh geometry={HANDLE} scale={hr * 2} renderOrder={1001} {...handleEvents(startRotate, "alias")}>
+              <meshBasicMaterial transparent opacity={0} depthTest={false} />
+            </mesh>
+            <mesh geometry={HANDLE} scale={hr * 1.1} renderOrder={1000}>
+              <meshBasicMaterial color="#d9f24a" depthTest={false} toneMapped={false} />
+            </mesh>
+            <mesh geometry={RING} scale={hr * 1.1} renderOrder={1001}>
+              <meshBasicMaterial color="#121110" depthTest={false} toneMapped={false} />
+            </mesh>
+          </group>
+        </group>
       )}
     </group>
   );

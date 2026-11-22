@@ -10,6 +10,7 @@ import { OverlayScene } from "../../components/OverlayScene";
 import { announcePiece, saveLocalPiece, type PublishedPiece } from "../../lib/pieces";
 import { CUTOUTS, DRAWERS, SHEET_W, SHEET_H, elementFrom, nid, useBoard, type Drawer, type El } from "./board";
 import type { BoardApi } from "./BoardCanvas";
+import { sound } from "@/lib/audio/useSound";
 import s from "./collage.module.css";
 
 const BoardCanvas = dynamic(() => import("./BoardCanvas"), { ssr: false, loading: () => <div className={s.loading}>Abriendo la mesa de trabajo…</div> });
@@ -101,6 +102,13 @@ export function CollectiveSection() {
     const el = elementFrom(c, added.current++);
     act({ type: "add", el });
     setSelected(el.id);
+    sound.play("recorte-tomar");
+  };
+  const duplicate = (id: string) => {
+    const nidv = nid();
+    act({ type: "duplicate", id, newId: nidv });
+    setSelected(nidv);
+    sound.play("recortar"); // duplicar = recortar una copia del mismo papel
   };
   const scaleBy = (f: number) => sel && patch(sel.id, { scaleX: Math.min(6, Math.max(0.08, sel.scaleX * f)), scaleY: Math.min(6, Math.max(0.08, sel.scaleY * f)) }, true);
   const rotateBy = (d: number) => sel && patch(sel.id, { rotation: ((sel.rotation + d) % 360 + 360) % 360 }, true);
@@ -139,6 +147,14 @@ export function CollectiveSection() {
     }
   };
   const onUp = (e: React.PointerEvent) => { touches.current.delete(e.pointerId); if (touches.current.size < 2) pinch.current = null; };
+  /* gestos colgados: al salir de la ventana, perder foco u ocultar la pestaña se sueltan todos los dedos */
+  useEffect(() => {
+    const clear = () => { touches.current.clear(); pinch.current = null; };
+    const vis = () => { if (document.hidden) clear(); };
+    window.addEventListener("blur", clear);
+    document.addEventListener("visibilitychange", vis);
+    return () => { window.removeEventListener("blur", clear); document.removeEventListener("visibilitychange", vis); };
+  }, []);
 
   const onKey = (e: React.KeyboardEvent) => {
     const mod = e.ctrlKey || e.metaKey;
@@ -175,10 +191,12 @@ export function CollectiveSection() {
         const j = await r.json();
         piece = { ...j.piece, image: j.piece?.image ?? image };
         setStatus({ kind: "ok", text: "Tu figura ya está colgada en la habitación de los mensajes." });
+        sound.play("composicion-completa");
       } else if (r.status === 503) {
         piece = { id: `local-${nid()}`, message: msg, signature: sig || null, image, createdAt: new Date().toISOString(), local: true };
         saveLocalPiece(piece);
         setStatus({ kind: "local", text: "Quedó publicada en este navegador; se verá para todos cuando la base de datos del museo esté conectada." });
+        sound.play("composicion-completa");
       } else {
         const j = await r.json().catch(() => ({}));
         const text = r.status === 429 ? "Ya publicaste varias figuras seguidas. Espera unos minutos." : (j.message as string) || (j.issues?.[0] as string) || "No se pudo publicar. Intenta de nuevo.";
@@ -225,6 +243,7 @@ export function CollectiveSection() {
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerCancel={onUp}
+          onPointerLeave={onUp}
         >
           {inView && <BoardCanvas api={api} narrow={narrow} reduced={reduced} lowPower={lowPower} />}
           <span className={s.tagAbraxas} aria-hidden>{narrow ? "Abraxas" : "Pieza de Abraxas · su cabeza sobre un cuerpo de muñeca"}</span>
@@ -245,7 +264,7 @@ export function CollectiveSection() {
               <Ticket size="sm" aria-label="Girar a la derecha" onClick={() => rotateBy(12)}>Girar +</Ticket>
               <Ticket size="sm" onClick={() => act({ type: "order", id: sel.id, dir: "front" })}>Al frente</Ticket>
               <Ticket size="sm" onClick={() => act({ type: "order", id: sel.id, dir: "back" })}>Atrás</Ticket>
-              <Ticket size="sm" icon="tijeras" onClick={() => { const id = nid(); act({ type: "duplicate", id: sel.id, newId: id }); setSelected(id); }}>Duplicar</Ticket>
+              <Ticket size="sm" icon="tijeras" onClick={() => duplicate(sel.id)}>Recortar copia</Ticket>
               <Ticket size="sm" icon="x" tone="bermellon" onClick={() => { act({ type: "remove", id: sel.id }); setSelected(null); }}>Quitar</Ticket>
             </div>
           )}
@@ -315,7 +334,7 @@ export function CollectiveSection() {
           </form>
         </aside>
       </div>
-      <p className={s.studioNote}>La rueda del mouse escala la pieza seleccionada (con Shift la gira). Para seguir el recorrido, suelta la pieza con Esc o haz scroll fuera de la mesa.</p>
+      <p className={s.studioNote}>Toca un recorte para elegirlo: arrastra sus esquinas para agrandarlo o achicarlo, el punto de arriba para girarlo y el centro para moverlo. En el celular, usa dos dedos o los botones + y −. Para seguir el recorrido, suelta la pieza con Esc o haz scroll fuera de la mesa.</p>
       </div>
       </div>
 

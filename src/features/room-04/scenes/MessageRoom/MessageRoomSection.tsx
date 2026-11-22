@@ -7,7 +7,9 @@ import { hasWebGL } from "../../hooks/useDevice";
 import { useRoom } from "../../store";
 import { PLAYLIST } from "../../data/media";
 import { fetchPieces, PIECE_EVENT, type PublishedPiece } from "../../lib/pieces";
-import { SEED, pageCount, pageOf } from "./layout";
+import { PORTALS, SEED, pageCount, pageOf } from "./layout";
+import { PortalViewer } from "./PortalViewer";
+import { sound } from "@/lib/audio/useSound";
 import { useSpotify } from "./useSpotify";
 import { Sticker, Ticket } from "@/components/abx/Ticket";
 import { Icon } from "@/components/abx/Icon";
@@ -35,7 +37,32 @@ export function MessageRoomSection() {
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [listMode, setListMode] = useState(false);
+  const [portal, setPortal] = useState<string | null>(null);
+  const portalReturn = useRef<HTMLElement | null>(null);
   const loaded = useRef(false);
+  const revealed = useRef(false);
+
+  // «Una habitación que aparece»: una sola vez, cuando la habitación se revela al entrar
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !revealed.current) { revealed.current = true; sound.play("habitacion-aparece"); io.disconnect(); }
+    }, { threshold: 0.35 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const openPortal = useCallback((id: string) => {
+    portalReturn.current = document.activeElement as HTMLElement | null;
+    setSelected(null);
+    setPortal(id);
+  }, []);
+  const closePortal = useCallback(() => {
+    setPortal(null);
+    // devolver el foco a donde estaba (la habitación conserva su cámara: solo se aleja del espejo)
+    window.setTimeout(() => (portalReturn.current ?? stageRef.current)?.focus?.({ preventScroll: true }), 50);
+  }, []);
 
   useEffect(() => {
     if (!inView || loaded.current) return;
@@ -71,6 +98,9 @@ export function MessageRoomSection() {
   // Música: el embed oficial se carga al acercarse; suena solo cuando la persona lo pide.
   const host = useRef<HTMLDivElement>(null);
   const spot = useSpotify(host, PLAYLIST.uri, inView);
+  // mientras suena la playlist, la música ambiental de la exposición baja (canal de audio externo)
+  useEffect(() => { sound.setVideoActive(spot.playing); }, [spot.playing]);
+  useEffect(() => () => sound.setVideoActive(false), []);
   const playerAction = useCallback(() => {
     if (spot.ready) spot.toggle();
     else host.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -97,7 +127,7 @@ export function MessageRoomSection() {
 
       <div ref={stageRef} className={s.stage} data-cursor="arrastra">
         {webgl && !listMode ? (
-          <MessageRoomCanvas pieces={shown} freshIds={fresh} selected={selected} onSelect={setSelected} active={inView} low={low} reduced={reduced} progress={progress} playing={spot.playing} onPlayer={playerAction} />
+          <MessageRoomCanvas pieces={shown} freshIds={fresh} selected={selected} onSelect={setSelected} active={inView} low={low} reduced={reduced} progress={progress} playing={spot.playing} onPlayer={playerAction} portal={portal} onPortal={openPortal} />
         ) : (
           <div className={s.flat} aria-hidden={!listMode}>
             {shown.map((p) => (
@@ -111,7 +141,7 @@ export function MessageRoomSection() {
 
 
         <div className={s.controls}>
-          <span className={s.hintPill}>Arrastra para mirar · toca una pieza para leerla</span>
+          <span className={s.hintPill}>Arrastra para mirar · toca una pieza para leerla · los espejos con marco dorado abren un collage</span>
           {spot.playing && (
             <Ticket icon="pausa" tone="lima" size="sm" onClick={spot.toggle} aria-label="Pausar la música">Pausar música</Ticket>
           )}
@@ -171,6 +201,12 @@ export function MessageRoomSection() {
           <svg className={s.stitch} viewBox="0 0 300 12" aria-hidden><path d="M2 6 H298" stroke="currentColor" strokeWidth="2" strokeDasharray="8 6" fill="none" /></svg>
         </figure>
       </div>
+
+      {/* acceso por teclado a los espejos portal */}
+      <nav className="sr-only" aria-label="Espejos de la habitación">
+        {PORTALS.map((p) => <button key={p.id} onClick={() => openPortal(p.id)}>Entrar al collage: {p.title}</button>)}
+      </nav>
+      {portal && <PortalViewer portal={PORTALS.find((p) => p.id === portal)!} onClose={closePortal} />}
 
       {current && (
         <div className={s.reader} role="dialog" aria-modal="true" aria-labelledby="reader-msg" onClick={() => setSelected(null)}>

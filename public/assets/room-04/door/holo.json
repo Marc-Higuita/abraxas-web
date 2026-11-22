@@ -1,0 +1,30 @@
+{
+ "cuerpo": {
+  "src": "/assets/room-04/door/holo-cuerpo.webp",
+  "aspect": 0.805
+ },
+ "cara-roja": {
+  "src": "/assets/room-04/door/holo-cara-roja.webp",
+  "aspect": 0.8776
+ },
+ "cara-blanca": {
+  "src": "/assets/room-04/door/holo-cara-blanca.webp",
+  "aspect": 0.7876
+ },
+ "ojos": {
+  "src": "/assets/room-04/door/holo-ojos.webp",
+  "aspect": 3.5303
+ },
+ "manos": {
+  "src": "/assets/room-04/door/holo-manos.webp",
+  "aspect": 2.7815
+ },
+ "satin": {
+  "src": "/assets/room-04/door/holo-satin.webp",
+  "aspect": 1.2637
+ },
+ "pelo": {
+  "src": "/assets/room-04/door/holo-pelo.webp",
+  "aspect": 2.566
+ }
+}

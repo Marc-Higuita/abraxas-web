@@ -1,11 +1,10 @@
-import Link from "next/link";
 import { Icon } from "@/components/abx/Icon";
 import { Sticker } from "@/components/abx/Ticket";
 import { StitchLine } from "@/components/abx/Ornaments";
-import { RIGHTS } from "./rights";
+import { LegalLinks } from "./LegalDialog";
 import s from "./footer.module.css";
 
-/** Pie del recorrido: identificación de Abraxas, créditos, derechos por material y enlaces legales. */
+/** Pie del recorrido: identificación de Abraxas y créditos. Derechos, términos, privacidad y créditos completos se abren en ventanas. */
 export function Footer() {
   return (
     <footer className={s.footer} aria-labelledby="footer-title">
@@ -32,39 +31,11 @@ export function Footer() {
             <dt>Docente</dt><dd><span className={s.todo}>por completar</span></dd>
             <dt>Año</dt><dd>2026</dd>
           </dl>
-          <nav className={s.legal} aria-label="Información legal">
-            <Link href="/legal/terminos"><Icon name="balanza" size={18} /> Términos y condiciones</Link>
-            <Link href="/legal/privacidad"><Icon name="ojo" size={18} /> Política de privacidad</Link>
-            <Link href="/creditos"><Icon name="libro" size={18} /> Créditos y derechos completos</Link>
-          </nav>
+          <LegalLinks />
         </section>
       </div>
 
       <StitchLine className={s.stitch} color="var(--oro)" width={1200} />
-
-      <section className={s.rights} aria-labelledby="footer-rights">
-        <div className={s.rightsHead}>
-          <h3 id="footer-rights" className={s.h3}><Icon name="cinta" size={20} /> Derechos de autor por material</h3>
-          <Sticker tone="bermellon" shape="flag" rotate={2}>Borrador para revisión</Sticker>
-        </div>
-        <p className={s.small}>No todos los materiales tienen el mismo titular. Lo marcado en rosado falta por confirmar.</p>
-        <div className={s.tableWrap} tabIndex={0} role="region" aria-label="Tabla de derechos por material">
-          <table className={s.table}>
-            <thead><tr><th scope="col">Material</th><th scope="col">Dónde aparece</th><th scope="col">Titular</th><th scope="col">Uso en el sitio</th></tr></thead>
-            <tbody>
-              {RIGHTS.map((r) => (
-                <tr key={r.material}>
-                  <th scope="row">{r.material}</th>
-                  <td>{r.donde}</td>
-                  <td>{r.titular}</td>
-                  <td>{r.uso}{r.pendiente && <span className={s.todo}>Por completar: {r.pendiente}</span>}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       <div className={s.bottom}>
         <span>© 2026 · Museo Abraxas · Sala 04 · Universidad de Antioquia. Proyecto académico sin fines comerciales.</span>
         <img src="/assets/brand/isotipo-papel.png" alt="" width={32} height={40} />

@@ -5,6 +5,7 @@ import { DOCUMENTARY } from "../../data/media";
 import { useRoom } from "../../store";
 import { Ticket, Sticker } from "@/components/abx/Ticket";
 import { StitchLine } from "@/components/abx/Ornaments";
+import { sound } from "@/lib/audio/useSound";
 import s from "./documentary.module.css";
 
 /** Recortes de las paredes de la habitación (bordes rasgados, sin marco) que construyen el fondo. */
@@ -15,6 +16,11 @@ const FRAGS: { n: number; x: number; y: number; w: number; r: number; d: number 
   { n: 16, x: 62, y: 82, w: 14, r: -9, d: 0.9 }, { n: 17, x: 40, y: 88, w: 12, r: 3, d: 0.5 }, { n: 18, x: 24, y: -8, w: 12, r: -12, d: 0.7 },
   { n: 19, x: 58, y: -10, w: 12, r: 8, d: 0.6 }, { n: 20, x: 93, y: 76, w: 11, r: -3, d: 1.1 }, { n: 21, x: -6, y: 86, w: 12, r: 7, d: 0.9 },
   { n: 22, x: 70, y: 26, w: 10, r: 14, d: 1.2 }, { n: 23, x: 14, y: 24, w: 11, r: -14, d: 1.1 }, { n: 25, x: 46, y: -12, w: 11, r: -6, d: 0.8 },
+  // más detalles y texturas de las paredes, siempre detrás del reproductor
+  { n: 30, x: -9, y: 18, w: 12, r: 11, d: 1.3 }, { n: 31, x: 96, y: 24, w: 11, r: -10, d: 1.25 }, { n: 32, x: 33, y: -14, w: 10, r: 5, d: 1.15 },
+  { n: 33, x: 66, y: -14, w: 9, r: -11, d: 1.3 }, { n: 34, x: -8, y: 54, w: 12, r: -6, d: 1.2 }, { n: 35, x: 97, y: 56, w: 12, r: 8, d: 1.15 },
+  { n: 36, x: 30, y: 90, w: 12, r: -8, d: 1.25 }, { n: 37, x: 52, y: 92, w: 11, r: 12, d: 1.3 }, { n: 38, x: 8, y: 94, w: 11, r: 4, d: 1.1 },
+  { n: 39, x: 86, y: 92, w: 11, r: -5, d: 1.2 }, { n: 40, x: 4, y: -12, w: 11, r: 9, d: 1.3 }, { n: 41, x: 88, y: -12, w: 10, r: -12, d: 1.25 },
 ];
 const VC = "/assets/room-04/video-collage";
 
@@ -47,8 +53,8 @@ export function DocumentarySection() {
   }, { start: "top bottom", end: "bottom bottom" });
   const onMove = (e: React.PointerEvent) => {
     if (reduced || e.pointerType !== "mouse") return;
-    const el = stage.current;
-    if (!el) return;
+    // en el contenedor fijo: lo heredan el muro de fondo y todas las capas
+    const el = e.currentTarget as HTMLElement;
     el.style.setProperty("--mx", ((e.clientX / innerWidth) * 2 - 1).toFixed(3));
     el.style.setProperty("--my", ((e.clientY / innerHeight) * 2 - 1).toFixed(3));
   };
@@ -80,11 +86,17 @@ export function DocumentarySection() {
     if (e.key === "ArrowRight") { v.currentTime = Math.min(v.duration || 0, v.currentTime + 5); e.preventDefault(); }
     if (e.key === "ArrowLeft") { v.currentTime = Math.max(0, v.currentTime - 5); e.preventDefault(); }
   };
+  // canal de audio del video: mientras suena con sonido, la música de fondo baja
+  useEffect(() => { sound.setVideoActive(playing && !muted); }, [playing, muted]);
+  useEffect(() => () => sound.setVideoActive(false), []);
 
   return (
     <section ref={section} id="video" className={`${s.section} tx-kraft`} aria-labelledby="act2-title" style={{ minHeight: reduced ? "100svh" : "130svh" }}>
       <h2 id="act2-title" className="sr-only">02 · La imagen que habla: video documental</h2>
       <div className={s.sticky} onPointerMove={onMove}>
+        {/* muro de collage a sangre con los recortes de las paredes de la habitación */}
+        <div className={s.wall} aria-hidden="true" />
+        <div className={s.wallVeil} aria-hidden="true" />
         <div ref={stage} className={s.stage}>
           {/* capas DETRÁS del video: recortes de las paredes y una silueta hecha de fragmentos */}
           <div className={s.back} aria-hidden="true">
@@ -105,6 +117,8 @@ export function DocumentarySection() {
               <img className={`${s.fig} ${s.figB}`} src={`${VC}/silueta-cuerpo.webp`} alt="" loading="lazy" />
               <img className={`${s.fig} ${s.figC}`} src={`${VC}/silueta-delante.webp`} alt="" loading="lazy" />
             </div>
+            <img className={s.eye} src="/assets/room-04/interludes/ojo-azul.webp" alt="" loading="lazy" />
+            <img className={s.mask} src="/assets/room-04/interludes/mascara.webp" alt="" loading="lazy" />
             <StitchLine className={s.stitchBack} color="var(--negro)" width={900} />
           </div>
 
@@ -114,6 +128,9 @@ export function DocumentarySection() {
           </div>
 
           <div ref={frame} className={s.frame} data-cursor="play">
+            {/* cinta solo sobre el filo de papel: nunca sobre la imagen ni los controles */}
+            <span className={`${s.tape} ${s.tapeA}`} aria-hidden="true" />
+            <span className={`${s.tape} ${s.tapeB}`} aria-hidden="true" />
             {available === false ? (
               <div className={s.pending}><img src={DOCUMENTARY.poster} alt="" /><p>El video no está disponible.</p></div>
             ) : (
@@ -161,14 +178,6 @@ export function DocumentarySection() {
             )}
           </div>
 
-          {/* capas DELANTE del video */}
-          <div className={s.front} aria-hidden="true">
-            <span className={`${s.tape} ${s.tapeA}`} />
-            <span className={`${s.tape} ${s.tapeB}`} />
-            <span className={`${s.tape} ${s.tapeC}`} />
-            <img className={s.eye} src="/assets/room-04/interludes/ojo-azul.webp" alt="" loading="lazy" />
-            <img className={s.mask} src="/assets/room-04/interludes/mascara.webp" alt="" loading="lazy" />
-          </div>
         </div>
       </div>
     </section>

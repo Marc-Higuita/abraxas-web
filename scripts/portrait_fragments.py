@@ -25,6 +25,12 @@ F = {
     "t2": "taller-de-abraxas-aguilar-m_51929056_20261020130323.webp",
     "w": "ABRAXAS-web.jpg",
     "d44": "DSC_0244.JPG",
+    "w3": "ABRAXAS-web-3.jpg",
+    "d40": "DSC_0540.JPG",
+    "d63": "DSC_0263.JPG",
+    "d48": "DSC_0248.JPG",
+    "gu": "../../../app/public/assets/room-04/portrait/abraxas-libro-guinness.jpg",
+    "en": "../../../app/public/assets/room-04/portrait/abraxas-entrevista.jpg",
 }
 
 # nombre, fuente, modo, rect (x0,y0,x1,y1) en px de la foto original, extra
@@ -43,6 +49,18 @@ PIECES = [
     ("libro-manos", "t2", "poly", None, {"poly": [(476, 520), (500, 470), (560, 455), (620, 480), (720, 470), (860, 460), (905, 450), (940, 600), (950, 719), (530, 719), (520, 600), (480, 560)]}),
     ("espejo-baile", "w", "torn", (448, 28, 892, 562), {"rough": 0.04}),
     ("risa-hojas", "d44", "torn", (1330, 1240, 2380, 2620), {"rough": 0.07}),
+    # fase 3: más capas de otras fotos y momentos
+    ("cara-gafas", "w3", "torn", (262, 98, 398, 242), {"rough": 0.09}),
+    ("mano-mesa", "w3", "torn", (205, 290, 340, 420), {"rough": 0.1}),
+    ("cara-arbol", "d40", "torn", (1580, 2110, 2110, 2640), {"rough": 0.08}),
+    ("camisa-bronce", "d40", "torn", (1470, 2560, 2250, 3600), {"rough": 0.06, "diag": True}),
+    ("papa-noel", "d40", "torn", (300, 3190, 1300, 4096), {"rough": 0.06}),
+    ("cara-taller", "d63", "torn", (3230, 1090, 3820, 1700), {"rough": 0.08}),
+    ("camisa-flores", "d63", "torn", (2950, 1700, 4020, 2830), {"rough": 0.06}),
+    ("figura-guinness", "gu", "torn", (590, 300, 830, 900), {"rough": 0.05}),
+    ("cartel-guinness", "gu", "torn", (262, 170, 620, 950), {"rough": 0.04}),
+    ("figura-entrevista", "en", "torn", (555, 200, 845, 870), {"rough": 0.05}),
+    ("figura-pasillo", "d48", "torn", (1440, 1600, 2060, 3100), {"rough": 0.06}),
 ]
 
 

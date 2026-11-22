@@ -6,6 +6,7 @@ import type { Dimension, TimelineEvent } from "../../types";
 import { useRoom } from "../../store";
 import { useInView } from "../../hooks/useInView";
 import { Ticket, Sticker } from "@/components/abx/Ticket";
+import { sound } from "@/lib/audio/sound";
 import { bigDate, DIM_HEX, DIM_LABEL, imgUrl, SORTED, VER_LABEL } from "./shared";
 import s from "./timeline.module.css";
 
@@ -25,6 +26,9 @@ export function TimelineSection() {
   const lowPower = useRoom((st) => st.lowPower);
   const [narrow, setNarrow] = useState(false);
   const near = useInView(section, "300px");
+  /** en celular la tarjeta arranca plegada (fecha + título) para no tapar la línea de fotografías */
+  const [cardOpen, setCardOpen] = useState(true);
+  const lastIdx = useRef(0);
 
   const events = useMemo(() => SORTED.filter((e) => e.dimensions.some((d) => active.has(d))), [active]);
   const n = events.length;
@@ -35,6 +39,13 @@ export function TimelineSection() {
     f(); mq.addEventListener("change", f);
     return () => mq.removeEventListener("change", f);
   }, []);
+
+  // al cambiar de momento: en celular la tarjeta se vuelve a plegar; un salto grande suena discreto
+  useEffect(() => {
+    setCardOpen(!narrow);
+    if (Math.abs(idx - lastIdx.current) >= 3) sound.play("fotos-desplazamiento", { volume: 0.6 });
+    lastIdx.current = idx;
+  }, [idx, narrow]);
 
   /* scroll vertical → posición en el pasillo */
   useEffect(() => {
@@ -164,12 +175,18 @@ export function TimelineSection() {
         </header>
 
         {ev && (
-          <article key={ev.id} className={s.card} aria-live="polite">
+          <article key={ev.id} className={`${s.card} ${cardOpen ? s.cardOpen : s.cardShut}`} aria-live="polite">
             <p className={s.date}>
               <span className={s.big}>{bigDate(ev)}</span>
-              <span>{ev.dateLabel}</span>
+              <span className={s.dateLabel}>{ev.dateLabel}</span>
             </p>
             <h3>{ev.title}</h3>
+            {narrow && (
+              <button className={s.more} onClick={() => setCardOpen((v) => !v)} aria-expanded={cardOpen} aria-controls={`tl-more-${ev.id}`}>
+                {cardOpen ? "Ver menos" : "Leer más"}
+              </button>
+            )}
+            <div id={`tl-more-${ev.id}`} className={s.moreBody} hidden={narrow && !cardOpen}>
             <div className={s.tags}>
               {ev.dimensions.map((d) => <span key={d} className={s.tag} style={{ ["--c" as string]: DIM_HEX[d] }}>{DIM_LABEL[d]}</span>)}
               <span className={`${s.ver} ${s[ev.verification.replace("-", "")]}`}>{VER_LABEL[ev.verification]}</span>
@@ -177,6 +194,7 @@ export function TimelineSection() {
             <p className={s.desc}>{ev.description}</p>
             <p className={s.src}>Fuente: {ev.sources.map((x) => x.label).join(" · ")}</p>
             <Ticket icon="lupa" tone="papel" size="sm" onClick={() => ficha(ev)} cursor="ver">Ver ficha</Ticket>
+            </div>
           </article>
         )}
 

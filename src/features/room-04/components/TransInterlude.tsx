@@ -2,64 +2,74 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { useRoom } from "../store";
 import { useInView } from "../hooks/useInView";
+import { sound } from "@/lib/audio/sound";
 import letters from "../../../../public/assets/room-04/letters/letters.json";
 import pieces from "./transPieces.json";
 import s from "./transInterlude.module.css";
 
 /**
- * Corrección 07 · «Todo es trans». Figuras andróginas armadas con recortes (cabeza de una pieza, torso de otra,
- * piernas de otra), en distintas escalas y profundidades. Las piezas grandes tienen grosor de papel (capas
- * apiladas) y toda la instalación gira con el cursor. El título se arma con letras recortadas que se fragmentan.
- * Piezas: hojas de recortes aportadas por el equipo (sin retratos de personas reales ni obras completas firmadas).
- * Frase citada en el video del equipo (2:36).
+ * «Todo es trans». Collage de cuerpos trans, no binarios y andróginos: torsos, siluetas y poses recortados de las
+ * láminas que aportó el equipo (siempre a la altura del cuello o del mentón: sin rostros reconocibles y sin
+ * atribuir identidades a nadie), recombinados con cabezas de maniquí, muñecas, pelucas y rasgos sueltos.
+ * Piezas en distintos planos y escalas, algunas translúcidas; las grandes tienen grosor de papel.
+ * La sección queda fija (sticky) un buen tramo para que la frase se lea completa antes de que el tablero
+ * se superponga. Frase citada en el video del equipo (2:36).
  */
 type PieceId = keyof typeof pieces;
-interface Placed { id: PieceId; x: number; y: number; h: number; r: number; z: number; thick?: boolean; flip?: boolean; lite?: boolean }
+interface Placed { id: PieceId; x: number; y: number; h: number; r: number; z: number; thick?: boolean; flip?: boolean; lite?: boolean; alpha?: number; blend?: boolean }
 
 /** Composición en un lienzo virtual de 1600 × 900. x, y = centro de la pieza; h = alto en px virtuales. */
 const LAYOUT: Placed[] = [
-  // figura 1 · izquierda: cabeza de maniquí, peluca roja, busto, brazos, piernas en calzón
-  { id: "untitled-11", x: 255, y: 690, h: 380, r: 2, z: -110, thick: true },
-  { id: "d8-8", x: 262, y: 420, h: 250, r: -2, z: -95, thick: true },
-  { id: "d9-2", x: 150, y: 440, h: 220, r: 18, z: -100, lite: true },
-  { id: "d9-6", x: 372, y: 450, h: 210, r: -14, z: -90, lite: true },
-  { id: "d8-2", x: 262, y: 225, h: 190, r: 4, z: -80, thick: true },
-  { id: "hair-19", x: 258, y: 158, h: 175, r: -3, z: -88 },
-  { id: "d22-7", x: 330, y: 120, h: 70, r: 24, z: -60 },
-  // figura 2 · derecha: máscara de muñeca con bob oscuro, torso de maniquí, brazo, piernas en blanco y negro
-  { id: "piernas-bn-5", x: 1330, y: 735, h: 310, r: -2, z: -60, thick: true },
-  { id: "d8-1", x: 1330, y: 445, h: 380, r: 1, z: -50, thick: true },
-  { id: "d9-9", x: 1450, y: 400, h: 250, r: -8, z: -45, lite: true },
-  { id: "hair-18", x: 1330, y: 160, h: 150, r: 3, z: -40 },
-  { id: "d26-1", x: 1328, y: 195, h: 140, r: -4, z: -30, thick: true },
-  { id: "d23-18", x: 1250, y: 330, h: 50, r: -20, z: -20 },
-  // figura 3 · al fondo, en el centro: cabeza gris con labios, caderas, piernas de maniquí
-  { id: "d8-5", x: 770, y: 650, h: 290, r: 6, z: -340, lite: true },
-  { id: "d8-7", x: 845, y: 650, h: 290, r: -4, z: -345, lite: true },
-  { id: "d8-4", x: 805, y: 420, h: 210, r: 0, z: -330, thick: true },
-  { id: "d9-4", x: 700, y: 360, h: 200, r: 20, z: -335, lite: true },
-  { id: "hair-1", x: 806, y: 195, h: 150, r: -2, z: -320 },
-  { id: "d25-1", x: 806, y: 245, h: 160, r: 2, z: -310, thick: true },
-  // figura 4 · pequeña, al frente: muñeca de porcelana con piernas sueltas
-  { id: "d2-2", x: 1080, y: 790, h: 150, r: 8, z: 110, lite: true },
-  { id: "d2-3", x: 1135, y: 795, h: 140, r: -6, z: 112, lite: true },
-  { id: "d2-1", x: 1105, y: 670, h: 170, r: -3, z: 120, thick: true },
-  { id: "d23-21", x: 1150, y: 600, h: 60, r: 40, z: 130, lite: true },
+  // fondo: cuerpos grandes y translúcidos, como capas de memoria detrás del título
+  { id: "b-torso-3", x: 800, y: 470, h: 620, r: -2, z: -520, alpha: 0.42, blend: true },
+  { id: "b-torso-6", x: 470, y: 430, h: 470, r: 7, z: -430, alpha: 0.55, blend: true, lite: true },
+  { id: "b-escultura-1", x: 1130, y: 470, h: 470, r: -5, z: -450, alpha: 0.6, blend: true, lite: true },
+  { id: "b-torso-5", x: 640, y: 690, h: 260, r: -9, z: -380, alpha: 0.5, blend: true, lite: true },
+
+  // figura 1 · izquierda: cabeza de maniquí y peluca roja sobre un torso con cicatrices, brazos y piernas en calzón
+  { id: "untitled-11", x: 205, y: 735, h: 330, r: 2, z: -110, thick: true },
+  { id: "b-torso-1", x: 210, y: 455, h: 225, r: -3, z: -95, thick: true },
+  { id: "d9-2", x: 47, y: 470, h: 200, r: 22, z: -100, lite: true },
+  { id: "d9-6", x: 373, y: 480, h: 190, r: -18, z: -90, lite: true },
+  { id: "d8-2", x: 213, y: 262, h: 170, r: 4, z: -80, thick: true },
+  { id: "hair-19", x: 209, y: 200, h: 160, r: -3, z: -88 },
+  { id: "d22-7", x: 285, y: 150, h: 64, r: 24, z: -60 },
+
+  // figura 2 · derecha: máscara de muñeca con bob oscuro sobre un torso con short estampado y piernas en blanco y negro
+  { id: "piernas-bn-5", x: 1420, y: 780, h: 240, r: -2, z: -60, thick: true },
+  { id: "b-torso-2", x: 1415, y: 470, h: 430, r: 1, z: -50, thick: true },
+  { id: "d26-1", x: 1412, y: 205, h: 135, r: -4, z: -30, thick: true },
+  { id: "hair-18", x: 1414, y: 160, h: 130, r: 3, z: -40 },
+  { id: "d9-9", x: 1580, y: 420, h: 230, r: -10, z: -45, lite: true },
+  { id: "d23-18", x: 1310, y: 330, h: 50, r: -20, z: -20 },
+
+  // figura 3 · al fondo, en el centro-izquierda: cabeza gris con labios sobre un cuerpo de traje que camina
+  { id: "b-traje-1", x: 560, y: 600, h: 430, r: 3, z: -300, lite: true },
+  { id: "d25-1", x: 548, y: 352, h: 120, r: -3, z: -290, lite: true },
+  { id: "hair-1", x: 548, y: 318, h: 110, r: -2, z: -295, lite: true },
+
+  // figura 4 · al fondo, centro-derecha: torso de maniquí con caderas y piernas, manos que lo sostienen
+  { id: "d8-5", x: 1010, y: 690, h: 260, r: 6, z: -340, lite: true },
+  { id: "d8-7", x: 1080, y: 690, h: 260, r: -4, z: -345, lite: true },
+  { id: "b-torso-4", x: 1045, y: 470, h: 210, r: 0, z: -330, thick: true },
+  { id: "b-manos-1", x: 1170, y: 520, h: 260, r: 8, z: -310, alpha: 0.9, lite: true },
+  { id: "d15-2", x: 1043, y: 300, h: 150, r: 2, z: -320, thick: true },
+
+  // figura 5 · pequeña, al frente: muñeca de porcelana con piernas sueltas
+  { id: "d2-2", x: 760, y: 820, h: 130, r: 8, z: 110, lite: true },
+  { id: "d2-3", x: 812, y: 825, h: 122, r: -6, z: 112, lite: true },
+  { id: "d2-1", x: 786, y: 718, h: 150, r: -3, z: 120, thick: true },
+
   // rasgos sueltos, flotando alrededor
-  { id: "faces-9", x: 560, y: 120, h: 70, r: -6, z: 60 },
-  { id: "d18-3", x: 1080, y: 120, h: 70, r: 8, z: 40 },
-  { id: "d21-1", x: 1530, y: 640, h: 150, r: 6, z: 20, lite: true },
-  { id: "faces-10", x: 470, y: 820, h: 70, r: 5, z: 80, lite: true },
-  { id: "d17-13", x: 640, y: 790, h: 70, r: -8, z: 150 },
-  { id: "d17-6", x: 1490, y: 120, h: 70, r: 10, z: 30, lite: true },
-  { id: "faces-12", x: 990, y: 300, h: 44, r: -4, z: -150, lite: true },
-  { id: "d6-3", x: 95, y: 230, h: 110, r: -12, z: 40, lite: true },
-  { id: "d4-1", x: 980, y: 520, h: 200, r: -6, z: -220, lite: true },
-  { id: "d13-7", x: 540, y: 520, h: 140, r: 14, z: -180, lite: true },
-  { id: "d7-12", x: 900, y: 860, h: 90, r: -6, z: -60, lite: true },
-  { id: "d23-15", x: 440, y: 110, h: 60, r: -30, z: 100, lite: true },
-  { id: "d23-6", x: 1240, y: 100, h: 70, r: 18, z: 70, lite: true },
-  { id: "d11-6", x: 1560, y: 330, h: 80, r: 6, z: 50, lite: true },
+  { id: "faces-9", x: 600, y: 110, h: 64, r: -6, z: 60 },
+  { id: "d18-3", x: 1080, y: 110, h: 64, r: 8, z: 40 },
+  { id: "faces-10", x: 470, y: 840, h: 64, r: 5, z: 80, lite: true },
+  { id: "d17-13", x: 640, y: 800, h: 64, r: -8, z: 150 },
+  { id: "d17-6", x: 1500, y: 110, h: 64, r: 10, z: 30, lite: true },
+  { id: "d6-3", x: 90, y: 230, h: 100, r: -12, z: 40, lite: true },
+  { id: "d23-15", x: 430, y: 100, h: 56, r: -30, z: 100, lite: true },
+  { id: "d23-6", x: 1230, y: 96, h: 64, r: 18, z: 70, lite: true },
+  { id: "d11-6", x: 1560, y: 640, h: 76, r: 6, z: 50, lite: true },
 ];
 
 type Letter = { id: string; char: string; src: string; w: number; h: number };
@@ -74,7 +84,11 @@ export function TransInterlude({ source = "frase citada en el video del equipo (
   const near = useInView(ref, "0px");
   const [seen, setSeen] = useState(false);
   const [narrow, setNarrow] = useState(false);
-  useEffect(() => { if (near) setSeen(true); }, [near]);
+  useEffect(() => {
+    if (!near || seen) return;
+    setSeen(true);
+    if (!reduced) sound.play("collage-ensambla");
+  }, [near, seen, reduced]);
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 760px)");
     const f = () => setNarrow(mq.matches); f(); mq.addEventListener("change", f);
@@ -130,18 +144,21 @@ export function TransInterlude({ source = "frase citada en el video del equipo (
   return (
     <section ref={ref} className={`${s.section} ${seen ? s.in : ""} ${reduced ? s.still : ""}`} aria-labelledby="trans-title">
       <h2 id="trans-title" className="sr-only">Todo es trans: ¿tu cuerpo qué te dice?</h2>
+      <div className={s.sticky}>
       <div className={s.stage} aria-hidden="true">
         <div ref={world} className={s.world} style={{ ["--s" as string]: scale } as CSSProperties}>
           {placed.map((p, i) => {
             const meta = pieces[p.id];
             const w = (p.h * meta.w) / meta.h;
+            const px = narrow ? 800 + (p.x - 800) * 0.66 : p.x;
             const style = {
-              left: p.x, top: p.y, width: w, height: p.h,
+              left: px, top: p.y, width: w, height: p.h,
               ["--z" as string]: `${p.z}px`, ["--r" as string]: `${p.r}deg`, ["--i" as string]: i,
+              ["--a" as string]: p.alpha ?? 1,
               ["--fx" as string]: `${(rnd(i, 1) - 0.5) * 1400}px`, ["--fy" as string]: `${(rnd(i, 3) - 0.5) * 900 - 300}px`, ["--fr" as string]: `${(rnd(i, 5) - 0.5) * 160}deg`,
             } as CSSProperties;
             return (
-              <div key={p.id} className={`${s.piece} ${p.thick && !lite ? s.thick : ""}`} style={style}>
+              <div key={p.id} className={`${s.piece} ${p.thick && !lite ? s.thick : ""} ${p.blend ? s.blend : ""}`} style={style}>
                 {p.thick && !lite && (
                   <>
                     <img src={meta.src} alt="" className={`${s.img} ${s.layer}`} style={{ ["--d" as string]: "-3px" } as CSSProperties} draggable={false} />
@@ -172,6 +189,7 @@ export function TransInterlude({ source = "frase citada en el video del equipo (
         </div>
       </div>
       <p className={s.attrib}>{source}</p>
+      </div>
     </section>
   );
 }

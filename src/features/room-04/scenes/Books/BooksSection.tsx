@@ -5,7 +5,9 @@ import { BOOKS } from "../../data/books";
 import { useInView } from "../../hooks/useInView";
 import { hasWebGL } from "../../hooks/useDevice";
 import { useRoom } from "../../store";
-import { Ticket, Sticker } from "@/components/abx/Ticket";
+import { Sticker } from "@/components/abx/Ticket";
+import { Icon } from "@/components/abx/Icon";
+import { sound } from "@/lib/audio/useSound";
 import type { FlipState } from "./BooksCanvas";
 import type { FloatQuote } from "./QuotePapers";
 import s from "./books.module.css";
@@ -27,6 +29,8 @@ export function BooksSection() {
   const openFicha = useRoom((st) => st.openFicha);
   const reduced = useRoom((st) => st.reducedMotion);
   const book = selected !== null ? BOOKS[selected] : null;
+  const selRef = useRef<number | null>(null);
+  selRef.current = selected;
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 860px)");
@@ -60,6 +64,14 @@ export function BooksSection() {
   const openBook = useCallback((i: number, page?: number) => {
     const b = BOOKS[i];
     const p = page && b.pageCount ? Math.min(page, b.pageCount) : 1;
+    const prev = selRef.current;
+    if (prev === i && !page) return;
+    if (prev !== null && prev !== i) {
+      // cambio de libro dentro de la lectura: se cierra uno y se abre el otro
+      sound.play("libro-cerrar");
+      window.setTimeout(() => sound.play("libro-abrir", { force: true }), 260);
+    } else if (prev === null) sound.play("libro-abrir");
+    setFocusKey(null);
     setSelected(i);
     setHovered(null);
     setFlip({ spread: Math.floor(p / 2), flip: null });
@@ -68,6 +80,7 @@ export function BooksSection() {
   }, []);
 
   const close = useCallback(() => {
+    if (selRef.current !== null) sound.play("libro-cerrar");
     setSelected(null);
     setFocusKey(null);
     setAnnounce("Libro cerrado. De vuelta a la biblioteca.");
@@ -82,6 +95,8 @@ export function BooksSection() {
     if (!book || flip.flip) return;
     if (dir === 1 && !canNext) return;
     if (dir === -1 && !canPrev) return;
+    // aquí el cambio de página ya es seguro: un solo sonido por cambio real
+    sound.play("pagina");
     // en pantallas estrechas se lee página a página: primero cambia el foco, luego se pasa la hoja
     if (narrow) {
       if (dir === 1 && focus === "left") { setFocus("right"); return; }
@@ -193,11 +208,35 @@ export function BooksSection() {
               onPointerUp={(e) => onUp(e, 1)}
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); step(1); } }}
             />
-            <div className={s.openMeta}>
-              <p className={s.bookTitle}>
-                <strong>{book.title}</strong>{book.year ? ` · ${book.year}` : ""}
-                <span>{book.author}</span>
+            {/* barra de lectura: arriba, dentro del escenario fijo, fuera de las páginas */}
+            <div className={s.readbar} role="toolbar" aria-label={`Lectura de ${book.title}`}>
+              <button className={s.rbClose} onClick={close} aria-label="Cerrar libro y volver a la biblioteca (Esc)" data-cursor="toca">
+                <Icon name="cerrar" size={16} />
+                <span>Cerrar</span>
+              </button>
+              <span className={s.rbSep} aria-hidden="true" />
+              <p className={s.rbTitle}>
+                <strong>{book.title}</strong>
+                <span>{book.year ? `${book.year} · ` : ""}{book.author}</span>
               </p>
+              {indicator && <span className={s.indicator} aria-hidden="true">{indicator}</span>}
+              <span className={s.rbSep} aria-hidden="true" />
+              <div className={s.rbBooks} role="group" aria-label="Cambiar de libro">
+                {BOOKS.map((b, i) => (
+                  <button
+                    key={b.id}
+                    className={`${s.rbBook} ${i === selected ? s.rbBookOn : ""}`}
+                    style={{ ["--c" as string]: b.color, ["--sp" as string]: b.spine }}
+                    onClick={() => openBook(i)}
+                    aria-label={i === selected ? `${b.title} (abierto)` : `Abrir ${b.title}`}
+                    aria-current={i === selected ? "true" : undefined}
+                    title={b.title}
+                    data-cursor="abre"
+                  >
+                    {b.cover ? <img src={b.cover} alt="" loading="lazy" /> : null}
+                  </button>
+                ))}
+              </div>
               <button className={s.about} onClick={() => openFicha({ title: book.title, image: book.cover ?? undefined, body: book.sourceNote, meta: book.coverNote ? [book.coverNote] : undefined })}>
                 Sobre este libro
               </button>
@@ -205,10 +244,6 @@ export function BooksSection() {
             {book.pageCount === 0 && (
               <p className={s.pending} role="status">Páginas en digitalización. El equipo está escaneando el ejemplar.</p>
             )}
-            <div className={s.bar}>
-              <Ticket icon="cerrar" tone="papel" size="sm" onClick={close} cursor="toca">Cerrar libro</Ticket>
-              {indicator && <span className={s.indicator} aria-hidden="true">{indicator}</span>}
-            </div>
           </>
         )}
 

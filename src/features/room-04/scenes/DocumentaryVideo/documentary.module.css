@@ -1,12 +1,18 @@
 /* 02 · La imagen que habla — video al centro, capas detrás y delante, entrada de puerta */
 .section { position: relative; color: var(--negro); overflow: clip; background-color: var(--kraft, #c9a878); }
 .sticky { position: sticky; top: 0; height: 100svh; display: grid; place-items: center; overflow: hidden; }
-.stage { --open: 1; --settle: 1; --mx: 0; --my: 0; position: relative; width: min(1180px, 92vw); height: 100%; display: grid; place-items: center; }
+.sticky { --mx: 0; --my: 0; }
+.stage { --open: 1; --settle: 1; position: relative; width: min(1180px, 92vw); height: 100%; display: grid; place-items: center; }
 
 /* capas de fondo */
-.back, .front { position: absolute; inset: 0; pointer-events: none; }
-.back { z-index: 1; }
-.front { z-index: 4; }
+.back { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+/* muro de collage a sangre detrás de todo, con parallax mínimo y un velo que enfoca el centro */
+.wall { position: absolute; inset: -4%; z-index: 0; pointer-events: none; background: url("/assets/room-04/video-collage/muro.webp") center / cover no-repeat;
+  transform: translate(calc(var(--mx, 0) * -8px), calc(var(--my, 0) * -6px)) scale(1.04); transition: transform 900ms cubic-bezier(.2, .8, .2, 1); }
+.wallVeil { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 52% 50% at 50% 50%, rgba(201, 168, 120, .78) 0%, rgba(201, 168, 120, .52) 55%, rgba(201, 168, 120, .18) 78%, rgba(18, 17, 16, .45) 100%),
+    linear-gradient(180deg, rgba(18, 17, 16, .25), transparent 18%, transparent 82%, rgba(18, 17, 16, .3)); }
 .paper { position: absolute; display: block; box-shadow: 0 10px 30px rgba(18, 17, 16, .18); }
 .paperLima { width: 34%; height: 44%; left: -2%; top: 14%; background: var(--lima); transform: rotate(calc(-7deg * var(--settle))) translateX(calc((1 - var(--settle)) * -60px));
   clip-path: polygon(0 4%, 12% 0, 30% 3%, 52% 0, 75% 4%, 100% 1%, 98% 30%, 100% 62%, 97% 100%, 70% 97%, 40% 100%, 14% 96%, 0 100%, 2% 60%); }
@@ -53,23 +59,24 @@
 .pending img { width: 100%; height: 100%; object-fit: cover; }
 .pending p { position: absolute; left: 16px; bottom: 16px; margin: 0; background: var(--papel); padding: 8px 12px; border-radius: 8px; }
 
-/* capas delante del video (no tapan el centro) */
-.tape { position: absolute; width: 130px; height: 34px; background: rgba(246, 220, 140, .78); box-shadow: 0 2px 4px rgba(0, 0, 0, .15); mix-blend-mode: multiply; opacity: var(--settle); }
-.tapeA { top: calc(50% - min(35svh, 22vw) - 14px); left: 22%; transform: rotate(-9deg); }
-.tapeB { bottom: calc(50% - min(35svh, 22vw) - 12px); right: 20%; transform: rotate(7deg); background: rgba(245, 188, 217, .85); }
-.tapeC { top: calc(50% - 20px); right: calc(50% - min(440px, 39vw) - 50px); transform: rotate(84deg); }
-.eye { position: absolute; width: clamp(110px, 15vw, 210px); left: calc(50% - min(440px, 39vw) - 70px); top: 60%; transform: rotate(calc(-14deg * var(--settle))) translateX(calc((1 - var(--settle)) * -120px)); filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, .35)); }
-.mask { position: absolute; width: clamp(90px, 11vw, 160px); right: calc(50% - min(440px, 39vw) - 60px); top: 10%; transform: rotate(calc(12deg * var(--settle))) translateY(calc((1 - var(--settle)) * -120px)); filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, .35)); }
+/* cintas: solo sobre el filo de papel del marco (por fuera de la imagen), sin capturar clics */
+.tape { position: absolute; z-index: 4; width: 120px; height: 26px; pointer-events: none; background: rgba(246, 220, 140, .8); box-shadow: 0 2px 4px rgba(0, 0, 0, .15); opacity: var(--settle); }
+.tapeA { top: -26px; left: 8%; transform: rotate(-4deg); }
+.tapeB { bottom: -26px; right: 9%; transform: rotate(3deg); background: rgba(245, 188, 217, .88); }
+/* ojo y máscara: detrás del reproductor, asomando por los costados */
+.eye { position: absolute; width: clamp(110px, 15vw, 210px); left: calc(50% - min(440px, 39vw) - 150px); top: 58%; transform: rotate(calc(-14deg * var(--settle))) translateX(calc((1 - var(--settle)) * -120px)); filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, .35)); }
+.mask { position: absolute; width: clamp(90px, 11vw, 160px); right: calc(50% - min(440px, 39vw) - 130px); top: 6%; transform: rotate(calc(12deg * var(--settle))) translateY(calc((1 - var(--settle)) * -120px)); filter: drop-shadow(4px 8px 10px rgba(0, 0, 0, .35)); }
 
 @media (max-width: 900px) {
   .frame { width: 92vw; border-width: 6px; box-shadow: 8px 10px 0 rgba(18, 17, 16, .9); }
   .controls { opacity: 1; transform: none; flex-wrap: wrap; }
   .time { display: none; }
-  .shardA, .shardB,   .eye { width: 96px; left: 2%; top: 68%; }
-  .mask { width: 80px; right: 2%; top: 16%; }
+  .eye { width: 96px; left: -4%; top: 74%; }
+  .mask { width: 80px; right: -3%; top: 8%; }
+  .tape { width: 84px; }
   .labels { top: 84px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .frame { transition: none; }
-  .frag, .fig { transition: none; }
+  .frag, .fig, .wall { transition: none; }
 }

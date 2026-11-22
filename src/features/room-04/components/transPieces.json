@@ -310,5 +310,59 @@
 "src": "/assets/room-04/trans/d23-21.webp",
 "w": 196,
 "h": 112
+},
+"b-torso-1": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-torso-1.webp",
+"w": 525,
+"h": 322
+},
+"b-torso-2": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-torso-2.webp",
+"w": 310,
+"h": 562
+},
+"b-torso-3": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-torso-3.webp",
+"w": 522,
+"h": 417
+},
+"b-torso-4": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-torso-4.webp",
+"w": 106,
+"h": 156
+},
+"b-torso-5": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-torso-5.webp",
+"w": 164,
+"h": 286
+},
+"b-escultura-1": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-escultura-1.webp",
+"w": 213,
+"h": 315
+},
+"b-manos-1": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-manos-1.webp",
+"w": 370,
+"h": 420
+},
+"b-traje-1": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-traje-1.webp",
+"w": 421,
+"h": 607
+},
+"b-torso-6": {
+"cat": "cuerpos",
+"src": "/assets/room-04/trans/b-torso-6.webp",
+"w": 286,
+"h": 362
 }
 }

@@ -1,4 +1,4 @@
-.section { position: relative; background: var(--negro); color: var(--papel); }
+.section { position: relative; background: var(--negro); color: var(--papel); padding-bottom: 32vh; } /* deja sitio a la entrada superpuesta del retrato sin tapar el libro */
 .stage { position: relative; height: 100svh; min-height: 640px; overflow: hidden; --mx: 0; --my: 0; }
 .stage > div:first-child { position: absolute !important; inset: 0; }
 
@@ -13,7 +13,7 @@
 .zone:focus-visible { outline: 2px dashed rgba(212, 161, 42, 0.8); outline-offset: -10px; }
 .zoneL { left: calc(50% - var(--bookw, 100%) / 2); }
 .zoneR { left: 50%; }
-.focusHint { position: absolute; left: 50%; bottom: 74px; transform: translateX(-50%); margin: 0; font-size: 12px; color: rgba(243, 238, 227, 0.7); z-index: 4; pointer-events: none; animation: fade 400ms ease both; }
+.focusHint { position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%); margin: 0; font-size: 12px; color: rgba(243, 238, 227, 0.7); z-index: 4; pointer-events: none; animation: fade 400ms ease both; }
 .openMeta { position: absolute; top: 84px; left: max(16px, 5vw); right: max(16px, 5vw); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; z-index: 4; animation: fade 500ms 300ms ease both; }
 .bookTitle { margin: 0; font-size: 15px; color: var(--papel); display: grid; gap: 2px; }
 .bookTitle span { font-size: 13px; color: rgba(243, 238, 227, 0.6); }
@@ -23,6 +23,35 @@
 .bar { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; z-index: 5; animation: fade 500ms 400ms ease both; }
 .indicator { font-size: 12px; letter-spacing: 0.08em; color: rgba(243, 238, 227, 0.7); font-variant-numeric: tabular-nums; }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes drop { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* barra de lectura flotante (arriba, sobre el libro abierto) */
+.readbar {
+  position: absolute; top: 74px; left: 50%; transform: translateX(-50%); z-index: 6;
+  display: flex; align-items: center; gap: 12px; max-width: calc(100% - 24px);
+  padding: 6px 10px 6px 6px; background: rgba(243, 238, 227, 0.94); color: var(--negro);
+  border-radius: 3px; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  /* borde de papel perforado arriba y abajo */
+  -webkit-mask: radial-gradient(3px at 6px 0, transparent 98%, #000) -3px 0 / 12px 51% repeat-x, radial-gradient(3px at 6px 100%, transparent 98%, #000) -3px 100% / 12px 51% repeat-x;
+  mask: radial-gradient(3px at 6px 0, transparent 98%, #000) -3px 0 / 12px 51% repeat-x, radial-gradient(3px at 6px 100%, transparent 98%, #000) -3px 100% / 12px 51% repeat-x;
+  animation: drop 420ms 250ms cubic-bezier(.2, .9, .3, 1.2) both;
+}
+.rbClose { display: inline-flex; align-items: center; gap: 6px; border: 0; background: var(--negro); color: var(--papel); font: 600 13px/1 var(--font-caos, Arial), sans-serif; padding: 8px 12px 8px 10px; border-radius: 2px; cursor: pointer; transition: background 160ms ease, transform 160ms ease; }
+.rbClose:hover, .rbClose:focus-visible { background: var(--bermellon, #d9341f); outline: none; transform: translateY(-1px); }
+.rbClose:focus-visible { box-shadow: 0 0 0 2px var(--papel), 0 0 0 4px var(--negro); }
+.rbSep { width: 1px; align-self: stretch; margin: 4px 0; background: repeating-linear-gradient(to bottom, rgba(18,17,16,.35) 0 3px, transparent 3px 6px); }
+.rbTitle { margin: 0; display: grid; gap: 1px; min-width: 0; }
+.rbTitle strong { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 22ch; }
+.rbTitle span { font-size: 11px; color: rgba(18, 17, 16, 0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 30ch; }
+.readbar .indicator { color: rgba(18, 17, 16, 0.65); }
+.rbBooks { display: flex; gap: 6px; align-items: flex-end; }
+.rbBook { width: 24px; height: 34px; padding: 0; border: 0; border-radius: 1px 2px 2px 1px; background: var(--c); box-shadow: inset 3px 0 0 var(--sp), 0 2px 4px rgba(0,0,0,.3); overflow: hidden; cursor: pointer; opacity: .55; transition: transform 180ms ease, opacity 180ms ease; }
+.rbBook img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rbBook:hover, .rbBook:focus-visible { opacity: 1; transform: translateY(-3px) rotate(-3deg); outline: none; }
+.rbBook:focus-visible { box-shadow: 0 0 0 2px var(--negro); }
+.rbBookOn { opacity: 1; transform: translateY(-4px); box-shadow: inset 3px 0 0 var(--sp), 0 0 0 2px var(--oro, #d4a12a), 0 4px 8px rgba(0,0,0,.35); }
+.readbar .about { color: rgba(18, 17, 16, 0.75); padding: 6px 4px; white-space: nowrap; }
+.readbar .about:hover, .readbar .about:focus-visible { color: var(--bermellon, #d9341f); }
 
 /* selector */
 .picker { position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%); display: flex; gap: 6px; z-index: 4; }
@@ -45,7 +74,11 @@
 @media (max-width: 860px) {
   .head { top: 80px; }
   .title { font-size: 26px; }
-  .openMeta { top: 76px; }
+  .readbar { top: 66px; gap: 8px; padding: 5px 8px 5px 5px; }
+  .rbTitle span, .readbar .about, .readbar .rbSep:first-of-type { display: none; }
+  .rbTitle strong { max-width: 12ch; }
+  .rbClose span { display: none; }
+  .rbClose { padding: 8px; }
   .zone { top: 14%; bottom: 12%; }
   .picker { bottom: 14px; }
   .pick { padding: 6px 10px; font-size: 12px; }

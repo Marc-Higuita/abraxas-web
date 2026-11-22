@@ -118,6 +118,16 @@ function glowTexture() {
   });
 }
 
+/** cono de luz cálida, más intenso arriba, que se desvanece hacia el suelo */
+function beamTexture() {
+  return canvasTex(128, 512, (c) => {
+    const g = c.createLinearGradient(0, 0, 0, 512);
+    g.addColorStop(0, "rgba(255,226,170,0.85)"); g.addColorStop(0.55, "rgba(242,185,15,0.22)"); g.addColorStop(1, "rgba(242,185,15,0)");
+    c.fillStyle = g;
+    c.beginPath(); c.moveTo(48, 0); c.lineTo(80, 0); c.lineTo(128, 512); c.lineTo(0, 512); c.closePath(); c.fill();
+  });
+}
+
 function stitchTexture() {
   return canvasTex(128, 32, (c) => {
     c.strokeStyle = "#d4a12a"; c.lineWidth = 6; c.lineCap = "round";
@@ -171,6 +181,16 @@ function propTexture(kind: PropKind, color: string) {
 interface Slot {
   hang: THREE.Group | null;
   main: THREE.Group | null;
+  /** luz cenital que cae sobre el momento activo */
+  beam?: THREE.MeshBasicMaterial | null;
+  /** fragmentos de papel en primer plano (capa de parallax cercana) */
+  fore?: THREE.Group | null;
+  /** fecha recortada del fondo (capa de parallax lejana) */
+  dateMesh?: THREE.Mesh | null;
+  side?: number;
+  /** impulso de llegada (muelle) cuando el momento toma protagonismo */
+  kick?: number;
+  arrived?: boolean;
   photoMats: THREE.MeshBasicMaterial[];
   date: THREE.MeshBasicMaterial | null;
   glow: THREE.MeshBasicMaterial | null;
@@ -185,6 +205,8 @@ function Corridor({ events, target, onPick, reduced, lite, font }: Omit<Props, "
   slots.current.length = events.length;
   /** protagonismo de cada momento (0 lejos, 1 frente a la cámara); lo leen las composiciones propias */
   const focus = useRef<number[]>([]);
+  /** momento bajo el cursor: la foto se adelanta un poco */
+  const hovered = useRef(-1);
 
   // texturas de fotos (una por hito como máximo dos)
   const urls = useMemo(() => {
@@ -204,11 +226,12 @@ function Corridor({ events, target, onPick, reduced, lite, font }: Omit<Props, "
     notes: events.map((e) => (e.images.length ? null : noteTexture(e, font))),
     props: events.map((e) => propTexture(propOf(e.id), DIM_HEX[e.dimensions[e.dimensions.length > 1 ? 1 : 0]])),
     glow: glowTexture(),
+    beam: beamTexture(),
     stitch: stitchTexture(),
   }), [events, font]);
   useEffect(() => () => {
     drawn.dates.forEach((t) => t.dispose()); drawn.notes.forEach((t) => t?.dispose()); drawn.props.forEach((t) => t.dispose());
-    drawn.glow.dispose(); drawn.stitch.dispose();
+    drawn.glow.dispose(); drawn.beam.dispose(); drawn.stitch.dispose();
   }, [drawn]);
 
   const total = Math.max(1, events.length - 1) * SPACING;
@@ -229,7 +252,29 @@ function Corridor({ events, target, onPick, reduced, lite, font }: Omit<Props, "
       const d = Math.abs(c - i);
       const f = THREE.MathUtils.smoothstep(1 - Math.min(d, 1), 0, 1);
       focus.current[i] = f;
-      if (s.main) s.main.scale.setScalar(0.86 + 0.24 * f);
+      // llegada: al cruzar el umbral, un pequeño impulso que se amortigua (muelle)
+      if (f > 0.92 && !s.arrived) { s.arrived = true; if (!reduced) s.kick = 1; }
+      else if (f < 0.4) s.arrived = false;
+      s.kick = (s.kick ?? 0) * Math.exp(-dt * 4.2);
+      const kick = Math.sin((1 - (s.kick ?? 0)) * Math.PI * 3) * (s.kick ?? 0);
+      const hov = hovered.current === i ? 1 : 0;
+      if (s.main) {
+        s.main.scale.setScalar(0.86 + 0.24 * f + 0.035 * hov + kick * 0.05);
+        if (!reduced) {
+          // se gira hacia la cámara al acercarse y sigue apenas el cursor cuando es protagonista
+          s.main.rotation.y = (1 - f) * 0.32 * (s.side ?? 1) + pointer.x * 0.08 * f;
+          s.main.rotation.x = -pointer.y * 0.05 * f;
+          s.main.position.z = 0.25 * f + 0.12 * hov;
+        }
+      }
+      if (s.beam) s.beam.opacity = 0.32 * f * (0.9 + (reduced ? 0 : Math.sin(time * 1.6 + i) * 0.1));
+      if (s.fore && !reduced) {
+        // capa cercana: se desplaza más rápido que la cámara (parallax) y reacciona al cursor
+        s.fore.position.x = (i - c) * 1.6 + pointer.x * -0.35;
+        s.fore.position.y = pointer.y * -0.2;
+        s.fore.rotation.z = Math.sin(time * 0.4 + i) * 0.04;
+      }
+      if (s.dateMesh && !reduced) s.dateMesh.position.x = -1.05 * (s.side ?? 1) + (c - i) * 0.9;
       if (s.hang && !reduced) s.hang.rotation.z = Math.sin(time * 0.7 + i * 1.7) * 0.025 * (1 - f * 0.6);
       s.photoMats.forEach((m) => m.color.setScalar(0.3 + 0.7 * f));
       if (s.date) s.date.opacity = 0.16 + 0.84 * f;
@@ -276,6 +321,7 @@ function Corridor({ events, target, onPick, reduced, lite, font }: Omit<Props, "
         const topY = 4.4;
         const slot: Slot = slots.current[i] ?? { hang: null, main: null, photoMats: [], date: null, glow: null, prop: null, propMat: null };
         slot.photoMats = [];
+        slot.side = side;
         slots.current[i] = slot;
         const dim = DIM_HEX[e.dimensions[0]];
         return (
@@ -286,7 +332,7 @@ function Corridor({ events, target, onPick, reduced, lite, font }: Omit<Props, "
               <meshBasicMaterial color={dim} />
             </mesh>
             {/* fecha recortada, al fondo */}
-            <mesh position={[-1.05 * side, 1.95, -2.6]}>
+            <mesh ref={(m) => { slot.dateMesh = m; }} position={[-1.05 * side, 1.95, -2.6]}>
               <planeGeometry args={[3.4, 1.06]} />
               <meshBasicMaterial ref={(m) => { slot.date = m; }} map={drawn.dates[i]} transparent depthWrite={false} />
             </mesh>
@@ -295,8 +341,13 @@ function Corridor({ events, target, onPick, reduced, lite, font }: Omit<Props, "
               <planeGeometry args={[W * 2.6, H * 2.2]} />
               <meshBasicMaterial ref={(m) => { slot.glow = m; }} map={drawn.glow} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} />
             </mesh>
+            {/* luz cenital: un cono suave que cae sobre el momento activo */}
+            <mesh position={[0, yMain + 1.6, zMain - 0.7]}>
+              <planeGeometry args={[W * 1.7, 5.2]} />
+              <meshBasicMaterial ref={(m) => { slot.beam = m; }} map={drawn.beam} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} />
+            </mesh>
             {/* fotografía o documento colgado de un hilo */}
-            <group ref={(g) => { slot.hang = g; }} position={[0, topY, zMain]}>
+            <group ref={(g) => { slot.hang = g; }} position={[0, topY, zMain]} onPointerOver={(ev) => { ev.stopPropagation(); hovered.current = i; }} onPointerOut={() => { if (hovered.current === i) hovered.current = -1; }}>
               <mesh position={[0, (yMain + H / 2 - topY) / 2, -0.01]}>
                 <planeGeometry args={[0.012, topY - (yMain + H / 2)]} />
                 <meshBasicMaterial color="#c9b79a" />
@@ -338,6 +389,13 @@ function Corridor({ events, target, onPick, reduced, lite, font }: Omit<Props, "
               <FloatingBooks books={[{ cover: bookCover, spine: "#2a4c2f" }]} anchor={[1.8 * side, -0.3, zMain - 0.6]} index={i} focus={focus} reduced={reduced} size={H * 0.62} />
             )}
             {stage === "books" && <GuinnessBooks anchor={[0, yMain, zMain + 0.6]} spread={W * 0.5 + 1.05} index={i} focus={focus} reduced={reduced} size={lite ? 0.85 : 1} />}
+            {/* capa cercana: dos fragmentos de papel desenfocados por la cercanía, entre la cámara y el momento */}
+            {!lite && (
+              <group ref={(g) => { slot.fore = g; }}>
+                <ForeScrap tex={mainTex} position={[2.6 * side, 2.1, 2.6]} size={0.7} rot={0.3 * side} u={[0.05, 0.45]} />
+                <ForeScrap tex={drawn.props[i]} position={[-2.9 * side, -1.6, 2.9]} size={0.55} rot={-0.2 * side} u={[0, 1]} />
+              </group>
+            )}
             {/* objeto recortado */}
             <group ref={(g) => { slot.prop = g; }} position={[-1.35 * side, -1.15, 0.8]}>
               <mesh>
@@ -385,6 +443,25 @@ function BackWall({ total }: { total: number }) {
 /* ---------- composiciones propias de algunos momentos ---------- */
 
 type Focus = MutableRefObject<number[]>;
+
+/** Fragmento de papel cercano a la cámara: un trozo de la foto del momento, recortado y algo traslúcido. */
+function ForeScrap({ tex, position, size, rot, u }: { tex: THREE.Texture; position: [number, number, number]; size: number; rot: number; u: [number, number] }) {
+  const geo = useMemo(() => {
+    const g = new THREE.PlaneGeometry(size, size * 0.8, 1, 1);
+    const uv = g.attributes.uv as THREE.BufferAttribute;
+    for (let v = 0; v < uv.count; v++) { uv.setX(v, u[0] + uv.getX(v) * (u[1] - u[0])); uv.setY(v, 0.3 + uv.getY(v) * 0.4); }
+    // borde irregular: se mueven los vértices para que no sea un rectángulo perfecto
+    const pos = g.attributes.position as THREE.BufferAttribute;
+    for (let v = 0; v < pos.count; v++) pos.setXY(v, pos.getX(v) * (0.9 + ((v * 37) % 7) / 40), pos.getY(v) * (0.88 + ((v * 53) % 5) / 30));
+    return g;
+  }, [tex, size, u]);
+  useEffect(() => () => geo.dispose(), [geo]);
+  return (
+    <mesh geometry={geo} position={position} rotation={[0, 0, rot]} raycast={() => null}>
+      <meshBasicMaterial map={tex} transparent opacity={0.55} depthWrite={false} toneMapped={false} />
+    </mesh>
+  );
+}
 
 /** La foto llega en tiras recortadas que se ordenan al acercarse (1982: empieza el collage). */
 function StripPhoto({ tex, w, h, index, focus, onClick }: { tex: THREE.Texture; w: number; h: number; index: number; focus: Focus; onClick: (e: ThreeEvent<MouseEvent>) => void }) {
