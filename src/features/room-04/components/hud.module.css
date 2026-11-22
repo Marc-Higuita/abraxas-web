@@ -1,0 +1,29 @@
+.hud { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; align-items: center; gap: 12px; padding: 8px max(8px, 2vw); background: linear-gradient(rgba(18, 17, 16, 0.9), rgba(18, 17, 16, 0)); color: var(--papel); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; min-height: 56px; padding-right: 8px; }
+.word { font-family: var(--font-caos); font-weight: 500; font-size: 18px; letter-spacing: 0.06em; }
+.room { font-family: var(--font-caos); font-weight: 700; background: var(--bermellon); color: var(--blanco); padding: 2px 8px; transform: rotate(-2deg); }
+.progress { flex: 1; height: 3px; background: rgba(243, 238, 227, 0.2); min-width: 40px; }
+.progress span { display: block; height: 100%; background: var(--oro); transform-origin: 0 50%; }
+.act { font-size: 14px; color: var(--espejo); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 28ch; }
+.buttons { display: flex; gap: 4px; }
+.buttons button:disabled { opacity: 0.35; }
+.backdrop { position: fixed; inset: 0; z-index: 70; background: rgba(18, 17, 16, 0.82); display: grid; place-items: center; padding: 16px; }
+.dialog { position: relative; background: var(--papel); color: var(--negro); width: min(560px, 100%); max-height: calc(100svh - 32px); overflow: auto; padding: 32px 28px 28px; outline: none; }
+.wide { width: min(980px, 100%); }
+.dialog h3 { font-family: var(--font-caos); font-weight: 500; margin: 20px 0 6px; }
+.dialog :global(.t-meta) { color: var(--gris); }
+.dialog :global(.btn) { color: var(--negro); }
+.close { position: absolute; top: 8px; right: 8px; background: var(--negro) !important; color: var(--papel); }
+.index { list-style: none; padding: 0; display: grid; gap: 8px; margin: 16px 0 20px; }
+.index :global(.btn) { width: 100%; justify-content: flex-start; text-transform: none; letter-spacing: 0; font-size: 18px; }
+.n { color: var(--bermellon); font-weight: 700; min-width: 28px; }
+.legend li { margin-bottom: 8px; }
+.ficha { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.ficha img { width: 100%; max-height: 70svh; object-fit: contain; background: var(--negro); }
+.fichaTitle { font-family: var(--font-caos); font-weight: 500; font-size: 26px; line-height: 1.15; margin: 12px 0; }
+@media (max-width: 760px) {
+  .act { display: none; }
+  .word { display: none; }
+  .ficha { grid-template-columns: minmax(0, 1fr); }
+  .buttons :global(.icon-btn) { width: 44px; height: 44px; }
+}

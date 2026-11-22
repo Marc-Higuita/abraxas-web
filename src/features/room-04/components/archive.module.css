@@ -1,0 +1,23 @@
+.main { background: var(--papel); color: var(--negro); min-height: 100svh; padding: 32px max(16px, 4vw) 64px; }
+.head { max-width: 980px; margin-bottom: 24px; }
+.head h1 { margin: 16px 0 8px; }
+.head :global(.btn) { color: var(--negro); }
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.filters select, .filters input:not([type=checkbox]) { min-height: 48px; font-size: 16px; padding: 0 10px; border: 2px solid var(--negro); background: var(--blanco); color: var(--negro); }
+.check { display: flex; align-items: center; gap: 8px; }
+.check input { width: 22px; height: 22px; }
+.group { margin-top: 32px; }
+.group h2 { font-family: var(--font-caos); font-weight: 500; font-size: 26px; border-top: 4px solid var(--bermellon); padding-top: 10px; }
+.grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+.cell { width: 100%; border: 0; background: var(--blanco); padding: 4px; text-align: left; cursor: zoom-in; display: grid; gap: 2px; }
+.cell:hover { outline: 2px solid var(--oro-hondo); }
+.key { outline: 2px solid var(--bermellon); }
+.cell img { width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; }
+.cap { font-size: 13px; font-weight: 700; }
+.cap2 { font-size: 11px; color: var(--gris); overflow-wrap: anywhere; }
+.lightbox { position: fixed; inset: 0; background: rgba(18, 17, 16, 0.9); display: grid; place-items: center; padding: 16px; z-index: 50; }
+.lightbox figure { margin: 0; background: var(--papel); padding: 12px; display: grid; grid-template-columns: minmax(0, auto) minmax(0, 280px); gap: 16px; max-width: 1100px; max-height: calc(100svh - 32px); }
+.lightbox img { max-height: calc(100svh - 64px); width: auto; max-width: 100%; object-fit: contain; }
+.lightbox figcaption { display: grid; gap: 8px; align-content: start; font-size: 15px; }
+.lightbox :global(.btn) { color: var(--negro); }
+@media (max-width: 700px) { .lightbox figure { grid-template-columns: minmax(0, 1fr); overflow: auto; } }
