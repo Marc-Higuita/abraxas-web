@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     .eq("status", "approved")
     .order("created_at", { ascending: true })
     .range(page * PAGE, page * PAGE + PAGE - 1);
-  if (error) return NextResponse.json({ error: "db" }, { status: 500 });
+  if (error) return NextResponse.json({ error: "db", code: error.code ?? null, hint: (error.message ?? "").slice(0, 160) }, { status: 500 });
   const paths = (data ?? []).map((d) => d.image_path);
   const signed = paths.length ? await sb.storage.from("collages").createSignedUrls(paths, 3600) : { data: [] };
   const items = (data ?? []).map((d, i) => ({ id: d.id, message: d.message, signature: d.signature, createdAt: d.created_at, image: signed.data?.[i]?.signedUrl ?? null }));
