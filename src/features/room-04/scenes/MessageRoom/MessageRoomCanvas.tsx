@@ -284,7 +284,7 @@ function HangingPiece({ piece, slot, fresh, reduced, onSelect, index }: { piece:
       <mesh position={[0, -0.06 - hh / 2, -0.005]}><planeGeometry args={[w + 0.08, hh + 0.08]} /><meshStandardMaterial color={hover ? "#f6dc8c" : "#e9dfcb"} roughness={0.95} /></mesh>
       <mesh position={[0, -0.06 - hh / 2, 0]}>
         <planeGeometry args={[w, hh]} />
-        {img ? <meshStandardMaterial map={img.tex} roughness={0.95} /> : <meshStandardMaterial color="#e9dfcb" roughness={0.95} />}
+        {img ? <meshStandardMaterial key={img.tex.uuid} map={img.tex} roughness={0.95} /> : <meshStandardMaterial key="plain" color="#e9dfcb" roughness={0.95} />}
       </mesh>
       {/* hilo corto y tarjeta del mensaje debajo */}
       <mesh position={[0, -0.12 - hh - 0.08, 0]}><cylinderGeometry args={[0.004, 0.004, 0.16, 4]} /><meshBasicMaterial color="#e8dcc4" /></mesh>
