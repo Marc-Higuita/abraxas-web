@@ -12,7 +12,7 @@ import s from "./timeline.module.css";
 const TimelineCanvas = dynamic(() => import("./TimelineCanvas").then((m) => m.TimelineCanvas), { ssr: false });
 
 /** Altura de scroll por hito (vh). El scroll vertical mueve la cámara por el pasillo. */
-const VH_PER_EVENT = 34;
+const VH_PER_EVENT = 44;
 
 export function TimelineSection() {
   const section = useRef<HTMLElement>(null);
@@ -146,7 +146,7 @@ export function TimelineSection() {
             <Sticker tone="bermellon" rotate={-5}>05</Sticker>
             <Sticker tone="papel" shape="flag" rotate={3}>Las transformaciones</Sticker>
           </div>
-          <h2 id="tl-title" className={s.title}>Una vida en {SORTED.length} momentos</h2>
+          <h2 id="tl-title" className={s.title}>La vida en {SORTED.length} momentos</h2>
           <div className={s.filters} role="group" aria-label="Filtrar por dimensión">
             {DIMENSIONS.map((d) => (
               <button

@@ -1,7 +1,7 @@
 /* 02 · La imagen que habla — video al centro, capas detrás y delante, entrada de puerta */
 .section { position: relative; color: var(--negro); overflow: clip; background-color: var(--kraft, #c9a878); }
 .sticky { position: sticky; top: 0; height: 100svh; display: grid; place-items: center; overflow: hidden; }
-.stage { --open: 1; --settle: 1; position: relative; width: min(1180px, 92vw); height: 100%; display: grid; place-items: center; }
+.stage { --open: 1; --settle: 1; --mx: 0; --my: 0; position: relative; width: min(1180px, 92vw); height: 100%; display: grid; place-items: center; }
 
 /* capas de fondo */
 .back, .front { position: absolute; inset: 0; pointer-events: none; }
@@ -13,23 +13,25 @@
 .paperPapel { width: 40%; height: 38%; right: -3%; bottom: 8%; background: var(--papel); transform: rotate(calc(5deg * var(--settle))) translateX(calc((1 - var(--settle)) * 60px));
   background-image: repeating-linear-gradient(0deg, transparent 0 22px, rgba(35, 64, 168, .18) 22px 23px);
   clip-path: polygon(2% 0, 100% 3%, 97% 40%, 100% 100%, 0 97%, 3% 52%); }
-.shard { position: absolute; object-fit: cover; box-shadow: 0 14px 34px rgba(18, 17, 16, .35); border: 5px solid var(--papel); }
-.shardA { width: 19%; aspect-ratio: 3 / 4; right: 2%; top: 7%; transform: rotate(calc(9deg * var(--settle))) translateY(calc((1 - var(--settle)) * -80px)); }
-.shardB { width: 16%; aspect-ratio: 3 / 4; left: 5%; bottom: 6%; transform: rotate(calc(-11deg * var(--settle))) translateY(calc((1 - var(--settle)) * 80px)); }
-.oval { position: absolute; width: 26%; height: auto; left: 30%; top: -4%; opacity: .8; transform: rotate(-12deg); }
 .stitchBack { position: absolute; left: -4%; right: -4%; width: 108%; height: 14px; top: 78%; transform: rotate(-3deg); }
 
 .labels { position: absolute; z-index: 5; top: max(96px, 13svh); left: 4%; display: flex; gap: 8px; align-items: center; }
+
+/* recortes de pared: sin marco, bordes rasgados, en varias profundidades */
+.frag { position: absolute; height: auto; filter: drop-shadow(3px 6px 8px rgba(18, 17, 16, .32));
+  transform: translate(calc(var(--mx) * var(--d) * -22px), calc(var(--my) * var(--d) * -16px + (1 - var(--settle)) * var(--d) * 90px)) rotate(var(--r)) scale(calc(.85 + var(--settle) * .15));
+  opacity: calc(.35 + var(--settle) * .65); transition: transform 600ms cubic-bezier(.2, .8, .2, 1); }
+/* silueta hecha de fragmentos: tres capas que se separan con el cursor y el scroll */
+.figure { position: absolute; z-index: 2; left: 19%; top: 52%; height: 112%; aspect-ratio: 720 / 1180; transform: translate(-50%, -50%); pointer-events: none; }
+.fig { position: absolute; inset: 0; width: 100%; height: 100%; transition: transform 700ms cubic-bezier(.2, .8, .2, 1); }
+.figA { opacity: .75; transform: translate(calc(var(--mx) * -10px), calc(var(--my) * -8px + (1 - var(--settle)) * 40px)) scale(1.02); filter: saturate(.7) brightness(.9); }
+.figB { transform: translate(calc(var(--mx) * -18px), calc(var(--my) * -12px + (1 - var(--settle)) * 70px)); filter: drop-shadow(0 12px 20px rgba(18, 17, 16, .3)); }
+.figC { transform: translate(calc(var(--mx) * -30px), calc(var(--my) * -20px + (1 - var(--settle)) * 110px)) rotate(calc((1 - var(--settle)) * 4deg)); filter: drop-shadow(2px 6px 8px rgba(18, 17, 16, .35)); }
 
 /* el video: protagonista, centrado; dos hojas de puerta que se abren */
 .frame { position: relative; z-index: 3; width: min(880px, 78vw); max-height: 70svh; aspect-ratio: 848 / 480; background: var(--negro); border: 9px solid var(--papel); border-radius: 4px;
   box-shadow: 16px 18px 0 rgba(18, 17, 16, .9), 0 40px 90px rgba(0, 0, 0, .45);
   transform: scale(calc(.9 + .1 * var(--open))) rotate(calc(-1.2deg * var(--settle))); transition: transform 120ms linear; }
-.leaf { position: absolute; top: -9px; bottom: -9px; width: calc(50% + 9px); z-index: 6; pointer-events: none; background: var(--kraft, #c9a878);
-  background-image: radial-gradient(rgba(18, 17, 16, .14) 1px, transparent 1.3px); background-size: 7px 7px;
-  box-shadow: inset 0 0 0 2px rgba(18, 17, 16, .25); backface-visibility: hidden; }
-.leafL { left: -9px; transform-origin: 0 50%; transform: perspective(1200px) rotateY(calc(-105deg * var(--open))); opacity: calc(1 - var(--open) * .85); }
-.leafR { right: -9px; transform-origin: 100% 50%; transform: perspective(1200px) rotateY(calc(105deg * var(--open))); opacity: calc(1 - var(--open) * .85); }
 .video { width: 100%; height: 100%; object-fit: cover; display: block; background: var(--negro); }
 
 .bigPlay { position: absolute; inset: 0; margin: auto; z-index: 2; width: 104px; height: 104px; border-radius: 50%; border: 0; background: var(--lima); color: var(--negro); display: grid; place-items: center; box-shadow: 6px 6px 0 var(--negro); transition: transform 300ms var(--ease-spring); cursor: pointer; }
@@ -63,12 +65,11 @@
   .frame { width: 92vw; border-width: 6px; box-shadow: 8px 10px 0 rgba(18, 17, 16, .9); }
   .controls { opacity: 1; transform: none; flex-wrap: wrap; }
   .time { display: none; }
-  .shardA, .shardB, .oval { display: none; }
-  .eye { width: 96px; left: 2%; top: 68%; }
+  .shardA, .shardB,   .eye { width: 96px; left: 2%; top: 68%; }
   .mask { width: 80px; right: 2%; top: 16%; }
   .labels { top: 84px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .frame { transition: none; }
-  .leaf { display: none; }
+  .frag, .fig { transition: none; }
 }

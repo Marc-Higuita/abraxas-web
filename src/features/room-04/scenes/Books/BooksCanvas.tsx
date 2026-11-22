@@ -4,6 +4,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Book } from "../../types";
 import { useRoom } from "../../store";
+import { QuotePapers, type FloatQuote } from "./QuotePapers";
 
 /**
  * Biblioteca 3D: tres libros de pie. Al pasar el cursor, halo dorado, elevación y sombra que se abre.
@@ -33,6 +34,12 @@ interface Props {
   active: boolean;
   narrow: boolean;
   focus: "left" | "right";
+  library: FloatQuote[];
+  openQuotes: FloatQuote[];
+  focusKey: string | null;
+  onPick: (q: FloatQuote, inBook: boolean) => void;
+  /** Fracción del ancho que ocupa el pliego abierto (deja columnas a los lados para las frases). */
+  bookFrac: number;
 }
 
 export const FLIP_MS = 720;
@@ -46,7 +53,7 @@ export function BooksCanvas(props: Props) {
       camera={{ fov: 38, position: [0, 0.25, 6.6] }}
       gl={{ antialias: true }}
       onCreated={({ gl }) => { gl.setClearColor("#121110"); gl.toneMapping = THREE.ACESFilmicToneMapping; }}
-      onPointerMissed={() => props.onHover(null)}
+      onPointerMissed={() => { props.onHover(null); if (props.focusKey) props.onPick({ key: props.focusKey } as FloatQuote, false); }}
     >
       <ambientLight intensity={0.7} />
       <directionalLight position={[3, 5, 4]} intensity={2.1} />
@@ -56,7 +63,16 @@ export function BooksCanvas(props: Props) {
           <Book3D key={b.id} book={b} index={i} {...props} />
         ))}
       </PageCache>
-      <CameraRig selected={props.selected} narrow={props.narrow} focus={props.focus} books={props.books} />
+      <QuotePapers
+        library={props.library}
+        open={props.openQuotes}
+        selected={props.selected}
+        narrow={props.narrow}
+        focusKey={props.focusKey}
+        onPick={props.onPick}
+        bookFrac={props.bookFrac}
+      />
+      <CameraRig selected={props.selected} narrow={props.narrow} focus={props.focus} books={props.books} bookFrac={props.bookFrac} />
     </Canvas>
   );
 }
@@ -156,7 +172,7 @@ const sheetFrag = /* glsl */ `
 
 /* ---------- cámara ---------- */
 
-function CameraRig({ selected, narrow, focus, books }: { selected: number | null; narrow: boolean; focus: "left" | "right"; books: Book[] }) {
+function CameraRig({ selected, narrow, focus, books, bookFrac }: { selected: number | null; narrow: boolean; focus: "left" | "right"; books: Book[]; bookFrac: number }) {
   const { camera, pointer, size } = useThree();
   const reduced = useRoom((s) => s.reducedMotion);
   useFrame((_, dt) => {
@@ -169,7 +185,7 @@ function CameraRig({ selected, narrow, focus, books }: { selected: number | null
     if (selected !== null) {
       const W = H * books[selected].aspect;
       // en pantallas estrechas se enfoca la página derecha; en anchas, el pliego completo
-      const spanW = narrow ? W * 1.12 : W * 2 * 1.12;
+      const spanW = narrow ? W * 1.12 : (W * 2 * 1.08) / Math.min(1, bookFrac);
       const spanH = H * 1.18;
       z = Math.max(spanH / (2 * tan), spanW / (2 * tan * aspect));
       x = narrow ? (focus === "right" ? W / 2 : -W / 2) : 0;

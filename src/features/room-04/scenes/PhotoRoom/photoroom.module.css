@@ -20,3 +20,11 @@
   .overlay { padding-top: 84px; }
   .hint { display: none; }
 }
+/* indicación de la puerta: aparece en la parada, discreta, abajo al centro */
+.doorHint { position: absolute; left: 50%; bottom: 34px; transform: translate(-50%, 12px); opacity: 0; pointer-events: none; transition: opacity 400ms ease, transform 500ms var(--ease-out, ease); z-index: 3; }
+.doorHint[data-on="1"] { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.doorHint[data-on="1"] :global(.ticket) { animation: abx-door-pulse 2.6s ease-in-out infinite; }
+@keyframes abx-door-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(212, 161, 42, 0.0); } 50% { box-shadow: 0 0 0 10px rgba(212, 161, 42, 0.18); } }
+@media (prefers-reduced-motion: reduce) { .doorHint[data-on="1"] :global(.ticket) { animation: none; } }
+/* al cruzar la puerta, la luz kraft llena la pantalla sin velos ni textos encima */
+.isOpening .overlay { opacity: 0; transition: opacity 500ms ease; }

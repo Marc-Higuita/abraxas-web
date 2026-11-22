@@ -8,6 +8,7 @@ const MISC = new Set([
 ]);
 
 export const imgUrl = (id: string) => {
+  if (id.startsWith("/")) return id;
   if (id.startsWith("timeline/")) return `/assets/room-04/${id}.jpg`;
   if (MISC.has(id)) return `/assets/room-04/misc/${id}.jpg`;
   return `/assets/room-04/archive/${id}.jpg`;
@@ -35,12 +36,29 @@ export type PropKind =
   | "tijeras" | "casas" | "libro" | "trofeo" | "tarjeton" | "globo" | "espejo" | "periodico";
 
 const PROPS: Record<string, PropKind> = {
-  nacimiento: "corazon", infancia: "casa", seminario: "cruz", teatro: "mascara", formacion: "birrete",
-  concejo: "columnas", telefonia: "poste", asoma: "moto", "otero-soto": "maleta", "collage-inicio": "tijeras",
-  viviendas: "casas", "prohibido-perder": "libro", "control-fiscal": "libro", guinness: "trofeo", presidencia: "tarjeton",
-  gobernacion: "tarjeton", tesis: "globo", alcaldia: "tarjeton", transformacion: "espejo", "concejo-2011": "tarjeton",
-  patrimonio: "casa", pandemia: "tijeras", "tercer-record": "trofeo", riesgo: "periodico", legado: "corazon",
+  formacion: "birrete", teatro: "mascara", concejo: "columnas", "collage-inicio": "tijeras", "prohibido-perder": "libro",
+  guinness: "trofeo", presidencia: "tarjeton", transformacion: "espejo", patrimonio: "casa", legado: "periodico",
 };
+/**
+ * Composición propia de cada momento (corrección 06):
+ * books = libros Guinness 3D flotando · book = el libro como objeto 3D (portada = imagen 0)
+ * curtain = telón que se abre · strips = la foto llega en tiras recortadas · mirror = espejo ovalado
+ * stamp = marca de voto sobre el tarjetón · wide = foto panorámica más grande.
+ */
+export type StageKind = "books" | "book" | "curtain" | "strips" | "mirror" | "stamp" | "wide" | "none";
+const STAGES: Record<string, StageKind> = {
+  teatro: "curtain", "collage-inicio": "strips", "prohibido-perder": "book", guinness: "books",
+  presidencia: "stamp", transformacion: "mirror", patrimonio: "wide",
+};
+export const stageOf = (id: string): StageKind => STAGES[id] ?? "none";
+
+/** Libros Guinness World Records de su biblioteca: portadas enderezadas de nuestras fotos. */
+export const GWR_BOOKS = [
+  { year: "2006", cover: "/assets/room-04/timeline/guinness/gwr-2006.webp", spine: "#1d8a2c" },
+  { year: "2014", cover: "/assets/room-04/timeline/guinness/gwr-2014.webp", spine: "#d9341f" },
+  { year: "2016", cover: "/assets/room-04/timeline/guinness/gwr-2016.webp", spine: "#e9c21a" },
+];
+
 export const propOf = (id: string): PropKind => PROPS[id] ?? "tijeras";
 
 /** Fecha grande que se puede afirmar: año, rango, aproximada o «s/f». */

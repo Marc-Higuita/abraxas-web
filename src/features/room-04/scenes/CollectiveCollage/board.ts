@@ -2,27 +2,33 @@
 import { useCallback, useReducer } from "react";
 import type { CollageElement } from "@/lib/collage-schema";
 import cutouts from "../../data/cutouts.json";
+import letters from "../../data/letters.json";
 
 /** Hoja de trabajo del visitante, en unidades de composición (origen arriba a la izquierda, y hacia abajo). */
 export const SHEET_W = 600;
 export const SHEET_H = 800;
 
-export type Drawer = "cabezas" | "rostros" | "torsos" | "brazos" | "piernas" | "vestuario" | "anadidos";
+export type Drawer = "cabezas" | "pelo" | "rostros" | "torsos" | "brazos" | "piernas" | "vestuario" | "anadidos" | "letras";
 export interface Cutout { id: string; src: string; cat: Drawer; label: string; w: number; h: number }
-export const CUTOUTS = cutouts as Cutout[];
+interface Letter { id: string; char: string; set: string; src: string; w: number; h: number }
+/** Alfabeto recortado (revista y papel) como un sobre más: sirve para escribir sobre la figura. */
+const LETTERS: Cutout[] = (letters as Letter[]).map((l) => ({ id: `letras/${l.id}`, src: l.src, cat: "letras", label: `Letra ${l.char}`, w: l.w, h: l.h }));
+export const CUTOUTS = [...(cutouts as Cutout[]), ...LETTERS];
 
 export const DRAWERS: { id: Drawer; label: string; hint: string; tone: string }[] = [
   { id: "cabezas", label: "Cabezas", hint: "Muñecas, bustos y la cabeza de Abraxas", tone: "#f2b90f" },
-  { id: "rostros", label: "Rostros", hint: "Ojos, bocas y narices", tone: "#e07bf0" },
+  { id: "pelo", label: "Pelo", hint: "Pelucas y peinados para cambiar de cabeza", tone: "#b07a4a" },
+  { id: "rostros", label: "Rostros", hint: "Ojos, bocas, narices y orejas", tone: "#e07bf0" },
   { id: "torsos", label: "Torsos", hint: "Espaldas, pechos y maniquíes", tone: "#ff7a45" },
   { id: "brazos", label: "Brazos", hint: "Brazos y guantes", tone: "#d9f24a" },
   { id: "piernas", label: "Piernas", hint: "Piernas, medias y caderas", tone: "#a8e6e8" },
   { id: "vestuario", label: "Vestuario", hint: "Vestidos de tela estampada", tone: "#f5bcd9" },
-  { id: "anadidos", label: "Añadidos", hint: "Peces, signos, papeles y cintas", tone: "#c9a878" },
+  { id: "anadidos", label: "Añadidos", hint: "Pinzas, clips, alfileres, signos, papeles y cintas", tone: "#c9a878" },
+  { id: "letras", label: "Letras", hint: "Letras recortadas de revista y papel: escribe una palabra", tone: "#f3eee3" },
 ];
 
 /** Tamaño de llegada a la hoja según la parte del cuerpo (lado mayor, en unidades de la hoja). */
-const TARGET: Record<Drawer, number> = { cabezas: 170, rostros: 80, torsos: 270, brazos: 250, piernas: 330, vestuario: 430, anadidos: 130 };
+const TARGET: Record<Drawer, number> = { pelo: 190, letras: 64, cabezas: 170, rostros: 80, torsos: 270, brazos: 250, piernas: 330, vestuario: 430, anadidos: 130 };
 
 export type El = CollageElement & { w: number; h: number; src: string };
 
@@ -32,7 +38,7 @@ export const nid = () => `p${Date.now().toString(36)}${(counter++).toString(36)}
 /** Llega cerca del centro de la hoja, con una pequeña desviación para que no se apilen exactos. */
 export function elementFrom(c: Cutout, n: number): El {
   const s = TARGET[c.cat] / Math.max(c.w, c.h);
-  const zone: Record<Drawer, number> = { cabezas: 0.2, rostros: 0.22, torsos: 0.42, brazos: 0.45, piernas: 0.72, vestuario: 0.55, anadidos: 0.5 };
+  const zone: Record<Drawer, number> = { pelo: 0.16, letras: 0.88, cabezas: 0.2, rostros: 0.22, torsos: 0.42, brazos: 0.45, piernas: 0.72, vestuario: 0.55, anadidos: 0.5 };
   const j = ((n * 37) % 11) - 5;
   return {
     id: nid(), kind: "image", src: c.src, w: c.w, h: c.h,

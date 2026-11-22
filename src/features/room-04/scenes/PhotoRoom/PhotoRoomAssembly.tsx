@@ -23,6 +23,11 @@ interface Props {
   onPhase: (p: RoomPhase) => void;
   onLoad: (loaded: number, total: number) => void;
   active: boolean;
+  /** puerta: openAt = instante (s, performance.now) en que el visitante la tocó */
+  door: MutableRefObject<{ openAt: number | null }>;
+  onDoor: () => void;
+  /** modo del cursor propio sobre el canvas ("ver" sobre una foto, "entra" sobre la puerta) */
+  onCursor: (mode: string | null) => void;
 }
 
 function pickPhotos(low: boolean) {
@@ -54,11 +59,11 @@ export function PhotoRoomCanvas(props: Props) {
 
 interface Item { photo: number; s: Pose; f: Pose; t: Pose; main: boolean; delay: number; ring: number }
 
-function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
+function Scene({ progress, onPhase, onLoad, low, door: doorState, onDoor, onCursor }: Props & { low: boolean }) {
   const photos = useMemo(() => pickPhotos(low), [low]);
   const reduced = useRoom((s) => s.reducedMotion);
   const openFicha = useRoom((s) => s.openFicha);
-  const { camera, pointer, gl, size } = useThree();
+  const { camera, pointer, gl, size, scene } = useThree();
 
   // un material por foto: la capa principal y el relleno comparten textura
   const materials = useMemo(
@@ -82,6 +87,18 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
     return all;
   }, [photos, low]);
   const door = useMemo(() => buildDoor(photos), [photos]);
+  // vidrio de la puerta: refleja la propia habitación (CubeCamera situada frente a la puerta)
+  const cubeRT = useMemo(() => new THREE.WebGLCubeRenderTarget(low ? 128 : 256, { generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter }), [low]);
+  const cubeCam = useMemo(() => new THREE.CubeCamera(0.1, 40, cubeRT), [cubeRT]);
+  const glassMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#e6ede9", metalness: 1, roughness: 0.05, envMap: cubeRT.texture, envMapIntensity: 1.05 }), [cubeRT]);
+  const goldMat = useMemo(() => new THREE.MeshStandardMaterial({ color: "#d4a12a", metalness: 1, roughness: 0.28, envMap: cubeRT.texture, emissive: "#7d5a10", emissiveIntensity: 0.15 }), [cubeRT]);
+  const ghostTex = useMemo(() => { const tx = new THREE.TextureLoader().load("/assets/room-04/misc/abraxas-reflejo.webp"); tx.colorSpace = THREE.SRGBColorSpace; return tx; }, []);
+  const ghostMat = useMemo(() => new THREE.MeshBasicMaterial({ map: ghostTex, transparent: true, opacity: 0, depthWrite: false, toneMapped: false, color: "#efe2cf", fog: false }), [ghostTex]);
+  useEffect(() => () => { cubeRT.dispose(); glassMat.dispose(); goldMat.dispose(); ghostTex.dispose(); ghostMat.dispose(); }, [cubeRT, glassMat, goldMat, ghostTex, ghostMat]);
+  const doorGroup = useRef<THREE.Group>(null);
+  const cubeFrame = useRef(0);
+  const cursorMode = useRef<string | null>(null);
+  const setCursor = (m: string | null) => { if (cursorMode.current !== m) { cursorMode.current = m; onCursor(m); } };
   const geo = useMemo(() => photos.map((p) => new THREE.PlaneGeometry(PHOTO_H * p.aspect, PHOTO_H)), [photos]);
   useEffect(() => () => { materials.forEach((m) => { m.map?.dispose(); m.dispose(); }); geo.forEach((g) => g.dispose()); }, [materials, geo]);
 
@@ -133,13 +150,16 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
       setPhase(a <= 0 ? "scattered" : a < 1 ? "assembling" : "assembled");
     }
     const p = progress.current;
-    // guion: acercarse (0–.22) · la habitación se vuelve túnel (.2–.36) · recorrerlo (.32–.76)
-    // · la puerta se abre (.7–.86) · cruzarla hacia la luz kraft (.8–1)
+    // guion: acercarse (0–.22) · la habitación se vuelve túnel (.2–.3) · recorrerlo hasta la puerta (.28–.78)
+    // · PARADA frente a la puerta (.78–1): no se atraviesa con scroll; se abre al tocarla
     const zoom = smooth(0, 0.22, p);
     const tb = reduced ? 0 : smooth(0.2, 0.3, p);
-    const travel = reduced ? 0 : smooth(0.28, 0.72, p);
-    const open = reduced ? 0 : smooth(0.66, 0.8, p);
-    const pass = reduced ? 0 : smooth(0.76, 0.92, p);
+    const travel = reduced ? 0 : smooth(0.28, 0.78, p);
+    const near = reduced ? 0 : smooth(0.6, 0.82, p);
+    const oAt = doorState.current.openAt;
+    const o = oAt === null ? 0 : THREE.MathUtils.clamp((now - oAt) / 1.5, 0, 1);
+    const open = easeInOut(o);
+    const pass = oAt === null ? 0 : easeInOut(THREE.MathUtils.clamp((now - oAt - 0.35) / 1.4, 0, 1));
 
     for (let i = 0; i < items.length; i++) {
       const m = meshes.current[i];
@@ -160,34 +180,54 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
           tmpQuat.premultiply(tunnelAxisQ);
         }
       }
-      if (hover.current === i && tb < 0.05) scale *= 1.07;
+      if (hover.current === i && tb < 0.05) scale *= 1.04;
       m.position.copy(tmpPos);
       m.quaternion.copy(tmpQuat);
       m.scale.setScalar(Math.max(0.0001, scale));
       if (it.main && ai < 1 && !reduced) m.position.y += Math.sin(now * 0.7 + i) * 0.04 * (1 - ai);
     }
 
-    const settled = a >= 1 ? 1 - tb : 0.3;
+    const settled = a >= 1 ? 1 - tb * 0.7 : 0.3;
     look.current.yaw = THREE.MathUtils.damp(look.current.yaw, -pointer.x * 0.18 * settled, 3, dt);
     look.current.pitch = THREE.MathUtils.damp(look.current.pitch, pointer.y * 0.1 * settled, 3, dt);
-    const along = zoom * 1.6 + travel * (DOOR_D - 2.3 - 1.6) + pass * 3.6;
+    // la cámara se detiene a ~3,4 m de la puerta; al abrirla, la cruza hacia la luz kraft
+    const along = zoom * 1.6 + travel * (DOOR_D - 3.4 - 1.6) + pass * 5.2;
     camera.position.copy(camDir).multiplyScalar(along);
-    // un leve balanceo al caminar por el túnel
     if (travel > 0 && travel < 1 && !reduced) camera.position.y += Math.sin(travel * Math.PI * 6) * 0.03;
-    const ang = easeInOut(open) * 1.85;
+    const ang = open * 1.75;
     if (doorL.current) doorL.current.rotation.y = ang;
     if (doorR.current) doorR.current.rotation.y = -ang;
+    // en la parada, la puerta "respira": el marco dorado late suave
+    const waiting = p > 0.74 && oAt === null;
+    goldMat.emissiveIntensity = 0.15 + (waiting ? (Math.sin(now * 2.2) * 0.5 + 0.5) * 0.35 : 0);
+    // la presencia de Abraxas en el vidrio se revela al acercarse y se va al abrir
+    ghostMat.opacity = near * (0.34 + Math.sin(now * 0.9) * 0.04) * (1 - Math.min(1, o * 2.5));
+    // refresca el reflejo del vidrio mientras la puerta está a la vista
+    if (doorGroup.current && tb > 0.95 && p > 0.45) {
+      cubeFrame.current++;
+      if (cubeFrame.current % (low ? 60 : 18) === 1) {
+        doorGroup.current.visible = false;
+        cubeCam.position.copy(camDir).multiplyScalar(DOOR_D - 0.9);
+        cubeCam.updateMatrixWorld();
+        cubeCam.update(gl, scene);
+        doorGroup.current.visible = true;
+      }
+    }
+    // sin foto debajo (o en el túnel) no hay «Ver»
+    if (hover.current !== null && !interactive()) { hover.current = null; if (cursorMode.current === "ver") setCursor(null); }
     camera.rotation.set(look.current.pitch, -yawBase + look.current.yaw, 0, "YXZ");
     const cam = camera as THREE.PerspectiveCamera;
     const narrow = size.width < size.height;
-    const fov = THREE.MathUtils.lerp(narrow ? 74 : 46, narrow ? 60 : 36, zoom) + tb * (narrow ? 12 : 18) - pass * 6;
+    const fov = THREE.MathUtils.lerp(narrow ? 74 : 46, narrow ? 60 : 36, zoom) + tb * (narrow ? 12 : 18) - pass * 8;
     if (Math.abs(cam.fov - fov) > 0.01) { cam.fov = fov; cam.updateProjectionMatrix(); }
   });
 
   const interactive = () => phaseRef.current === "assembled" && progress.current < 0.2;
+  const doorReady = () => !reduced && progress.current > 0.7 && doorState.current.openAt === null;
   const onClick = (e: ThreeEvent<MouseEvent>, i: number) => {
     e.stopPropagation();
-    if (!interactive()) return;
+    // un arrastre o un gesto de scroll no abre la foto
+    if (e.delta > 6 || !interactive()) return;
     const ph = photos[items[i].photo];
     // la ficha muestra la foto en grande y solo su número
     openFicha({ title: `Collage #${ph.collage ?? ph.seq}`, image: `/assets/room-04/photos/${ph.id}.jpg` });
@@ -196,34 +236,31 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
   return (
     <group>
       {!reduced && (
-        <group position={camDir.clone().multiplyScalar(DOOR_D)} rotation={[0, -yawBase, 0]}>
+        <group
+          ref={doorGroup}
+          position={camDir.clone().multiplyScalar(DOOR_D)}
+          rotation={[0, -yawBase, 0]}
+          onClick={(e) => { e.stopPropagation(); if (e.delta <= 6 && doorReady()) onDoor(); }}
+          onPointerOver={(e) => { e.stopPropagation(); if (doorReady()) setCursor("entra"); }}
+          onPointerOut={() => { if (cursorMode.current === "entra") setCursor(null); }}
+        >
           {/* luz kraft al otro lado: empalma con la sección del video */}
           <mesh position={[0, 0, -2.4]}>
             <planeGeometry args={[40, 30]} />
             <meshBasicMaterial color={KRAFT} toneMapped={false} fog={false} />
           </mesh>
           <Tiles tiles={door.wall} geo={geo} materials={materials} />
-          {/* marco de madera */}
-          {[[-DOOR_W - 0.05, DOOR_Y, 0.11, 0.1, DOOR_H + 0.2], [DOOR_W + 0.05, DOOR_Y, 0.11, 0.1, DOOR_H + 0.2], [0, DOOR_Y + DOOR_H / 2 + 0.05, 0.11, DOOR_W * 2 + 0.2, 0.1]].map(([x, y, z, w, h], k) => (
-            <mesh key={k} position={[x, y, z]}>
-              <boxGeometry args={[w, h, 0.12]} />
-              <meshBasicMaterial color="#3a2618" />
-            </mesh>
-          ))}
+          <DoorFrame materials={materials} gold={goldMat} glass={glassMat} />
           <group ref={doorL} position={[-DOOR_W, DOOR_Y, 0]}>
-            <mesh position={[DOOR_W / 2, 0, 0]}>
-              <boxGeometry args={[DOOR_W, DOOR_H, 0.05]} />
-              <meshBasicMaterial color="#4a3221" />
-            </mesh>
-            <Tiles tiles={door.left} geo={geo} materials={materials} />
+            <GlassLeaf materials={materials} gold={goldMat} glass={glassMat} seed={3} />
           </group>
           <group ref={doorR} position={[DOOR_W, DOOR_Y, 0]} scale={[-1, 1, 1]}>
-            <mesh position={[DOOR_W / 2, 0, 0]}>
-              <boxGeometry args={[DOOR_W, DOOR_H, 0.05]} />
-              <meshBasicMaterial color="#4a3221" side={THREE.DoubleSide} />
-            </mesh>
-            <Tiles tiles={door.right} geo={geo} materials={materials} mirrored />
+            <GlassLeaf materials={materials} gold={goldMat} glass={glassMat} seed={11} />
           </group>
+          {/* presencia de Abraxas en el reflejo */}
+          <mesh position={[0.08, DOOR_Y + 0.25, 0.06]} material={ghostMat} renderOrder={5}>
+            <planeGeometry args={[1.9, 1.9 * (646 / 520)]} />
+          </mesh>
         </group>
       )}
       {items.map((it, i) => (
@@ -234,8 +271,8 @@ function Scene({ progress, onPhase, onLoad, low }: Props & { low: boolean }) {
           material={materials[it.photo]}
           renderOrder={it.main ? 2 : 1}
           onClick={(e) => onClick(e, i)}
-          onPointerOver={(e) => { e.stopPropagation(); if (interactive()) hover.current = i; }}
-          onPointerOut={() => { hover.current = null; }}
+          onPointerOver={(e) => { e.stopPropagation(); if (interactive()) { hover.current = i; setCursor("ver"); } }}
+          onPointerOut={() => { if (hover.current === i) { hover.current = null; if (cursorMode.current === "ver") setCursor(null); } }}
         />
       ))}
     </group>
@@ -251,6 +288,73 @@ function Tiles({ tiles, geo, materials, mirrored }: { tiles: DoorTile[]; geo: TH
           scale={[mirrored ? -t.h / PHOTO_H : t.h / PHOTO_H, t.h / PHOTO_H, 1]} />
       ))}
     </>
+  );
+}
+
+/** Marco de la puerta: jambas y dintel forrados de fotos, molduras doradas y un medio punto de vidrio. */
+function DoorFrame({ materials, gold, glass }: { materials: THREE.MeshBasicMaterial[]; gold: THREE.Material; glass: THREE.Material }) {
+  const n = materials.length;
+  const m = (k: number) => materials[(k * 37) % n];
+  const top = DOOR_Y + DOOR_H / 2;
+  const jamb = DOOR_W * 2 + 0.36;
+  return (
+    <group>
+      {/* jambas y dintel de collage */}
+      <mesh position={[-DOOR_W - 0.12, DOOR_Y, 0.08]} material={m(1)}><boxGeometry args={[0.2, DOOR_H + 0.12, 0.18]} /></mesh>
+      <mesh position={[DOOR_W + 0.12, DOOR_Y, 0.08]} material={m(2)}><boxGeometry args={[0.2, DOOR_H + 0.12, 0.18]} /></mesh>
+      <mesh position={[0, top + 0.1, 0.08]} material={m(3)}><boxGeometry args={[jamb, 0.2, 0.18]} /></mesh>
+      {/* molduras doradas */}
+      {[-1, 1].map((sx) => (
+        <mesh key={sx} position={[sx * (DOOR_W + 0.025), DOOR_Y, 0.17]} material={gold}><boxGeometry args={[0.03, DOOR_H + 0.1, 0.03]} /></mesh>
+      ))}
+      <mesh position={[0, top + 0.005, 0.17]} material={gold}><boxGeometry args={[jamb - 0.3, 0.03, 0.03]} /></mesh>
+      {/* medio punto: arco de vidrio sobre el dintel */}
+      <group position={[0, top + 0.2, 0.06]}>
+        <mesh material={glass}><circleGeometry args={[DOOR_W + 0.1, 48, 0, Math.PI]} /></mesh>
+        <mesh position={[0, 0, 0.03]} material={gold}><torusGeometry args={[DOOR_W + 0.1, 0.035, 10, 48, Math.PI]} /></mesh>
+        {[0.25, 0.5, 0.75].map((f) => (
+          <mesh key={f} position={[Math.cos(Math.PI * f) * (DOOR_W + 0.1) / 2, Math.sin(Math.PI * f) * (DOOR_W + 0.1) / 2, 0.03]} rotation={[0, 0, Math.PI * f]} material={gold}>
+            <boxGeometry args={[DOOR_W + 0.1, 0.02, 0.02]} />
+          </mesh>
+        ))}
+        <mesh position={[0, 0, 0.04]} material={m(5)}><circleGeometry args={[0.16, 24]} /></mesh>
+      </group>
+    </group>
+  );
+}
+
+/** Hoja de vidrio espejado en tres paños, con travesaños forrados de fotos y tirador dorado (bisagra en x = 0). */
+function GlassLeaf({ materials, gold, glass, seed }: { materials: THREE.MeshBasicMaterial[]; gold: THREE.Material; glass: THREE.Material; seed: number }) {
+  const n = materials.length;
+  const m = (k: number) => materials[((k + seed) * 53) % n];
+  const w = DOOR_W, h = DOOR_H, bar = 0.09;
+  const panes = [0.34, 0.33, 0.33];
+  let y0 = -h / 2 + bar;
+  const inner = h - bar * 2;
+  return (
+    <group>
+      {/* bastidor de collage */}
+      <mesh position={[bar / 2, 0, 0.02]} material={m(1)}><boxGeometry args={[bar, h, 0.06]} /></mesh>
+      <mesh position={[w - bar / 2, 0, 0.02]} material={m(2)}><boxGeometry args={[bar, h, 0.06]} /></mesh>
+      <mesh position={[w / 2, h / 2 - bar / 2, 0.02]} material={m(3)}><boxGeometry args={[w, bar, 0.06]} /></mesh>
+      <mesh position={[w / 2, -h / 2 + bar / 2, 0.02]} material={m(4)}><boxGeometry args={[w, bar, 0.06]} /></mesh>
+      {panes.map((f, k) => {
+        const ph = inner * f;
+        const cy = y0 + ph / 2;
+        y0 += ph;
+        return (
+          <group key={k}>
+            <mesh position={[w / 2, cy, 0.02]} material={glass}><planeGeometry args={[w - bar * 2, ph - 0.03]} /></mesh>
+            {k < panes.length - 1 && (
+              <mesh position={[w / 2, cy + ph / 2, 0.03]} material={m(6 + k)}><boxGeometry args={[w - bar * 2, 0.05, 0.05]} /></mesh>
+            )}
+          </group>
+        );
+      })}
+      {/* filete dorado interior y tirador */}
+      <mesh position={[w / 2, 0, 0.055]} material={gold}><boxGeometry args={[w - bar * 2 + 0.02, 0.012, 0.012]} /></mesh>
+      <mesh position={[w - 0.2, -0.05, 0.09]} rotation={[0, 0, 0]} material={gold}><cylinderGeometry args={[0.022, 0.022, 0.42, 12]} /></mesh>
+    </group>
   );
 }
 

@@ -1,4 +1,11 @@
-.section { position: relative; background: #1d1712; color: var(--papel); padding: 104px max(16px, 4vw) 72px; overflow: clip; }
+.section { color: var(--papel); padding: 104px max(16px, 4vw) 72px; }
+/* estudio fijo: 100svh aislados durante la creación; el bloque .pin da el recorrido de scroll en el que queda fijo */
+.pin { position: relative; height: calc(100svh + 45svh); margin: 0 calc(max(16px, 4vw) * -1); }
+.studio { position: sticky; top: 0; height: 100svh; padding: 76px max(16px, 4vw) 14px; background: #1d1712; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; }
+.studio .workspace { flex: 1; min-height: 0; }
+.studio .stage { height: 100%; min-height: 0; }
+.studio .side { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 2px; }
+.studioNote { margin: 0; font: 12px/1.4 Arial, sans-serif; color: rgba(243, 238, 227, 0.55); }
 .head { max-width: 860px; margin: 0 0 28px; }
 .stickers { display: flex; gap: 10px; margin-bottom: 18px; }
 .title { font-size: clamp(30px, 4.4vw, 60px); line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 16px; font-weight: 500; }
@@ -7,7 +14,7 @@
 .stitch { display: block; max-width: 100%; }
 
 .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 20px; align-items: start; }
-.stage { position: relative; height: min(78vh, 760px); min-height: 520px; border-radius: 18px; overflow: hidden; background: #2a2119; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(243, 238, 227, 0.08); outline: none; }
+.stage { position: relative; height: min(78vh, 760px); min-height: 520px; touch-action: none; overscroll-behavior: contain; border-radius: 18px; overflow: hidden; background: #2a2119; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.8), inset 0 0 0 1px rgba(243, 238, 227, 0.08); outline: none; }
 .stage:focus-visible { box-shadow: 0 0 0 3px #d9f24a, 0 30px 60px -30px rgba(0, 0, 0, 0.8); }
 .loading { display: grid; place-items: center; height: 100%; color: rgba(243, 238, 227, 0.6); font-family: Arial, sans-serif; }
 .tagAbraxas, .tagSheet { position: absolute; top: 14px; padding: 6px 12px; border-radius: 999px; font-size: 12px; letter-spacing: 0.04em; pointer-events: none; }
@@ -19,7 +26,7 @@
 
 .side { display: flex; flex-direction: column; gap: 16px; }
 .tray { background: #f3eee3; color: #121110; border-radius: 16px; padding: 14px 14px 10px; box-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.8); }
-.envelopes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 8px; padding-top: 26px; }
+.envelopes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px 8px; padding-top: 26px; }
 .envelope { position: relative; height: 62px; border: 0; padding: 0; background: none; cursor: pointer; font: inherit; color: #121110; }
 .envBody { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; padding: 6px 8px; border-radius: 6px; background: var(--tone); box-shadow: 0 6px 12px -8px rgba(0, 0, 0, 0.6); z-index: 2; transition: transform 0.2s ease; }
 .envBody::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 55%; background: linear-gradient(to bottom right, transparent 49%, rgba(0, 0, 0, 0.12) 50%) left / 50% 100% no-repeat, linear-gradient(to bottom left, transparent 49%, rgba(0, 0, 0, 0.12) 50%) right / 50% 100% no-repeat; border-radius: 6px 6px 0 0; }
@@ -34,7 +41,7 @@
 
 .papers { margin-top: 12px; border-top: 1px dashed rgba(18, 17, 16, 0.3); padding-top: 8px; }
 .hint { margin: 0 0 6px; font: 12px Arial, sans-serif; color: #3a3631; }
-.paperList { list-style: none; margin: 0; padding: 6px 4px 10px; display: flex; flex-wrap: wrap; gap: 4px; max-height: 250px; overflow-y: auto; }
+.paperList { list-style: none; margin: 0; padding: 6px 4px 10px; display: flex; flex-wrap: wrap; gap: 4px; max-height: 250px; overflow-y: auto; overscroll-behavior: contain; }
 .paperList li { transform: rotate(var(--r)); margin: 0 -4px -4px 0; }
 .paper { width: 74px; height: 74px; border: 0; border-radius: 4px; background: #fffdf8; padding: 6px; cursor: pointer; box-shadow: 0 3px 8px -4px rgba(0, 0, 0, 0.5); transition: transform 0.18s ease, box-shadow 0.18s ease; }
 .paper img { width: 100%; height: 100%; object-fit: contain; }
@@ -55,10 +62,17 @@
 .status { margin: 0; min-height: 1.2em; font: 13px/1.4 Arial, sans-serif; }
 .err { color: #8f1a0c; font-weight: 700; }
 
-@media (max-width: 1080px) { .workspace { grid-template-columns: 1fr; } .side { display: grid; grid-template-columns: 1fr 1fr; } }
+@media (max-width: 1080px) {
+  .workspace { grid-template-columns: 1fr; } .side { display: grid; grid-template-columns: 1fr 1fr; }
+  /* apilado no cabe en una pantalla: la mesa deja de fijarse pero la sección sigue opaca y aislada */
+  .pin { height: auto; margin: 0; }
+  .studio { position: relative; height: auto; padding: 0; background: none; }
+  .studio .stage { height: min(70vh, 640px); min-height: 420px; }
+  .studio .side { max-height: none; overflow: visible; }
+}
 @media (max-width: 760px) {
   .section { padding: 88px 12px 56px; }
-  .stage { height: 62vh; min-height: 420px; }
+  .stage, .studio .stage { height: 62vh; min-height: 420px; }
   .tools { left: 12px; bottom: 58px; justify-content: flex-start; }
   .side { display: flex; }
   .envelopes { display: flex; overflow-x: auto; gap: 8px; padding-bottom: 4px; }

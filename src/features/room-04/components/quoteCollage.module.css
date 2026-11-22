@@ -1,0 +1,37 @@
+.section { position: relative; height: 210vh; background: #121110; color: var(--papel); }
+.sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.bg { position: absolute; inset: -6%; transform-origin: 60% 50%; will-change: transform; }
+.bg img { width: 100%; height: 100%; object-fit: cover; object-position: 55% 45%; display: block; }
+/* velo moderado: más denso detrás del texto, la foto conserva su detalle a la derecha */
+.veil {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(18, 17, 16, 0.74) 0%, rgba(18, 17, 16, 0.52) 42%, rgba(18, 17, 16, 0.12) 78%, rgba(18, 17, 16, 0.05) 100%),
+    linear-gradient(0deg, rgba(18, 17, 16, 0.45) 0%, rgba(18, 17, 16, 0) 30%);
+}
+.figure { position: absolute; left: max(18px, 6vw); top: 50%; transform: translateY(-50%); margin: 0; width: min(60vw, 980px); perspective: 1100px; }
+.quote {
+  margin: 0; transform-style: preserve-3d;
+  font-family: var(--font-caos); font-weight: 500; font-size: clamp(34px, 5.1vw, 86px); line-height: 1.04; letter-spacing: -0.02em;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+}
+.mark { display: inline-block; margin-right: 0.04em; color: var(--amarillo); }
+.word { display: inline-block; margin-right: 0.24em; transform-style: preserve-3d; will-change: transform, opacity; backface-visibility: hidden; }
+.cut { display: inline-flex; align-items: flex-end; gap: 0.02em; margin-right: 0; white-space: nowrap; }
+.letter { height: 1.08em; width: auto; display: block; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
+.ellipsis { margin-left: 0.06em; }
+.attrib { margin: 28px 0 0; font-size: 15px; letter-spacing: 0.02em; color: rgba(243, 238, 227, 0.85); opacity: 0; }
+.attrib::before { content: ""; display: block; width: 180px; height: 10px; margin-bottom: 14px;
+  background: radial-gradient(circle at 5px 5px, var(--bermellon) 2px, transparent 2.6px) 0 0 / 12px 10px repeat-x; }
+.dash { color: var(--amarillo); }
+
+@media (max-width: 760px) {
+  .section { height: 190vh; }
+  .bg img { object-position: 30% 50%; }
+  .veil { background: linear-gradient(0deg, rgba(18, 17, 16, 0.84) 0%, rgba(18, 17, 16, 0.6) 55%, rgba(18, 17, 16, 0.2) 100%); }
+  .figure { top: auto; bottom: 10vh; transform: none; width: auto; right: 18px; }
+  .quote { font-size: clamp(30px, 8.6vw, 44px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .word { will-change: auto; }
+}

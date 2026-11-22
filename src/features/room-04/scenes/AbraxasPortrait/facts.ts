@@ -33,7 +33,7 @@ const RAW: Omit<PortraitFact, "event">[] = [
   { id: "guinness", label: "1997 · dos récords Guinness", thumb: `${A}/archive/parte4-img_1634.jpg`, image: `${A}/misc/parte4-img_1634.jpg`, caption: "Certificado Récords Guinness, 8 de mayo de 1997 (foto #638)", pos: [3.5, 0.05, 0.9], anchor: [0.8, 0.5] },
   { id: "presidencia", label: "1998 · candidata presidencial", thumb: `${A}/archive/parte5-img_10041.jpg`, image: `${A}/misc/parte5-img_10041.jpg`, caption: "Tarjetón presidencial pegado en la pared política (foto #82)", pos: [-3.1, -1.75, 0.4], anchor: [0.35, 0.25] },
   { id: "transformacion", label: "Trans-formarse", thumb: `${A}/abraxas/retrato-base.jpg`, image: `${A}/portrait/abraxas-hojas.jpg`, caption: "Abraxas entre hojas, retrato del equipo de la Sala 04", pos: [3.2, -1.7, 0.5], anchor: [0.55, 0.62] },
-  { id: "patrimonio", label: "Casa museo · patrimonio", thumb: `${A}/archive/parte5-img_11991.jpg`, image: `${A}/archive/parte5-img_11991.jpg`, caption: "Vista general de la oficina (foto #179)", pos: [0.05, -2.95, 0.7], anchor: [0.5, 0.12] },
+  { id: "patrimonio", label: "Casa museo · patrimonio", thumb: `${A}/archive/parte5-img_11991.jpg`, image: `${A}/archive/parte5-img_11991.jpg`, caption: "Vista general de la oficina (foto #179)", pos: [1.95, -2.72, 0.7], anchor: [0.55, 0.1] },
 ];
 
 export const PORTRAIT_FACTS: PortraitFact[] = RAW.map((f) => ({ ...f, event: pick(f.id) }));

@@ -6,6 +6,7 @@ import { Ticket, Sticker } from "@/components/abx/Ticket";
 import { StitchLine } from "@/components/abx/Ornaments";
 import { useRoom } from "../../store";
 import { useInView } from "../../hooks/useInView";
+import { OverlayScene } from "../../components/OverlayScene";
 import { announcePiece, saveLocalPiece, type PublishedPiece } from "../../lib/pieces";
 import { CUTOUTS, DRAWERS, SHEET_W, SHEET_H, elementFrom, nid, useBoard, type Drawer, type El } from "./board";
 import type { BoardApi } from "./BoardCanvas";
@@ -66,7 +67,7 @@ async function exportFigure(els: El[]): Promise<string> {
 }
 
 export function CollectiveSection() {
-  const section = useRef<HTMLElement>(null);
+  const section = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const inView = useInView(section, "400px");
   const reduced = useRoom((st) => st.reducedMotion);
@@ -196,7 +197,8 @@ export function CollectiveSection() {
   const done = status.kind === "ok" || status.kind === "local";
 
   return (
-    <section ref={section} id="collage" className={s.section} aria-labelledby="act6-title">
+    <OverlayScene id="collage" labelledBy="act6-title" tone="#1d1712" className={s.section}>
+      <div ref={section}>
       <header className={s.head}>
         <div className={s.stickers}><Sticker tone="lima" rotate={-5}>06</Sticker><Sticker tone="papel" shape="flag" rotate={3}>Tu figura, tu mensaje</Sticker></div>
         <h2 id="act6-title" className={s.title}>Toma una cabeza, una espalda, unas piernas. <em>Arma otro cuerpo.</em></h2>
@@ -207,6 +209,9 @@ export function CollectiveSection() {
         <StitchLine className={s.stitch} color="var(--oro)" width={360} />
       </header>
 
+      {/* La mesa queda fija y aislada mientras se crea: ocupa la pantalla y no deja ver otras salas detrás. */}
+      <div className={s.pin}>
+      <div className={s.studio}>
       <div className={s.workspace}>
         <div
           ref={stage}
@@ -310,12 +315,16 @@ export function CollectiveSection() {
           </form>
         </aside>
       </div>
+      <p className={s.studioNote}>La rueda del mouse escala la pieza seleccionada (con Shift la gira). Para seguir el recorrido, suelta la pieza con Esc o haz scroll fuera de la mesa.</p>
+      </div>
+      </div>
 
       <ul className="sr-only" aria-label="Piezas en tu hoja">
         {els.map((e, i) => (
           <li key={e.id}><button onClick={() => { setSelected(e.id); stage.current?.focus(); }}>Pieza {i + 1}{e.id === selected ? " (seleccionada)" : ""}</button></li>
         ))}
       </ul>
-    </section>
+      </div>
+    </OverlayScene>
   );
 }

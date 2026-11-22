@@ -11,6 +11,7 @@ const MODES: Record<string, { icon?: IconName; label?: string }> = {
   arrastra: { icon: "mano", label: "Arrastra" },
   lee: { icon: "ojo", label: "Leer" },
   play: { icon: "play", label: "Play" },
+  entra: { icon: "mano", label: "Entrar" },
 };
 
 /**
@@ -44,12 +45,15 @@ export function CursorFX() {
     const pos = { x: w / 2, y: h / 2 }, ringPos = { x: w / 2, y: h / 2 };
     const ripples: { x: number; y: number; t: number; s: number }[] = [];
     let last = 0, raf = 0, lastX = 0, lastY = 0;
+    // dentro de la habitación de fotos la exploración es limpia: sin ondas de agua
+    let calm = false;
 
     const onMove = (e: PointerEvent) => {
       pos.x = e.clientX; pos.y = e.clientY;
+      calm = !!(e.target as HTMLElement | null)?.closest?.("#habitacion");
       const now = performance.now();
       const dist = Math.hypot(pos.x - lastX, pos.y - lastY);
-      if (now - last > 55 && dist > 14) {
+      if (!calm && now - last > 55 && dist > 14) {
         ripples.push({ x: pos.x, y: pos.y, t: now, s: Math.min(1.6, 0.6 + dist / 60) });
         if (ripples.length > 28) ripples.shift();
         last = now; lastX = pos.x; lastY = pos.y;
@@ -57,7 +61,7 @@ export function CursorFX() {
       const el = (e.target as HTMLElement | null)?.closest?.("[data-cursor], a, button, [role=button], input, textarea, select") as HTMLElement | null;
       setMode(el ? el.dataset.cursor ?? "toca" : null);
     };
-    const onDown = () => { ripples.push({ x: pos.x, y: pos.y, t: performance.now(), s: 2.6 }); ring.current?.classList.add("down"); };
+    const onDown = () => { if (!calm) ripples.push({ x: pos.x, y: pos.y, t: performance.now(), s: 2.6 }); ring.current?.classList.add("down"); };
     const onUp = () => ring.current?.classList.remove("down");
     addEventListener("pointermove", onMove, { passive: true });
     addEventListener("pointerdown", onDown);

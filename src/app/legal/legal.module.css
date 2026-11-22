@@ -1,0 +1,15 @@
+.page { min-height: 100svh; background: #1d1712; padding: 32px max(16px, 5vw) 64px; }
+.nav a { color: #f3eee3; font: 14px Arial, sans-serif; text-decoration: none; border-bottom: 1px dashed rgba(243,238,227,.5); }
+.nav a:focus-visible { outline: 2px dashed #d9f24a; outline-offset: 3px; }
+.paper { max-width: 820px; margin: 28px auto 0; background: #f3eee3; color: #121110; padding: clamp(24px, 5vw, 56px); border-radius: 4px; box-shadow: 10px 12px 0 rgba(0,0,0,.35); background-image: repeating-linear-gradient(transparent 0 31px, rgba(35,64,168,.08) 31px 32px); }
+.draft { margin: 0 0 22px; padding: 12px 14px; border: 2px dashed #a01452; color: #a01452; background: #fff0f6; font: 700 13px/1.45 Arial, sans-serif; letter-spacing: .02em; }
+.title { margin: 14px 0 6px; font-weight: 500; font-size: clamp(30px, 4vw, 48px); line-height: 1; letter-spacing: -.02em; }
+.updated { margin: 0; font: 13px Arial, sans-serif; color: #3a3631; }
+.stitch { display: block; max-width: 100%; margin: 18px 0 8px; }
+.body { font: 16px/1.65 Arial, Helvetica, sans-serif; }
+.body h2 { font: 600 20px/1.3 var(--font-jost, Arial), sans-serif; margin: 30px 0 8px; }
+.body ul { padding-left: 20px; }
+.body li { margin: 4px 0; }
+.body table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+.body th, .body td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px dashed rgba(18,17,16,.3); }
+.todo { background: #ffd9ea; color: #7a0f3e; padding: 0 4px; border-radius: 3px; }

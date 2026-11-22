@@ -1070,5 +1070,1389 @@
 "label": "Signo",
 "w": 359,
 "h": 434
+},
+{
+"id": "rostros/r2-10-00",
+"src": "/assets/room-04/cutouts/rostros/r2-10-00.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 157,
+"h": 226
+},
+{
+"id": "rostros/r2-10-01",
+"src": "/assets/room-04/cutouts/rostros/r2-10-01.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 155,
+"h": 221
+},
+{
+"id": "rostros/r2-10-02",
+"src": "/assets/room-04/cutouts/rostros/r2-10-02.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 156,
+"h": 220
+},
+{
+"id": "rostros/r2-10-03",
+"src": "/assets/room-04/cutouts/rostros/r2-10-03.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 142,
+"h": 196
+},
+{
+"id": "rostros/r2-10-04",
+"src": "/assets/room-04/cutouts/rostros/r2-10-04.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 122,
+"h": 219
+},
+{
+"id": "rostros/r2-10-05",
+"src": "/assets/room-04/cutouts/rostros/r2-10-05.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 123,
+"h": 219
+},
+{
+"id": "rostros/r2-10-06",
+"src": "/assets/room-04/cutouts/rostros/r2-10-06.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 123,
+"h": 218
+},
+{
+"id": "rostros/r2-10-07",
+"src": "/assets/room-04/cutouts/rostros/r2-10-07.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 123,
+"h": 219
+},
+{
+"id": "rostros/r2-10-08",
+"src": "/assets/room-04/cutouts/rostros/r2-10-08.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 136,
+"h": 196
+},
+{
+"id": "rostros/r2-10-09",
+"src": "/assets/room-04/cutouts/rostros/r2-10-09.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 136,
+"h": 195
+},
+{
+"id": "rostros/r2-10-10",
+"src": "/assets/room-04/cutouts/rostros/r2-10-10.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 128,
+"h": 177
+},
+{
+"id": "rostros/r2-10-11",
+"src": "/assets/room-04/cutouts/rostros/r2-10-11.webp",
+"cat": "rostros",
+"label": "Nariz",
+"w": 134,
+"h": 190
+},
+{
+"id": "rostros/r2-16-00",
+"src": "/assets/room-04/cutouts/rostros/r2-16-00.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 205,
+"h": 275
+},
+{
+"id": "rostros/r2-16-01",
+"src": "/assets/room-04/cutouts/rostros/r2-16-01.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 197,
+"h": 225
+},
+{
+"id": "rostros/r2-16-02",
+"src": "/assets/room-04/cutouts/rostros/r2-16-02.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 237,
+"h": 200
+},
+{
+"id": "rostros/r2-16-03",
+"src": "/assets/room-04/cutouts/rostros/r2-16-03.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 181,
+"h": 237
+},
+{
+"id": "rostros/r2-16-04",
+"src": "/assets/room-04/cutouts/rostros/r2-16-04.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 189,
+"h": 204
+},
+{
+"id": "rostros/r2-16-05",
+"src": "/assets/room-04/cutouts/rostros/r2-16-05.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 241,
+"h": 165
+},
+{
+"id": "rostros/r2-16-06",
+"src": "/assets/room-04/cutouts/rostros/r2-16-06.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 260,
+"h": 158
+},
+{
+"id": "rostros/r2-16-07",
+"src": "/assets/room-04/cutouts/rostros/r2-16-07.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 188,
+"h": 189
+},
+{
+"id": "rostros/r2-16-08",
+"src": "/assets/room-04/cutouts/rostros/r2-16-08.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 182,
+"h": 196
+},
+{
+"id": "rostros/r2-16-09",
+"src": "/assets/room-04/cutouts/rostros/r2-16-09.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 200,
+"h": 183
+},
+{
+"id": "rostros/r2-16-10",
+"src": "/assets/room-04/cutouts/rostros/r2-16-10.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 256,
+"h": 156
+},
+{
+"id": "rostros/r2-16-11",
+"src": "/assets/room-04/cutouts/rostros/r2-16-11.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 241,
+"h": 157
+},
+{
+"id": "rostros/r2-16-12",
+"src": "/assets/room-04/cutouts/rostros/r2-16-12.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 193,
+"h": 174
+},
+{
+"id": "rostros/r2-16-13",
+"src": "/assets/room-04/cutouts/rostros/r2-16-13.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 201,
+"h": 179
+},
+{
+"id": "rostros/r2-16-14",
+"src": "/assets/room-04/cutouts/rostros/r2-16-14.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 186,
+"h": 180
+},
+{
+"id": "rostros/r2-16-15",
+"src": "/assets/room-04/cutouts/rostros/r2-16-15.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 180,
+"h": 183
+},
+{
+"id": "rostros/r2-16-16",
+"src": "/assets/room-04/cutouts/rostros/r2-16-16.webp",
+"cat": "rostros",
+"label": "Boca",
+"w": 242,
+"h": 136
+},
+{
+"id": "rostros/r2-17-01",
+"src": "/assets/room-04/cutouts/rostros/r2-17-01.webp",
+"cat": "rostros",
+"label": "Ojo",
+"w": 309,
+"h": 137
+},
+{
+"id": "rostros/r2-17-02",
+"src": "/assets/room-04/cutouts/rostros/r2-17-02.webp",
+"cat": "rostros",
+"label": "Ojo",
+"w": 256,
+"h": 138
+},
+{
+"id": "rostros/r2-17-03",
+"src": "/assets/room-04/cutouts/rostros/r2-17-03.webp",
+"cat": "rostros",
+"label": "Ojo",
+"w": 198,
+"h": 101
+},
+{
+"id": "rostros/r2-17-04",
+"src": "/assets/room-04/cutouts/rostros/r2-17-04.webp",
+"cat": "rostros",
+"label": "Ojo",
+"w": 161,
+"h": 120
+},
+{
+"id": "rostros/r2-17-05",
+"src": "/assets/room-04/cutouts/rostros/r2-17-05.webp",
+"cat": "rostros",
+"label": "Ojo",
+"w": 159,
+"h": 93
+},
+{
+"id": "pelo/r2-18-00",
+"src": "/assets/room-04/cutouts/pelo/r2-18-00.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 322,
+"h": 337
+},
+{
+"id": "pelo/r2-18-01",
+"src": "/assets/room-04/cutouts/pelo/r2-18-01.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 277,
+"h": 316
+},
+{
+"id": "pelo/r2-18-02",
+"src": "/assets/room-04/cutouts/pelo/r2-18-02.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 319,
+"h": 204
+},
+{
+"id": "pelo/r2-18-03",
+"src": "/assets/room-04/cutouts/pelo/r2-18-03.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 290,
+"h": 311
+},
+{
+"id": "pelo/r2-18-04",
+"src": "/assets/room-04/cutouts/pelo/r2-18-04.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 290,
+"h": 315
+},
+{
+"id": "pelo/r2-18-05",
+"src": "/assets/room-04/cutouts/pelo/r2-18-05.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 304,
+"h": 273
+},
+{
+"id": "pelo/r2-18-06",
+"src": "/assets/room-04/cutouts/pelo/r2-18-06.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 232,
+"h": 283
+},
+{
+"id": "pelo/r2-18-07",
+"src": "/assets/room-04/cutouts/pelo/r2-18-07.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 292,
+"h": 252
+},
+{
+"id": "rostros/r2-20-00",
+"src": "/assets/room-04/cutouts/rostros/r2-20-00.webp",
+"cat": "rostros",
+"label": "Fragmento de rostro",
+"w": 326,
+"h": 360
+},
+{
+"id": "rostros/r2-20-01",
+"src": "/assets/room-04/cutouts/rostros/r2-20-01.webp",
+"cat": "rostros",
+"label": "Fragmento de rostro",
+"w": 360,
+"h": 305
+},
+{
+"id": "rostros/r2-20-02",
+"src": "/assets/room-04/cutouts/rostros/r2-20-02.webp",
+"cat": "rostros",
+"label": "Fragmento de rostro",
+"w": 360,
+"h": 242
+},
+{
+"id": "rostros/r2-20-03",
+"src": "/assets/room-04/cutouts/rostros/r2-20-03.webp",
+"cat": "rostros",
+"label": "Fragmento de rostro",
+"w": 240,
+"h": 340
+},
+{
+"id": "brazos/r2-20-04",
+"src": "/assets/room-04/cutouts/brazos/r2-20-04.webp",
+"cat": "brazos",
+"label": "Mano",
+"w": 277,
+"h": 360
+},
+{
+"id": "anadidos/r2-22-00",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-00.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 130,
+"h": 165
+},
+{
+"id": "anadidos/r2-22-01",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-01.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 137,
+"h": 166
+},
+{
+"id": "anadidos/r2-22-02",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-02.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 140,
+"h": 167
+},
+{
+"id": "anadidos/r2-22-03",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-03.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 145,
+"h": 159
+},
+{
+"id": "anadidos/r2-22-04",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-04.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 138,
+"h": 161
+},
+{
+"id": "anadidos/r2-22-05",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-05.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 137,
+"h": 166
+},
+{
+"id": "anadidos/r2-22-06",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-06.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 218,
+"h": 117
+},
+{
+"id": "anadidos/r2-22-07",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-07.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 134,
+"h": 157
+},
+{
+"id": "anadidos/r2-22-08",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-08.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 196,
+"h": 128
+},
+{
+"id": "anadidos/r2-22-09",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-09.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 218,
+"h": 112
+},
+{
+"id": "anadidos/r2-22-10",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-10.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 191,
+"h": 125
+},
+{
+"id": "anadidos/r2-22-11",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-11.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 175,
+"h": 139
+},
+{
+"id": "anadidos/r2-22-12",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-12.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 167,
+"h": 138
+},
+{
+"id": "anadidos/r2-22-13",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-13.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 123,
+"h": 146
+},
+{
+"id": "anadidos/r2-22-14",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-14.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 176,
+"h": 118
+},
+{
+"id": "anadidos/r2-22-15",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-15.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 174,
+"h": 116
+},
+{
+"id": "anadidos/r2-22-16",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-16.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 166,
+"h": 109
+},
+{
+"id": "anadidos/r2-22-17",
+"src": "/assets/room-04/cutouts/anadidos/r2-22-17.webp",
+"cat": "anadidos",
+"label": "Pinza",
+"w": 113,
+"h": 111
+},
+{
+"id": "anadidos/r2-23-00",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-00.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 243,
+"h": 357
+},
+{
+"id": "anadidos/r2-23-01",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-01.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 196,
+"h": 237
+},
+{
+"id": "anadidos/r2-23-02",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-02.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 241,
+"h": 172
+},
+{
+"id": "anadidos/r2-23-03",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-03.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 167,
+"h": 255
+},
+{
+"id": "anadidos/r2-23-04",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-04.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 132,
+"h": 261
+},
+{
+"id": "anadidos/r2-23-05",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-05.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 179,
+"h": 196
+},
+{
+"id": "anadidos/r2-23-06",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-06.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 286,
+"h": 270
+},
+{
+"id": "anadidos/r2-23-07",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-07.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 229,
+"h": 182
+},
+{
+"id": "anadidos/r2-23-08",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-08.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 113,
+"h": 246
+},
+{
+"id": "anadidos/r2-23-09",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-09.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 173,
+"h": 206
+},
+{
+"id": "anadidos/r2-23-10",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-10.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 71,
+"h": 240
+},
+{
+"id": "anadidos/r2-23-11",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-11.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 184,
+"h": 221
+},
+{
+"id": "anadidos/r2-23-12",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-12.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 124,
+"h": 180
+},
+{
+"id": "anadidos/r2-23-13",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-13.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 136,
+"h": 211
+},
+{
+"id": "anadidos/r2-23-14",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-14.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 177,
+"h": 180
+},
+{
+"id": "anadidos/r2-23-15",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-15.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 143,
+"h": 172
+},
+{
+"id": "anadidos/r2-23-16",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-16.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 147,
+"h": 140
+},
+{
+"id": "anadidos/r2-23-17",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-17.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 196,
+"h": 113
+},
+{
+"id": "anadidos/r2-23-18",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-18.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 181,
+"h": 53
+},
+{
+"id": "anadidos/r2-23-19",
+"src": "/assets/room-04/cutouts/anadidos/r2-23-19.webp",
+"cat": "anadidos",
+"label": "Clip o alfiler",
+"w": 208,
+"h": 77
+},
+{
+"id": "cabezas/r2-26-00",
+"src": "/assets/room-04/cutouts/cabezas/r2-26-00.webp",
+"cat": "cabezas",
+"label": "Cara de muñeca",
+"w": 258,
+"h": 360
+},
+{
+"id": "rostros/r2-30-00",
+"src": "/assets/room-04/cutouts/rostros/r2-30-00.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 165
+},
+{
+"id": "rostros/r2-30-01",
+"src": "/assets/room-04/cutouts/rostros/r2-30-01.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 164
+},
+{
+"id": "rostros/r2-30-02",
+"src": "/assets/room-04/cutouts/rostros/r2-30-02.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 164
+},
+{
+"id": "rostros/r2-30-03",
+"src": "/assets/room-04/cutouts/rostros/r2-30-03.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 164
+},
+{
+"id": "rostros/r2-30-04",
+"src": "/assets/room-04/cutouts/rostros/r2-30-04.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 164
+},
+{
+"id": "rostros/r2-30-05",
+"src": "/assets/room-04/cutouts/rostros/r2-30-05.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 163
+},
+{
+"id": "rostros/r2-30-06",
+"src": "/assets/room-04/cutouts/rostros/r2-30-06.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 164
+},
+{
+"id": "rostros/r2-30-07",
+"src": "/assets/room-04/cutouts/rostros/r2-30-07.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 164
+},
+{
+"id": "rostros/r2-30-08",
+"src": "/assets/room-04/cutouts/rostros/r2-30-08.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 163
+},
+{
+"id": "rostros/r2-30-09",
+"src": "/assets/room-04/cutouts/rostros/r2-30-09.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 120,
+"h": 164
+},
+{
+"id": "rostros/r2-30-10",
+"src": "/assets/room-04/cutouts/rostros/r2-30-10.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 120,
+"h": 164
+},
+{
+"id": "rostros/r2-30-11",
+"src": "/assets/room-04/cutouts/rostros/r2-30-11.webp",
+"cat": "rostros",
+"label": "Oreja",
+"w": 121,
+"h": 165
+},
+{
+"id": "brazos/r2-33-00",
+"src": "/assets/room-04/cutouts/brazos/r2-33-00.webp",
+"cat": "brazos",
+"label": "Brazo",
+"w": 360,
+"h": 168
+},
+{
+"id": "brazos/r2-33-02",
+"src": "/assets/room-04/cutouts/brazos/r2-33-02.webp",
+"cat": "brazos",
+"label": "Brazo",
+"w": 233,
+"h": 245
+},
+{
+"id": "brazos/r2-33-03",
+"src": "/assets/room-04/cutouts/brazos/r2-33-03.webp",
+"cat": "brazos",
+"label": "Brazo",
+"w": 122,
+"h": 360
+},
+{
+"id": "brazos/r2-33-04",
+"src": "/assets/room-04/cutouts/brazos/r2-33-04.webp",
+"cat": "brazos",
+"label": "Brazo",
+"w": 90,
+"h": 360
+},
+{
+"id": "brazos/r2-33-05",
+"src": "/assets/room-04/cutouts/brazos/r2-33-05.webp",
+"cat": "brazos",
+"label": "Brazo",
+"w": 147,
+"h": 360
+},
+{
+"id": "brazos/r2-33-06",
+"src": "/assets/room-04/cutouts/brazos/r2-33-06.webp",
+"cat": "brazos",
+"label": "Brazo",
+"w": 168,
+"h": 215
+},
+{
+"id": "brazos/r2-33-07",
+"src": "/assets/room-04/cutouts/brazos/r2-33-07.webp",
+"cat": "brazos",
+"label": "Brazo",
+"w": 320,
+"h": 149
+},
+{
+"id": "brazos/r2-33-09",
+"src": "/assets/room-04/cutouts/brazos/r2-33-09.webp",
+"cat": "brazos",
+"label": "Brazo",
+"w": 210,
+"h": 231
+},
+{
+"id": "rostros/r2-35-00",
+"src": "/assets/room-04/cutouts/rostros/r2-35-00.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 265,
+"h": 101
+},
+{
+"id": "rostros/r2-35-01",
+"src": "/assets/room-04/cutouts/rostros/r2-35-01.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 223,
+"h": 93
+},
+{
+"id": "rostros/r2-35-02",
+"src": "/assets/room-04/cutouts/rostros/r2-35-02.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 177,
+"h": 106
+},
+{
+"id": "rostros/r2-35-03",
+"src": "/assets/room-04/cutouts/rostros/r2-35-03.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 209,
+"h": 75
+},
+{
+"id": "rostros/r2-35-04",
+"src": "/assets/room-04/cutouts/rostros/r2-35-04.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 165,
+"h": 97
+},
+{
+"id": "rostros/r2-35-05",
+"src": "/assets/room-04/cutouts/rostros/r2-35-05.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 127,
+"h": 121
+},
+{
+"id": "rostros/r2-35-06",
+"src": "/assets/room-04/cutouts/rostros/r2-35-06.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 134,
+"h": 109
+},
+{
+"id": "rostros/r2-35-07",
+"src": "/assets/room-04/cutouts/rostros/r2-35-07.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 120,
+"h": 82
+},
+{
+"id": "rostros/r2-35-08",
+"src": "/assets/room-04/cutouts/rostros/r2-35-08.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 136,
+"h": 77
+},
+{
+"id": "rostros/r2-35-09",
+"src": "/assets/room-04/cutouts/rostros/r2-35-09.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 195,
+"h": 65
+},
+{
+"id": "rostros/r2-35-10",
+"src": "/assets/room-04/cutouts/rostros/r2-35-10.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 146,
+"h": 71
+},
+{
+"id": "rostros/r2-35-11",
+"src": "/assets/room-04/cutouts/rostros/r2-35-11.webp",
+"cat": "rostros",
+"label": "Ojo o boca en blanco y negro",
+"w": 83,
+"h": 68
+},
+{
+"id": "pelo/r2-36-00",
+"src": "/assets/room-04/cutouts/pelo/r2-36-00.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 82,
+"h": 125
+},
+{
+"id": "pelo/r2-36-01",
+"src": "/assets/room-04/cutouts/pelo/r2-36-01.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 98,
+"h": 102
+},
+{
+"id": "pelo/r2-36-02",
+"src": "/assets/room-04/cutouts/pelo/r2-36-02.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 80,
+"h": 116
+},
+{
+"id": "pelo/r2-36-03",
+"src": "/assets/room-04/cutouts/pelo/r2-36-03.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 84,
+"h": 76
+},
+{
+"id": "pelo/r2-36-04",
+"src": "/assets/room-04/cutouts/pelo/r2-36-04.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 89,
+"h": 88
+},
+{
+"id": "pelo/r2-36-05",
+"src": "/assets/room-04/cutouts/pelo/r2-36-05.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 77,
+"h": 90
+},
+{
+"id": "pelo/r2-36-06",
+"src": "/assets/room-04/cutouts/pelo/r2-36-06.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 87,
+"h": 82
+},
+{
+"id": "pelo/r2-36-07",
+"src": "/assets/room-04/cutouts/pelo/r2-36-07.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 79,
+"h": 62
+},
+{
+"id": "pelo/r2-36-08",
+"src": "/assets/room-04/cutouts/pelo/r2-36-08.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 70,
+"h": 80
+},
+{
+"id": "pelo/r2-36-09",
+"src": "/assets/room-04/cutouts/pelo/r2-36-09.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 70,
+"h": 83
+},
+{
+"id": "pelo/r2-36-10",
+"src": "/assets/room-04/cutouts/pelo/r2-36-10.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 62,
+"h": 90
+},
+{
+"id": "pelo/r2-36-11",
+"src": "/assets/room-04/cutouts/pelo/r2-36-11.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 65,
+"h": 88
+},
+{
+"id": "pelo/r2-36-12",
+"src": "/assets/room-04/cutouts/pelo/r2-36-12.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 71,
+"h": 79
+},
+{
+"id": "pelo/r2-36-13",
+"src": "/assets/room-04/cutouts/pelo/r2-36-13.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 72,
+"h": 69
+},
+{
+"id": "pelo/r2-36-14",
+"src": "/assets/room-04/cutouts/pelo/r2-36-14.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 79,
+"h": 76
+},
+{
+"id": "pelo/r2-36-15",
+"src": "/assets/room-04/cutouts/pelo/r2-36-15.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 81,
+"h": 72
+},
+{
+"id": "pelo/r2-36-16",
+"src": "/assets/room-04/cutouts/pelo/r2-36-16.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 66,
+"h": 67
+},
+{
+"id": "pelo/r2-36-17",
+"src": "/assets/room-04/cutouts/pelo/r2-36-17.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 65,
+"h": 68
+},
+{
+"id": "pelo/r2-36-18",
+"src": "/assets/room-04/cutouts/pelo/r2-36-18.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 57,
+"h": 64
+},
+{
+"id": "pelo/r2-36-19",
+"src": "/assets/room-04/cutouts/pelo/r2-36-19.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 64,
+"h": 58
+},
+{
+"id": "pelo/r2-36-20",
+"src": "/assets/room-04/cutouts/pelo/r2-36-20.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 61,
+"h": 55
+},
+{
+"id": "pelo/r2-36-21",
+"src": "/assets/room-04/cutouts/pelo/r2-36-21.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 57,
+"h": 52
+},
+{
+"id": "pelo/r2-36-22",
+"src": "/assets/room-04/cutouts/pelo/r2-36-22.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 60,
+"h": 57
+},
+{
+"id": "pelo/r2-36-23",
+"src": "/assets/room-04/cutouts/pelo/r2-36-23.webp",
+"cat": "pelo",
+"label": "Peluca",
+"w": 55,
+"h": 52
+},
+{
+"id": "brazos/r2-03-01",
+"src": "/assets/room-04/cutouts/brazos/r2-03-01.webp",
+"cat": "brazos",
+"label": "Cuerpo",
+"w": 236,
+"h": 45
+},
+{
+"id": "piernas/r2-03-02",
+"src": "/assets/room-04/cutouts/piernas/r2-03-02.webp",
+"cat": "piernas",
+"label": "Cuerpo",
+"w": 46,
+"h": 122
+},
+{
+"id": "piernas/r2-03-03",
+"src": "/assets/room-04/cutouts/piernas/r2-03-03.webp",
+"cat": "piernas",
+"label": "Cuerpo",
+"w": 47,
+"h": 122
+},
+{
+"id": "piernas/r2-03-04",
+"src": "/assets/room-04/cutouts/piernas/r2-03-04.webp",
+"cat": "piernas",
+"label": "Piernas de muñeca",
+"w": 69,
+"h": 81
+},
+{
+"id": "piernas/r2-03-05",
+"src": "/assets/room-04/cutouts/piernas/r2-03-05.webp",
+"cat": "piernas",
+"label": "Cuerpo",
+"w": 58,
+"h": 132
+},
+{
+"id": "torsos/r2-03-06",
+"src": "/assets/room-04/cutouts/torsos/r2-03-06.webp",
+"cat": "torsos",
+"label": "Cuerpo",
+"w": 68,
+"h": 122
+},
+{
+"id": "piernas/r2-31-00",
+"src": "/assets/room-04/cutouts/piernas/r2-31-00.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 360,
+"h": 124
+},
+{
+"id": "piernas/r2-31-01",
+"src": "/assets/room-04/cutouts/piernas/r2-31-01.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 360,
+"h": 219
+},
+{
+"id": "piernas/r2-31-02",
+"src": "/assets/room-04/cutouts/piernas/r2-31-02.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 275,
+"h": 110
+},
+{
+"id": "piernas/r2-31-03",
+"src": "/assets/room-04/cutouts/piernas/r2-31-03.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 271,
+"h": 98
+},
+{
+"id": "piernas/r2-31-04",
+"src": "/assets/room-04/cutouts/piernas/r2-31-04.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 271,
+"h": 137
+},
+{
+"id": "piernas/r2-31-05",
+"src": "/assets/room-04/cutouts/piernas/r2-31-05.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 291,
+"h": 105
+},
+{
+"id": "piernas/r2-31-06",
+"src": "/assets/room-04/cutouts/piernas/r2-31-06.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 245,
+"h": 107
+},
+{
+"id": "piernas/r2-31-07",
+"src": "/assets/room-04/cutouts/piernas/r2-31-07.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 202,
+"h": 97
+},
+{
+"id": "piernas/r2-31-08",
+"src": "/assets/room-04/cutouts/piernas/r2-31-08.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 206,
+"h": 115
+},
+{
+"id": "piernas/r2-31-09",
+"src": "/assets/room-04/cutouts/piernas/r2-31-09.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 152,
+"h": 106
+},
+{
+"id": "piernas/r2-31-10",
+"src": "/assets/room-04/cutouts/piernas/r2-31-10.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 152,
+"h": 65
+},
+{
+"id": "piernas/r2-31-11",
+"src": "/assets/room-04/cutouts/piernas/r2-31-11.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 153,
+"h": 109
+},
+{
+"id": "piernas/r2-31-12",
+"src": "/assets/room-04/cutouts/piernas/r2-31-12.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 176,
+"h": 71
+},
+{
+"id": "piernas/r2-31-13",
+"src": "/assets/room-04/cutouts/piernas/r2-31-13.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 117,
+"h": 189
+},
+{
+"id": "piernas/r2-31-14",
+"src": "/assets/room-04/cutouts/piernas/r2-31-14.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 167,
+"h": 61
+},
+{
+"id": "piernas/r2-31-15",
+"src": "/assets/room-04/cutouts/piernas/r2-31-15.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 159,
+"h": 90
+},
+{
+"id": "piernas/r2-31-16",
+"src": "/assets/room-04/cutouts/piernas/r2-31-16.webp",
+"cat": "piernas",
+"label": "Pierna",
+"w": 130,
+"h": 58
+},
+{
+"id": "piernas/r2-32-00",
+"src": "/assets/room-04/cutouts/piernas/r2-32-00.webp",
+"cat": "piernas",
+"label": "Pieza de maniquí",
+"w": 141,
+"h": 356
+},
+{
+"id": "torsos/r2-32-01",
+"src": "/assets/room-04/cutouts/torsos/r2-32-01.webp",
+"cat": "torsos",
+"label": "Pieza de maniquí",
+"w": 135,
+"h": 234
+},
+{
+"id": "brazos/r2-32-02",
+"src": "/assets/room-04/cutouts/brazos/r2-32-02.webp",
+"cat": "brazos",
+"label": "Manos de maniquí",
+"w": 314,
+"h": 337
+},
+{
+"id": "cabezas/r2-32-03",
+"src": "/assets/room-04/cutouts/cabezas/r2-32-03.webp",
+"cat": "cabezas",
+"label": "Cabeza de maniquí",
+"w": 112,
+"h": 209
+},
+{
+"id": "torsos/r2-32-04",
+"src": "/assets/room-04/cutouts/torsos/r2-32-04.webp",
+"cat": "torsos",
+"label": "Pieza de maniquí",
+"w": 144,
+"h": 181
+},
+{
+"id": "cabezas/r2-32-05",
+"src": "/assets/room-04/cutouts/cabezas/r2-32-05.webp",
+"cat": "cabezas",
+"label": "Cabeza de maniquí",
+"w": 97,
+"h": 196
+},
+{
+"id": "piernas/r2-32-06",
+"src": "/assets/room-04/cutouts/piernas/r2-32-06.webp",
+"cat": "piernas",
+"label": "Pierna de maniquí",
+"w": 176,
+"h": 257
+},
+{
+"id": "piernas/r2-32-07",
+"src": "/assets/room-04/cutouts/piernas/r2-32-07.webp",
+"cat": "piernas",
+"label": "Pieza de maniquí",
+"w": 80,
+"h": 205
 }
 ]

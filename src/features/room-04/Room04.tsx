@@ -9,6 +9,9 @@ import { MessageRoomSection } from "./scenes/MessageRoom/MessageRoomSection";
 import { Hud, Overlays, RevealObserver } from "./components/Hud";
 import { CursorFX } from "@/components/abx/CursorFX";
 import { Interlude } from "./components/Interlude";
+import { QuoteCollage } from "./components/QuoteCollage";
+import { TransInterlude } from "./components/TransInterlude";
+import { Footer } from "./components/Footer";
 import { useDeviceCapabilities } from "./hooks/useDevice";
 
 /**
@@ -26,15 +29,12 @@ export function Room04() {
         <Interlude tone="negro" quote="Aquí las fotos no se toman, se hacen." source="a Centrópolis, 2020" />
         <BooksSection />
         <AbraxasSection />
-        <Interlude tone="papel" quote="Yo amo lo que hago porque es como el mundo: todo está adherido…" source="a Centrópolis, 2020" />
+        <QuoteCollage />
         <TimelineSection />
-        <Interlude tone="kraft" quote="Todo es trans: ¿tu cuerpo qué te dice?" source="frase citada en el video del equipo (2:36)" />
+        <TransInterlude />
         <CollectiveSection />
         <MessageRoomSection />
-        <footer style={{ padding: "48px max(16px, 5vw)", display: "flex", justifyContent: "space-between", gap: 16, flexWrap: "wrap", fontSize: 14, color: "var(--espejo)" }}>
-          <span>Museo Abraxas · Sala 04 · Vida y obra · Universidad de Antioquia</span>
-          <img src="/assets/brand/isotipo-papel.png" alt="" width={32} height={40} />
-        </footer>
+        <Footer />
       </main>
       <Overlays />
       <RevealObserver />

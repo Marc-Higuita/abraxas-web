@@ -1,0 +1,23 @@
+.scene {
+  --enter: 0;
+  position: relative;
+  z-index: 3;
+  margin-top: calc(var(--overlap) * -1);
+  background: var(--tone);
+  clip-path: inset(-16px calc((1 - var(--enter)) * 6%) 0 calc((1 - var(--enter)) * 6%) round calc((1 - var(--enter)) * 28px));
+  transform: scale(calc(0.94 + var(--enter) * 0.06));
+  transform-origin: 50% 0;
+  box-shadow: 0 -30px 60px rgba(0, 0, 0, calc(0.5 * (1 - var(--enter))));
+  will-change: transform, clip-path;
+}
+/* borde superior de papel rasgado que acompaña la llegada */
+.edge {
+  position: absolute; left: 0; right: 0; top: -14px; height: 16px; pointer-events: none;
+  background: var(--tone);
+  -webkit-mask: radial-gradient(10px 8px at 10px 16px, #000 98%, transparent) 0 0 / 20px 16px repeat-x;
+  mask: radial-gradient(10px 8px at 10px 16px, #000 98%, transparent) 0 0 / 20px 16px repeat-x;
+  opacity: calc(1 - var(--enter));
+}
+@media (prefers-reduced-motion: reduce) {
+  .scene { clip-path: none; transform: none; box-shadow: none; }
+}

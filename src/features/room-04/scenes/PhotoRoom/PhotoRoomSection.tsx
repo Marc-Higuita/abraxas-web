@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
 import { useInView } from "../../hooks/useInView";
@@ -10,7 +10,7 @@ import type { RoomPhase } from "./PhotoRoomAssembly";
 import photosData from "../../data/room-photos.json";
 import type { RoomPhoto } from "../../types";
 import s from "./photoroom.module.css";
-import { Sticker } from "@/components/abx/Ticket";
+import { Sticker, Ticket } from "@/components/abx/Ticket";
 import { Icon } from "@/components/abx/Icon";
 
 const PhotoRoomCanvas = dynamic(() => import("./PhotoRoomAssembly").then((m) => m.PhotoRoomCanvas), { ssr: false });
@@ -34,19 +34,72 @@ export function PhotoRoomSection() {
   const openFicha = useRoom((st) => st.openFicha);
   const inView = useInView(section);
   const [webgl] = useState(() => hasWebGL());
+  const sticky = useRef<HTMLDivElement>(null);
+  const doorHint = useRef<HTMLDivElement>(null);
+  const door = useRef<{ openAt: number | null }>({ openAt: null });
+  const [opening, setOpening] = useState(false);
+  const openingRef = useRef(false);
 
   const progress = useScrollProgress(section, (p) => {
-    if (fade.current) fade.current.style.opacity = String(Math.max(0, (p - 0.9) / 0.1));
+    // corte limpio a kraft solo si se sigue bajando sin tocar la puerta
+    if (fade.current) fade.current.style.opacity = String(openingRef.current ? 0 : Math.max(0, (p - 0.94) / 0.06));
     if (head.current) head.current.style.opacity = String(Math.max(0, 1 - Math.max(0, p - 0.12) * 6));
     if (hint.current) hint.current.style.opacity = String(p < 0.2 ? 1 : Math.max(0, 1 - (p - 0.2) * 6));
+    const show = !reduced && webgl && !openingRef.current && p > 0.74 && p < 0.97;
+    if (doorHint.current) { doorHint.current.dataset.on = show ? "1" : "0"; doorHint.current.inert = !show; }
+    // al volver atrás, la puerta se cierra otra vez
+    if (p < 0.7 && door.current.openAt !== null) { door.current.openAt = null; openingRef.current = false; setOpening(false); }
   });
   const onLoad = useCallback((n: number, of: number) => setLoad({ n, of }), []);
 
+  /** Tocar la puerta: se abre, la cámara la cruza y el recorrido sigue en el video. */
+  const openDoor = useCallback(() => {
+    if (door.current.openAt !== null) return;
+    door.current.openAt = performance.now() / 1000;
+    openingRef.current = true;
+    setOpening(true);
+    if (doorHint.current) doorHint.current.dataset.on = "0";
+    window.setTimeout(() => {
+      document.getElementById("video")?.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    }, reduced ? 0 : 1450);
+  }, [reduced]);
+
+  const onCursor = useCallback((mode: string | null) => {
+    const el = sticky.current;
+    if (!el) return;
+    if (mode) el.dataset.cursor = mode; else delete el.dataset.cursor;
+  }, []);
+
+  // parada controlada: si el visitante deja de hacer scroll cerca de la puerta (bajando), se acomoda frente a ella
+  useEffect(() => {
+    if (reduced || !webgl) return;
+    let lastY = scrollY, dir = 0, timer = 0, snapped = false;
+    const onScroll = () => {
+      dir = scrollY > lastY ? 1 : scrollY < lastY ? -1 : dir;
+      lastY = scrollY;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        const el = section.current;
+        if (!el || openingRef.current) return;
+        const span = el.offsetHeight - innerHeight;
+        const p = (scrollY - el.offsetTop) / span;
+        if (p < 0.6) snapped = false;
+        if (!snapped && dir > 0 && p > 0.7 && p < 0.9) {
+          snapped = true;
+          const top = el.offsetTop + span * 0.82;
+          if (Math.abs(top - scrollY) > 4) window.scrollTo({ top, behavior: "smooth" });
+        }
+      }, 180);
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+    return () => { removeEventListener("scroll", onScroll); window.clearTimeout(timer); };
+  }, [reduced, webgl]);
+
   return (
     <section ref={section} id="habitacion" className={s.section} aria-labelledby="act1-title" style={{ height: reduced ? "200vh" : "300vh" }}>
-      <div className={s.sticky} data-cursor="ver">
+      <div ref={sticky} className={`${s.sticky} ${opening ? s.isOpening : ""}`}>
         {webgl ? (
-          <PhotoRoomCanvas progress={progress} onPhase={setPhase} onLoad={onLoad} active={inView} />
+          <PhotoRoomCanvas progress={progress} onPhase={setPhase} onLoad={onLoad} active={inView} door={door} onDoor={openDoor} onCursor={onCursor} />
         ) : (
           <img className={s.fallback} src="/assets/room-04/portrait/oficina-collage-equipo.jpg" alt="Collage fotográfico de la oficina de Abraxas hecho por el equipo" />
         )}
@@ -67,9 +120,14 @@ export function PhotoRoomSection() {
               <span>{phase === "loading" ? `${CAPTION.loading} · ${load.n}/${load.of}` : CAPTION[phase]}</span>
             </p>
             {phase === "assembled" && (
-              <p className={s.hint}><Icon name="mano" size={18} /> Mira alrededor · toca una foto · baja para entrar</p>
+              <p className={s.hint}><Icon name="lupa" size={18} /> Mira alrededor · toca una foto para verla · baja para avanzar</p>
             )}
           </div>
+        </div>
+        <div ref={doorHint} className={s.doorHint} data-on="0">
+          <Ticket icon="mano" tone="papel" cursor="entra" onClick={openDoor} disabled={opening} aria-label="Toca la puerta para entrar a la sección del video">
+            Toca la puerta para entrar
+          </Ticket>
         </div>
         <div ref={fade} className={s.fade} aria-hidden="true" />
       </div>

@@ -1,29 +1,73 @@
 "use client";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
+import { Html, MeshTransmissionMaterial } from "@react-three/drei";
 import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { useRoom } from "../../store";
 import { PORTRAIT_FACTS, factFicha, type PortraitFact } from "./facts";
 import s from "./abraxas.module.css";
 
+/**
+ * 04 · Abraxas, por capas: una ESCULTURA FOTOGRÁFICA.
+ * Fragmentos recortados a mano de fotografías de Abraxas de distintos momentos (rostros, ojos, boca,
+ * pelo, camisas, manos, el libro, el espejo) se ensamblan en planos de profundidad distintos.
+ * El cursor separa las capas y deja ver las interiores; dos lupas de vidrio real (transmisión y
+ * refracción) cuelgan de hilos y se mueven al interactuar. Las miniaturas del archivo siguen cosidas.
+ */
+
 const A = "/assets/room-04";
-const BASE = `${A}/abraxas/retrato-base.jpg`;
-const BACK = `${A}/abraxas/retrato-fondo.jpg`;
+const FR = `${A}/abraxas/fragmentos`;
 const STRIP = `${A}/cutouts/papeles/tira-rasgada-01.png`;
 const TAPE = `${A}/cutouts/papeles/cinta-rosa-01.png`;
 
-/** Medidas del retrato en unidades de escena (proporción 3:4 de la foto, sin deformar). */
-const W = 3.3;
-const H = 4.4;
+/** Caja de la figura (unidades de escena): las miniaturas cosen sus hilos a puntos dentro de ella. */
+const W = 3.6;
+const H = 5.0;
+
+interface Frag {
+  id: string;
+  /** centro (x, y), ancho en unidades, profundidad z, giro (rad), curvatura del papel */
+  x: number; y: number; w: number; z: number; rot: number; bend: number;
+  /** fragmento de una capa interior (se revela al separar las capas) */
+  inner?: boolean;
+  alt: string;
+}
+
+/** Proporciones alto/ancho de cada recorte (de fragmentos.json). */
+const RATIO: Record<string, number> = {
+  "pelo-rosa": 53 / 136, "cara-roja": 236 / 208, "ojos-tira": 66 / 233, "boca-tira": 72 / 144, "cara-blanca": 256 / 200,
+  "cara-risa": 112 / 112, "torso-tigre": 222 / 314, "blusa-serpiente": 412 / 372, "camisa-satin": 455 / 575, manos: 162 / 459,
+  "brazo-baile": 244 / 125, "libro-manos": 273 / 482, "espejo-baile": 534 / 352, "risa-hojas": 760 / 578,
+};
+
+// De atrás hacia adelante. La figura: tres rostros de distintos años, el cuerpo de tres camisas, manos y libro.
+const FRAGS: Frag[] = [
+  { id: "espejo-baile", x: 1.2, y: 0.85, w: 1.7, z: -0.95, rot: 0.06, bend: 0.06, inner: true, alt: "Abraxas bailando frente a los espejos de la casa" },
+  { id: "risa-hojas", x: -1.3, y: -0.2, w: 1.25, z: -0.8, rot: -0.09, bend: 0.08, inner: true, alt: "Abraxas riendo entre hojas" },
+  { id: "cara-blanca", x: -0.62, y: 1.48, w: 1.2, z: -0.55, rot: -0.07, bend: 0.1, inner: true, alt: "Rostro de Abraxas con el pelo blanco" },
+  { id: "cara-risa", x: 0.66, y: 1.62, w: 0.82, z: -0.32, rot: 0.08, bend: 0.08, inner: true, alt: "Abraxas sonriendo, con el pelo rosado" },
+  { id: "camisa-satin", x: 0.55, y: -1.1, w: 1.75, z: -0.12, rot: -0.04, bend: 0.06, alt: "Camisa de satín café" },
+  { id: "blusa-serpiente", x: -0.62, y: -0.66, w: 1.45, z: 0.04, rot: 0.08, bend: 0.07, alt: "Blusa estampada de serpiente" },
+  { id: "torso-tigre", x: 0.05, y: -0.04, w: 1.9, z: 0.18, rot: -0.03, bend: 0.05, alt: "Camisa de tigre" },
+  { id: "pelo-rosa", x: 0.02, y: 2.18, w: 1.12, z: 0.36, rot: -0.05, bend: 0.12, alt: "Pelo rosado" },
+  { id: "cara-roja", x: 0, y: 1.36, w: 1.36, z: 0.46, rot: 0.01, bend: 0.1, alt: "Rostro de Abraxas con el pelo rojo" },
+  { id: "boca-tira", x: -0.02, y: 0.96, w: 0.62, z: 0.64, rot: 0.04, bend: 0.04, alt: "Boca de Abraxas hablando" },
+  { id: "ojos-tira", x: 0.08, y: 1.43, w: 1.25, z: 0.72, rot: -0.05, bend: 0.05, alt: "Ojos de Abraxas" },
+  { id: "brazo-baile", x: -1.48, y: -0.32, w: 0.72, z: 0.56, rot: 0.36, bend: 0.06, alt: "Brazo extendido" },
+  { id: "libro-manos", x: 0.1, y: -1.86, w: 1.8, z: 0.6, rot: -0.03, bend: 0.06, alt: "Manos con el libro «El derecho: realidad, ficción o estafa»" },
+  { id: "manos", x: 0.18, y: -0.58, w: 1.7, z: 0.78, rot: 0.02, bend: 0.05, alt: "Manos entrelazadas" },
+];
 
 interface Props {
   active: boolean;
   narrow: boolean;
   touch: boolean;
+  /** Progreso de entrada de la sección (0–1), viene del scroll. */
+  enter: React.RefObject<number>;
 }
 
-export function PortraitCanvas({ active, narrow, touch }: Props) {
+export function PortraitCanvas({ active, narrow, touch, enter }: Props) {
   const low = useRoom((st) => st.lowPower);
   return (
     <Canvas
@@ -31,10 +75,10 @@ export function PortraitCanvas({ active, narrow, touch }: Props) {
       frameloop={active ? "always" : "never"}
       camera={{ fov: 35, position: [0, 0, 12] }}
       gl={{ antialias: !low, alpha: true }}
-      onCreated={({ gl }) => gl.setClearColor(0x000000, 0)}
+      onCreated={({ gl }) => { gl.setClearColor(0x000000, 0); gl.toneMapping = THREE.ACESFilmicToneMapping; }}
     >
       <Suspense fallback={null}>
-        <Scene narrow={narrow} touch={touch} active={active} />
+        <Scene narrow={narrow} touch={touch} active={active} enter={enter} />
       </Suspense>
     </Canvas>
   );
@@ -59,39 +103,46 @@ function useSrgb(url: string) {
   return tex;
 }
 
-/** Puntero compartido por el retrato, las lentes y las tiras (uv sobre el retrato). */
+/** Puntero compartido (coordenadas de la figura en unidades de escena). */
 interface PointerState {
-  uv: THREE.Vector2; // suavizado
+  p: THREE.Vector2; // suavizado
   target: THREE.Vector2;
-  hover: number; // suavizado
+  hover: number;
   hoverTarget: number;
   lastInput: number;
 }
 
-function Scene({ narrow, touch, active }: { narrow: boolean; touch: boolean; active: boolean }) {
+/** Entorno de habitación (sin descargas) para los reflejos del vidrio y del metal. */
+function RoomEnv() {
+  const { gl, scene } = useThree();
+  useEffect(() => {
+    const pm = new THREE.PMREMGenerator(gl);
+    const env = pm.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = env;
+    return () => { scene.environment = null; env.dispose(); pm.dispose(); };
+  }, [gl, scene]);
+  return null;
+}
+
+function Scene({ narrow, touch, active, enter }: { narrow: boolean; touch: boolean; active: boolean; enter: React.RefObject<number> }) {
   const low = useRoom((st) => st.lowPower);
   const reduced = useRoom((st) => st.reducedMotion);
   const openFicha = useRoom((st) => st.openFicha);
-  const base = useSrgb(BASE);
-  const back = useSrgb(BACK);
   const group = useRef<THREE.Group>(null);
-  const ptr = useRef<PointerState>({ uv: new THREE.Vector2(0.5, 0.6), target: new THREE.Vector2(0.5, 0.6), hover: 0, hoverTarget: 0, lastInput: -10 });
-  /** Progreso de armado del retrato (0 disperso → 1 armado). Arranca la primera vez que la sección está activa. */
+  const ptr = useRef<PointerState>({ p: new THREE.Vector2(0, 1), target: new THREE.Vector2(0, 1), hover: 0, hoverTarget: 0, lastInput: -10 });
+  /** Armado: sube con el scroll de entrada (y con el tiempo, para no quedar a medias). */
   const build = useRef(reduced ? 1 : 0);
-  const started = useRef(false);
+  const clockBuild = useRef(0);
   const { camera, size } = useThree();
+  const frags = useMemo(() => (low ? FRAGS.filter((f) => !f.inner || f.id === "cara-blanca") : narrow ? FRAGS.filter((f) => f.id !== "risa-hojas") : FRAGS), [low, narrow]);
 
-  useEffect(() => {
-    if (active) started.current = true;
-  }, [active]);
-
-  // Encuadre: en pantallas anchas cabe el retrato con las miniaturas; en angostas, solo el retrato.
+  // Encuadre: en anchas cabe la figura con las miniaturas; en angostas, solo la figura.
   useEffect(() => {
     const cam = camera as THREE.PerspectiveCamera;
     const aspect = size.width / Math.max(1, size.height);
     const t = Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
-    const needW = narrow ? W + 0.9 : 9.4;
-    const needH = narrow ? H + 1.1 : 7.0;
+    const needW = narrow ? W + 0.6 : 9.6;
+    const needH = narrow ? H + 0.9 : 6.9;
     cam.position.z = Math.max(needH / 2 / t, needW / 2 / (t * aspect));
     cam.updateProjectionMatrix();
   }, [camera, size, narrow]);
@@ -99,226 +150,133 @@ function Scene({ narrow, touch, active }: { narrow: boolean; touch: boolean; act
   useFrame((state, dt) => {
     const d = Math.min(dt, 0.05);
     const p = ptr.current;
-    if (started.current && build.current < 1) build.current = reduced ? 1 : Math.min(1, build.current + d / 2.6);
-    // En táctil, o sin interacción reciente en táctil, el puntero vaga solo en un bucle lento.
+    if (active) clockBuild.current = Math.min(1, clockBuild.current + d / 3.2);
+    const target = reduced ? 1 : Math.max(clamp01((enter.current ?? 0) * 1.15), clockBuild.current * 0.999);
+    build.current += (target - build.current) * (reduced ? 1 : 1 - Math.exp(-d * 4));
     const t = state.clock.elapsedTime;
-    if (touch && !reduced && t - p.lastInput > 3.5 && build.current >= 1) {
-      p.target.set(0.5 + Math.sin(t * 0.31) * 0.28, 0.58 + Math.sin(t * 0.23 + 1.2) * 0.26);
-      p.hoverTarget = 0.85;
+    // en táctil, sin interacción reciente, el puntero vaga solo en un bucle lento
+    if (touch && !reduced && t - p.lastInput > 3.5 && build.current > 0.95) {
+      p.target.set(Math.sin(t * 0.31) * 1.1, 0.4 + Math.sin(t * 0.23 + 1.2) * 1.4);
+      p.hoverTarget = 0.8;
     }
     const k = 1 - Math.exp(-d * 7);
-    p.uv.lerp(p.target, k);
-    p.hover += (p.hoverTarget - p.hover) * (1 - Math.exp(-d * 5));
-    // Parallax: el conjunto gira apenas hacia el cursor; las capas a distinta profundidad se separan.
+    p.p.lerp(p.target, k);
+    p.hover += (p.hoverTarget - p.hover) * (1 - Math.exp(-d * 4));
     if (group.current) {
       const g = group.current;
-      const tx = reduced ? 0 : touch ? Math.sin(t * 0.2) * 0.08 : state.pointer.x * 0.22;
-      const ty = reduced ? 0 : touch ? Math.sin(t * 0.17) * 0.05 : -state.pointer.y * 0.12;
-      g.rotation.y += (tx - g.rotation.y) * k * 0.6;
-      g.rotation.x += (ty - g.rotation.x) * k * 0.6;
+      const tx = reduced ? 0 : touch ? Math.sin(t * 0.2) * 0.1 : state.pointer.x * 0.28;
+      const ty = reduced ? 0 : touch ? Math.sin(t * 0.17) * 0.05 : -state.pointer.y * 0.14;
+      g.rotation.y += (tx - g.rotation.y) * k * 0.5;
+      g.rotation.x += (ty - g.rotation.x) * k * 0.5;
     }
   });
 
   const onMove = (e: ThreeEvent<PointerEvent>) => {
-    if (!e.uv) return;
-    ptr.current.target.copy(e.uv);
-    ptr.current.lastInput = e.nativeEvent.timeStamp / 1000 || performance.now() / 1000;
+    if (!group.current) return;
+    const local = group.current.worldToLocal(e.point.clone());
+    ptr.current.target.set(local.x, local.y);
+    ptr.current.lastInput = performance.now() / 1000;
   };
 
   return (
-    <group ref={group}>
-      {/* Capa del fondo: la casa, que se ve a través de las perforaciones */}
-      <mesh position={[0, 0, -0.28]}>
-        <planeGeometry args={[W * 1.04, H * 1.04]} />
-        <meshBasicMaterial map={back} color="#cfc4b2" toneMapped={false} />
-      </mesh>
-      <Tiles base={base} ptr={ptr} build={build} cols={low ? 4 : narrow ? 5 : 6} rows={low ? 5 : narrow ? 7 : 8} shadows={!low} />
-      <Strips ptr={ptr} build={build} low={low} />
-      <Lenses base={base} ptr={ptr} build={build} count={low || narrow ? 1 : 2} reduced={reduced} />
-      {!narrow && PORTRAIT_FACTS.map((f, i) => <Fact key={f.id} fact={f} i={i} build={build} reduced={reduced} onOpen={() => openFicha(factFicha(f))} />)}
-      {/* Superficie invisible que recibe el puntero sobre el retrato */}
-      <mesh
-        position={[0, 0, 1.3]}
-        onPointerMove={onMove}
-        onPointerOver={() => (ptr.current.hoverTarget = 1)}
-        onPointerOut={() => (ptr.current.hoverTarget = 0)}
-        onPointerDown={(e) => {
-          onMove(e);
-          ptr.current.hoverTarget = 1;
-        }}
-      >
-        <planeGeometry args={[W, H]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
-    </group>
+    <>
+      <RoomEnv />
+      <ambientLight intensity={0.9} />
+      <directionalLight position={[2.5, 4, 6]} intensity={1.6} color="#fff4e2" />
+      <directionalLight position={[-4, -1, 3]} intensity={0.5} color="#d4a12a" />
+      <group ref={group}>
+        {frags.map((f, i) => (
+          <Fragment key={f.id} f={f} i={i} n={frags.length} ptr={ptr} build={build} reduced={reduced} shadows={!low} />
+        ))}
+        <Strips ptr={ptr} build={build} low={low} />
+        <Lenses ptr={ptr} build={build} count={low || narrow ? 1 : 2} reduced={reduced} low={low} />
+        {!narrow && PORTRAIT_FACTS.map((f, i) => <Fact key={f.id} fact={f} i={i} build={build} reduced={reduced} onOpen={() => openFicha(factFicha(f))} />)}
+        {/* superficie invisible que recibe el puntero sobre la figura */}
+        <mesh
+          position={[0, 0.1, 1.4]}
+          onPointerMove={onMove}
+          onPointerOver={() => (ptr.current.hoverTarget = 1)}
+          onPointerOut={() => (ptr.current.hoverTarget = 0)}
+          onPointerDown={(e) => { onMove(e); ptr.current.hoverTarget = 1; }}
+        >
+          <planeGeometry args={[W + 0.6, H + 0.4]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      </group>
+    </>
   );
 }
 
-/* ---------------------------------- Teselas del retrato -------------------------------------- */
+/* -------------------------------- Fragmentos de la escultura --------------------------------- */
 
-const tileVert = /* glsl */ `
-  attribute vec2 aLocal;
-  attribute float aSeed;
-  varying vec2 vUv;
-  varying vec2 vLocal;
-  varying float vSeed;
-  void main() {
-    vUv = uv; vLocal = aLocal; vSeed = aSeed;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+/** Plano subdividido con una leve curvatura de papel (las puntas se levantan hacia la cámara). */
+function bentPlane(bend: number) {
+  const g = new THREE.PlaneGeometry(1, 1, 18, 2);
+  const pos = g.attributes.position as THREE.BufferAttribute;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i);
+    pos.setZ(i, x * x * bend * 1.6);
   }
-`;
-
-const tileFrag = /* glsl */ `
-  uniform sampler2D uMap;
-  uniform vec2 uPointer;
-  uniform float uHover;
-  uniform float uAspect;
-  uniform float uTime;
-  varying vec2 vUv;
-  varying vec2 vLocal;
-  varying float vSeed;
-  float h21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
-  float vnoise(vec2 p) {
-    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(h21(i), h21(i + vec2(1, 0)), f.x), mix(h21(i + vec2(0, 1)), h21(i + 1.0), f.x), f.y);
-  }
-  void main() {
-    // Borde rasgado: cada tesela tiene un contorno irregular propio, como papel cortado a mano.
-    float e = min(min(vLocal.x, 1.0 - vLocal.x), min(vLocal.y, 1.0 - vLocal.y));
-    float n = vnoise(vLocal * 26.0 + vSeed * 17.0);
-    if (e < 0.006 + n * 0.022) discard;
-    vec4 c = texture2D(uMap, vUv);
-    float rim = 1.0 - smoothstep(0.0, 0.03, e - n * 0.022);
-    c.rgb = mix(c.rgb, vec3(0.96, 0.94, 0.88), rim * 0.7);
-
-    // Perforación: huecos circulares en retícula alrededor del cursor; dejan ver la casa detrás.
-    vec2 p = vec2(vUv.x * uAspect, vUv.y);
-    vec2 q = vec2(uPointer.x * uAspect, uPointer.y);
-    float d = distance(p, q);
-    float R = 0.2;
-    float infl = (1.0 - smoothstep(0.05, R, d)) * uHover;
-    float sp = 0.034;
-    vec2 cell = (fract(p / sp) - 0.5) * sp;
-    float hr = length(cell);
-    float holeR = sp * 0.44 * infl;
-    if (infl > 0.02 && hr < holeR) discard;
-    float lip = smoothstep(holeR + 0.005, holeR, hr) * step(0.02, infl);
-    c.rgb *= 1.0 - lip * 0.5;
-
-    // Costura: una puntada discontinua bordea la zona perforada.
-    float ang = atan(p.y - q.y, p.x - q.x);
-    float dash = step(0.45, fract(ang * 9.549 + uTime * 0.25));
-    float stitch = (1.0 - smoothstep(0.0025, 0.0045, abs(d - R * 1.04))) * dash * uHover;
-    c.rgb = mix(c.rgb, vec3(0.85, 0.2, 0.12), stitch);
-
-    gl_FragColor = vec4(c.rgb, 1.0);
-    #include <colorspace_fragment>
-  }
-`;
-
-interface TileDef {
-  geo: THREE.BufferGeometry;
-  final: THREE.Vector3;
-  rotF: number;
-  start: THREE.Vector3;
-  rotS: number;
-  delay: number;
-  w: number;
-  h: number;
+  g.computeVertexNormals();
+  return g;
 }
 
-function Tiles({ base, ptr, build, cols, rows, shadows }: { base: THREE.Texture; ptr: React.RefObject<PointerState>; build: React.RefObject<number>; cols: number; rows: number; shadows: boolean }) {
-  const refs = useRef<(THREE.Group | null)[]>([]);
-  const mat = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        vertexShader: tileVert,
-        fragmentShader: tileFrag,
-        uniforms: { uMap: { value: base }, uPointer: { value: new THREE.Vector2(0.5, 0.5) }, uHover: { value: 0 }, uAspect: { value: W / H }, uTime: { value: 0 } },
-      }),
-    [base],
-  );
-  const shadowMat = useMemo(() => new THREE.MeshBasicMaterial({ color: "#000", transparent: true, opacity: 0.28, depthWrite: false }), []);
-
-  const tiles = useMemo<TileDef[]>(() => {
-    const out: TileDef[] = [];
-    const cw = W / cols;
-    const ch = H / rows;
-    const over = 1.07; // las teselas se montan unas sobre otras para que no quede ningún hueco
-    for (let r = 0; r < rows; r++)
-      for (let c = 0; c < cols; c++) {
-        const i = r * cols + c;
-        const w = cw * over;
-        const h = ch * over;
-        const cx = -W / 2 + (c + 0.5) * cw;
-        const cy = -H / 2 + (r + 0.5) * ch;
-        const geo = new THREE.PlaneGeometry(w, h);
-        const uv = geo.attributes.uv as THREE.BufferAttribute;
-        const local = new Float32Array(uv.count * 2);
-        for (let k = 0; k < uv.count; k++) {
-          const lu = uv.getX(k);
-          const lv = uv.getY(k);
-          local[k * 2] = lu;
-          local[k * 2 + 1] = lv;
-          uv.setXY(k, clamp01((cx + (lu - 0.5) * w) / W + 0.5), clamp01((cy + (lv - 0.5) * h) / H + 0.5));
-        }
-        geo.setAttribute("aLocal", new THREE.BufferAttribute(local, 2));
-        geo.setAttribute("aSeed", new THREE.BufferAttribute(new Float32Array(uv.count).fill(hash(i + 3)), 1));
-        const a = hash(i) * Math.PI * 2;
-        const rad = 5 + hash(i + 9) * 4;
-        out.push({
-          geo,
-          w,
-          h,
-          final: new THREE.Vector3(cx, cy, (hash(i + 21) - 0.5) * 0.08 + ((r + c) % 2) * 0.012),
-          rotF: (hash(i + 5) - 0.5) * 0.045,
-          start: new THREE.Vector3(Math.cos(a) * rad, Math.sin(a) * rad * 0.7, -2 + hash(i + 7) * 5),
-          rotS: (hash(i + 11) - 0.5) * Math.PI * 1.6,
-          // de arriba hacia abajo, con desorden: la cabeza se arma primero
-          delay: ((rows - 1 - r) / rows) * 0.42 + hash(i + 13) * 0.18,
-        });
-      }
-    return out;
-  }, [cols, rows]);
-
-  useEffect(() => () => tiles.forEach((t) => t.geo.dispose()), [tiles]);
-  useEffect(() => () => mat.dispose(), [mat]);
+function Fragment({ f, i, n, ptr, build, reduced, shadows }: { f: Frag; i: number; n: number; ptr: React.RefObject<PointerState>; build: React.RefObject<number>; reduced: boolean; shadows: boolean }) {
+  const tex = useSrgb(`${FR}/${f.id}.webp`);
+  const geo = useMemo(() => bentPlane(f.bend), [f.bend]);
+  useEffect(() => () => geo.dispose(), [geo]);
+  const g = useRef<THREE.Group>(null);
+  const h = f.w * (RATIO[f.id] ?? 1);
+  // de dónde llega cada fragmento al armarse: disperso, más lejos y girado
+  const from = useMemo(() => {
+    const a = hash(i + 3) * Math.PI * 2;
+    const r = 4.5 + hash(i + 9) * 3;
+    return { x: Math.cos(a) * r, y: Math.sin(a) * r * 0.7, z: -3 - hash(i + 5) * 4, rot: (hash(i + 7) - 0.5) * 2.4 };
+  }, [i]);
 
   useFrame((state) => {
+    const m = g.current;
     const p = ptr.current;
-    if (!p) return;
-    mat.uniforms.uPointer.value.copy(p.uv);
-    mat.uniforms.uHover.value = p.hover * clamp01((build.current - 0.9) / 0.1);
-    mat.uniforms.uTime.value = state.clock.elapsedTime;
-    const b = build.current;
-    tiles.forEach((t, i) => {
-      const g = refs.current[i];
-      if (!g) return;
-      const k = easeOut(clamp01((b - t.delay) / 0.4));
-      g.position.lerpVectors(t.start, t.final, k);
-      g.rotation.z = THREE.MathUtils.lerp(t.rotS, t.rotF, k);
-      g.scale.setScalar(0.6 + 0.4 * k);
-      g.visible = b > t.delay * 0.6;
-    });
+    if (!m || !p) return;
+    // cada fragmento llega con su propio retraso: primero las capas interiores, al final las manos
+    const b = easeOut(clamp01((build.current - (i / n) * 0.45) / 0.55));
+    const t = state.clock.elapsedTime;
+    // separación de capas: alrededor del cursor, las capas delanteras se apartan y dejan ver las interiores
+    const dx = f.x - p.p.x, dy = f.y - p.p.y;
+    const dist = Math.hypot(dx, dy);
+    const near = Math.exp(-(dist * dist) / 1.4) * p.hover;
+    const front = f.z > 0 ? 1 : -0.4;
+    const push = near * front * 0.32;
+    const len = dist || 1;
+    const breathe = reduced ? 0 : Math.sin(t * 0.7 + i * 1.3) * 0.012;
+    const x = f.x + (dx / len) * push;
+    const y = f.y + (dy / len) * push + breathe;
+    const z = f.z + near * (f.z > 0 ? 0.35 : -0.15) + (f.z * 0.6) * p.hover;
+    m.position.set(
+      THREE.MathUtils.lerp(from.x, x, b),
+      THREE.MathUtils.lerp(from.y, y, b),
+      THREE.MathUtils.lerp(from.z, z, b),
+    );
+    m.rotation.set(0, 0, THREE.MathUtils.lerp(from.rot, f.rot + (reduced ? 0 : Math.sin(t * 0.4 + i) * 0.008), b));
+    const sc = THREE.MathUtils.lerp(0.6, 1, b);
+    m.scale.setScalar(sc);
   });
 
   return (
-    <group>
-      {tiles.map((t, i) => (
-        <group key={i} ref={(el) => { refs.current[i] = el; }}>
-          {shadows && (
-            <mesh position={[0.035, -0.045, -0.012]} material={shadowMat}>
-              <planeGeometry args={[t.w * 0.96, t.h * 0.96]} />
-            </mesh>
-          )}
-          <mesh geometry={t.geo} material={mat} />
-        </group>
-      ))}
+    <group ref={g}>
+      {shadows && (
+        <mesh geometry={geo} position={[0.06, -0.08, -0.03]} scale={[f.w, h, 1]} renderOrder={1}>
+          <meshBasicMaterial map={tex} color="#000" transparent opacity={0.42} depthWrite={false} toneMapped={false} />
+        </mesh>
+      )}
+      <mesh geometry={geo} scale={[f.w, h, 1]} renderOrder={2}>
+        <meshStandardMaterial map={tex} alphaTest={0.5} roughness={0.85} metalness={0} envMapIntensity={0.25} side={THREE.DoubleSide} />
+      </mesh>
     </group>
   );
 }
 
-/* --------------------------------- Tiras de papel y cinta ------------------------------------ */
+/* ---------------------------------------- Tiras de papel ------------------------------------- */
 
 function Strips({ ptr, build, low }: { ptr: React.RefObject<PointerState>; build: React.RefObject<number>; low: boolean }) {
   const strip = useSrgb(STRIP);
@@ -326,10 +284,10 @@ function Strips({ ptr, build, low }: { ptr: React.RefObject<PointerState>; build
   const items = useMemo(
     () =>
       [
-        { tex: "strip", w: 1.9, h: 1.9 * (270 / 588), pos: [-W / 2 - 0.25, H * 0.18, 0.45], rot: 0.32, depth: 0.55 },
-        { tex: "strip", w: 1.6, h: 1.6 * (270 / 588), pos: [W / 2 + 0.2, -H * 0.3, 0.6], rot: -0.22, depth: 0.8 },
-        { tex: "tape", w: 1.1, h: 1.1 * (182 / 520), pos: [-W / 2 + 0.3, H / 2 - 0.05, 0.3], rot: -0.6, depth: 0.3 },
-        { tex: "tape", w: 1.1, h: 1.1 * (182 / 520), pos: [W / 2 - 0.3, H / 2 - 0.05, 0.3], rot: 0.55, depth: 0.3 },
+        { tex: "strip", w: 1.7, h: 1.7 * (270 / 588), pos: [-W / 2 - 0.15, H * 0.12, 0.25], rot: 0.32, depth: 0.55 },
+        { tex: "strip", w: 1.5, h: 1.5 * (270 / 588), pos: [W / 2 + 0.05, -H * 0.3, 0.42], rot: -0.22, depth: 0.8 },
+        { tex: "tape", w: 0.9, h: 0.9 * (182 / 520), pos: [-0.62, 2.0, 0.6], rot: -0.6, depth: 0.3 },
+        { tex: "tape", w: 0.9, h: 0.9 * (182 / 520), pos: [0.66, 2.05, 0.6], rot: 0.55, depth: 0.3 },
       ].slice(0, low ? 2 : 4),
     [low],
   );
@@ -337,13 +295,12 @@ function Strips({ ptr, build, low }: { ptr: React.RefObject<PointerState>; build
   useFrame((state) => {
     const p = ptr.current;
     if (!p) return;
-    const show = clamp01((build.current - 0.75) / 0.25);
+    const show = clamp01((build.current - 0.8) / 0.2);
     items.forEach((it, i) => {
       const m = refs.current[i];
       if (!m) return;
-      // las tiras se corren con el cursor según su profundidad
-      const dx = (p.uv.x - 0.5) * it.depth * 0.5 * p.hover;
-      const dy = (p.uv.y - 0.5) * it.depth * 0.3 * p.hover;
+      const dx = (p.p.x / W) * it.depth * 0.5 * p.hover;
+      const dy = (p.p.y / H) * it.depth * 0.3 * p.hover;
       m.position.set(it.pos[0] + dx, it.pos[1] + dy + (1 - show) * 2.5, it.pos[2]);
       m.rotation.z = it.rot + Math.sin(state.clock.elapsedTime * 0.6 + i) * 0.015;
       (m.material as THREE.MeshBasicMaterial).opacity = show;
@@ -352,7 +309,7 @@ function Strips({ ptr, build, low }: { ptr: React.RefObject<PointerState>; build
   return (
     <group>
       {items.map((it, i) => (
-        <mesh key={i} ref={(el) => { refs.current[i] = el; }} renderOrder={2}>
+        <mesh key={i} ref={(el) => { refs.current[i] = el; }} renderOrder={3}>
           <planeGeometry args={[it.w, it.h]} />
           <meshBasicMaterial map={it.tex === "strip" ? strip : tape} transparent depthWrite={false} toneMapped={false} />
         </mesh>
@@ -361,108 +318,64 @@ function Strips({ ptr, build, low }: { ptr: React.RefObject<PointerState>; build
   );
 }
 
-/* ---------------------------------- Lentes colgadas de hilos --------------------------------- */
+/* --------------------------- Lupas de vidrio real colgadas de hilos -------------------------- */
 
-const lensVert = /* glsl */ `
-  varying vec2 vPos;
-  void main() { vPos = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
-`;
-const lensFrag = /* glsl */ `
-  uniform sampler2D uMap;
-  uniform vec2 uCenter;
-  uniform float uR;
-  uniform float uZoom;
-  uniform vec2 uSize;
-  varying vec2 vPos;
-  void main() {
-    vec2 l = vPos / uR;
-    float r = length(l);
-    if (r > 1.0) discard;
-    // lente convexa: aumenta al centro y curva hacia el borde
-    vec2 lb = l * (1.0 - 0.22 * r * r);
-    vec2 off = vec2(lb.x * uR / uSize.x, lb.y * uR / uSize.y) * uZoom;
-    vec2 uv = uCenter + off;
-    float ca = 0.004 * r;
-    vec3 col = vec3(texture2D(uMap, uv + off * ca * 20.0).r, texture2D(uMap, uv).g, texture2D(uMap, uv - off * ca * 20.0).b);
-    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) col = vec3(0.07);
-    // aro dorado, brillo y sombra interior
-    float ring = smoothstep(0.86, 0.9, r) - smoothstep(0.97, 1.0, r);
-    col = mix(col, vec3(0.83, 0.63, 0.16), ring);
-    col *= 1.0 - smoothstep(0.7, 0.9, r) * 0.25 * (1.0 - ring);
-    float glint = smoothstep(0.2, 0.0, length(l - vec2(-0.38, 0.42))) * 0.55;
-    col += glint;
-    gl_FragColor = vec4(col, 1.0);
-    #include <colorspace_fragment>
-  }
-`;
-
-function Lenses({ base, ptr, build, count, reduced }: { base: THREE.Texture; ptr: React.RefObject<PointerState>; build: React.RefObject<number>; count: number; reduced: boolean }) {
-  const R = 0.52;
-  const TOP = H / 2 + 1.6;
+/** Lente biconvexa: esfera aplanada (el vidrio refracta y amplía lo que hay detrás). */
+function Lenses({ ptr, build, count, reduced, low }: { ptr: React.RefObject<PointerState>; build: React.RefObject<number>; count: number; reduced: boolean; low: boolean }) {
+  const R = 0.5;
+  const TOP = H / 2 + 2.2;
   const defs = useMemo(
     () => [
-      { rest: new THREE.Vector2(-W * 0.18, H * 0.2), off: -0.35, zoom: 0.5 },
-      { rest: new THREE.Vector2(W * 0.24, -H * 0.06), off: 0.45, zoom: 0.62 },
+      { rest: new THREE.Vector2(-0.75, 1.3), off: -0.3 },
+      { rest: new THREE.Vector2(0.95, -0.55), off: 0.4 },
     ].slice(0, count),
     [count],
   );
-  const mats = useMemo(
-    () =>
-      defs.map(
-        (d) =>
-          new THREE.ShaderMaterial({
-            vertexShader: lensVert,
-            fragmentShader: lensFrag,
-            uniforms: { uMap: { value: base }, uCenter: { value: new THREE.Vector2(0.5, 0.5) }, uR: { value: R }, uZoom: { value: d.zoom }, uSize: { value: new THREE.Vector2(W, H) } },
-          }),
-      ),
-    [defs, base],
-  );
-  useEffect(() => () => mats.forEach((m) => m.dispose()), [mats]);
   const state = useRef(defs.map((d) => ({ x: d.rest.x, y: d.rest.y, vx: 0, vy: 0 })));
   const lensRefs = useRef<(THREE.Group | null)[]>([]);
   const threadRefs = useRef<(THREE.Mesh | null)[]>([]);
+  const lensGeo = useMemo(() => {
+    const g = new THREE.SphereGeometry(R, 64, 32);
+    g.scale(1, 1, 0.22);
+    return g;
+  }, []);
+  useEffect(() => () => lensGeo.dispose(), [lensGeo]);
 
-  useFrame((st, dt) => {
+  useFrame((_, dt) => {
     const p = ptr.current;
     if (!p) return;
     const d = Math.min(dt, 0.04);
     const show = clamp01((build.current - 0.85) / 0.15);
     defs.forEach((def, i) => {
       const s = state.current[i];
-      // con el cursor encima, cada lente se acerca a él (con su propio desfase); sin él, vuelve a su sitio
-      const px = (p.uv.x - 0.5) * W + def.off;
-      const py = (p.uv.y - 0.5) * H + (i ? -0.4 : 0.35);
-      const tx = THREE.MathUtils.lerp(def.rest.x, px, p.hover);
-      const ty = THREE.MathUtils.lerp(def.rest.y, py, p.hover * 0.7);
-      if (reduced) {
-        s.x = tx;
-        s.y = ty;
-      } else {
-        // resorte amortiguado: la lente se mece colgada de su hilo
-        s.vx += ((tx - s.x) * 18 - s.vx * 5.5) * d;
-        s.vy += ((ty - s.y) * 18 - s.vy * 5.5) * d;
+      // con el cursor encima, cada lupa se acerca a él (con su desfase); sin él, vuelve a su sitio
+      const tx = THREE.MathUtils.lerp(def.rest.x, p.p.x + def.off, p.hover);
+      const ty = THREE.MathUtils.lerp(def.rest.y, p.p.y + (i ? -0.35 : 0.3), p.hover * 0.75);
+      if (reduced) { s.x = tx; s.y = ty; s.vx = 0; }
+      else {
+        s.vx += ((tx - s.x) * 16 - s.vx * 5) * d;
+        s.vy += ((ty - s.y) * 16 - s.vy * 5) * d;
         s.x += s.vx * d;
         s.y += s.vy * d;
       }
       const g = lensRefs.current[i];
       const th = threadRefs.current[i];
-      const y = s.y + (1 - show) * 4;
+      const y = s.y + (1 - show) * 4.5;
       if (g) {
-        g.position.set(s.x, y, 0.95);
-        g.rotation.z = THREE.MathUtils.clamp(-s.vx * 0.05, -0.3, 0.3);
-        mats[i].uniforms.uCenter.value.set(s.x / W + 0.5, y / H + 0.5);
+        g.position.set(s.x, y, 1.15);
+        // la lupa se mece como un péndulo y gira apenas hacia el espectador
+        g.rotation.z = THREE.MathUtils.clamp(-s.vx * 0.06, -0.35, 0.35);
+        g.rotation.y = THREE.MathUtils.clamp(s.vx * 0.12, -0.5, 0.5);
+        g.rotation.x = THREE.MathUtils.clamp(-s.vy * 0.08, -0.4, 0.4);
       }
       if (th) {
-        // el hilo va del techo a la parte alta del aro
-        const topX = s.x * 0.65;
-        const len = Math.max(0.1, Math.hypot(s.x - topX, TOP - (y + R)));
-        th.position.set((s.x + topX) / 2, (TOP + y + R) / 2, 0.94);
+        const topX = s.x * 0.6;
+        const len = Math.max(0.1, Math.hypot(s.x - topX, TOP - (y + R + 0.05)));
+        th.position.set((s.x + topX) / 2, (TOP + y + R + 0.05) / 2, 1.15);
         th.scale.set(1, len, 1);
         th.rotation.z = Math.atan2(s.x - topX, TOP - (y + R));
       }
     });
-    void st;
   });
 
   return (
@@ -470,16 +383,50 @@ function Lenses({ base, ptr, build, count, reduced }: { base: THREE.Texture; ptr
       {defs.map((_, i) => (
         <group key={i}>
           <mesh ref={(el) => { threadRefs.current[i] = el; }}>
-            <planeGeometry args={[0.014, 1]} />
-            <meshBasicMaterial color="#efe6d2" toneMapped={false} />
+            <cylinderGeometry args={[0.006, 0.006, 1, 6]} />
+            <meshStandardMaterial color="#efe6d2" roughness={0.9} />
           </mesh>
           <group ref={(el) => { lensRefs.current[i] = el; }}>
-            <mesh position={[0.05, -0.06, -0.02]}>
-              <circleGeometry args={[R, 48]} />
-              <meshBasicMaterial color="#000" transparent opacity={0.35} depthWrite={false} />
+            {/* vidrio */}
+            <mesh geometry={lensGeo} renderOrder={5}>
+              {low ? (
+                <meshPhysicalMaterial transmission={1} thickness={0.6} ior={1.52} roughness={0.02} clearcoat={1} clearcoatRoughness={0.05} envMapIntensity={1.2} color="#ffffff" attenuationColor="#fff7e0" attenuationDistance={2} />
+              ) : (
+                <MeshTransmissionMaterial
+                  transmission={1}
+                  thickness={0.9}
+                  ior={1.55}
+                  roughness={0.015}
+                  chromaticAberration={0.08}
+                  anisotropicBlur={0.06}
+                  distortion={0.08}
+                  distortionScale={0.4}
+                  temporalDistortion={0.02}
+                  clearcoat={1}
+                  clearcoatRoughness={0.04}
+                  envMapIntensity={1.4}
+                  samples={6}
+                  resolution={512}
+                  backside={false}
+                  attenuationColor="#fff6dc"
+                  attenuationDistance={2.5}
+                />
+              )}
             </mesh>
-            <mesh material={mats[i]}>
-              <circleGeometry args={[R, 64]} />
+            {/* aro de latón */}
+            <mesh>
+              <torusGeometry args={[R, 0.045, 18, 72]} />
+              <meshStandardMaterial color="#c99a2e" metalness={1} roughness={0.22} envMapIntensity={1.6} />
+            </mesh>
+            {/* argolla donde se ata el hilo */}
+            <mesh position={[0, R + 0.06, 0]}>
+              <torusGeometry args={[0.05, 0.014, 10, 24]} />
+              <meshStandardMaterial color="#c99a2e" metalness={1} roughness={0.25} />
+            </mesh>
+            {/* brillo de espejo en el borde del vidrio */}
+            <mesh position={[-R * 0.32, R * 0.36, R * 0.13]} rotation={[0, 0, 0.7]}>
+              <planeGeometry args={[0.32, 0.06]} />
+              <meshBasicMaterial color="#ffffff" transparent opacity={0.35} depthWrite={false} toneMapped={false} />
             </mesh>
           </group>
         </group>

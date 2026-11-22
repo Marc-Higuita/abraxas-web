@@ -5,6 +5,8 @@ import { Sticker } from "@/components/abx/Ticket";
 import { Icon } from "@/components/abx/Icon";
 import { Stitch } from "@/components/abx/Ornaments";
 import { useInView } from "../../hooks/useInView";
+import { useScrollProgress } from "../../hooks/useScrollProgress";
+import { OverlayScene } from "../../components/OverlayScene";
 import { hasWebGL } from "../../hooks/useDevice";
 import { useRoom } from "../../store";
 import { PORTRAIT_FACTS, factFicha } from "./facts";
@@ -13,13 +15,17 @@ import s from "./abraxas.module.css";
 const PortraitCanvas = dynamic(() => import("./PortraitCanvas").then((m) => m.PortraitCanvas), { ssr: false });
 
 /**
- * 04 · Abraxas, por capas. Un retrato de Abraxas armado con teselas de papel en varias profundidades.
- * Al pasar el cursor el retrato se perfora y deja ver la casa; dos lentes cuelgan de hilos y amplían lo que tocan.
- * Alrededor flotan miniaturas del archivo cosidas al retrato: cada una abre su ficha con fuente.
+ * 04 · Abraxas, por capas. Escultura fotográfica: fragmentos recortados de fotos de Abraxas de distintos
+ * momentos, ensamblados en planos de profundidad. Entra SUPERPUESTA a la sección anterior y se arma con
+ * el scroll; el cursor separa las capas y dos lupas de vidrio real cuelgan de hilos.
+ * Alrededor flotan miniaturas del archivo cosidas a la figura: cada una abre su ficha con fuente.
  */
 export function AbraxasSection() {
-  const section = useRef<HTMLElement>(null);
+  const section = useRef<HTMLDivElement>(null);
   const inView = useInView(section, "120px");
+  // progreso de entrada (0 cuando asoma por abajo, 1 cuando ocupa la pantalla): arma la escultura
+  const enter = useRef(0);
+  useScrollProgress(section, (p) => { enter.current = p; }, { start: "top bottom", end: "top 15%" });
   const [webgl] = useState(() => hasWebGL());
   const [narrow, setNarrow] = useState(false);
   const [touch, setTouch] = useState(false);
@@ -36,10 +42,10 @@ export function AbraxasSection() {
   }, []);
 
   return (
-    <section ref={section} id="abraxas" className={s.section} aria-labelledby="act4-title">
-      <div className={s.stage} data-cursor="ver">
+    <OverlayScene id="abraxas" labelledBy="act4-title" className={s.section} tone="#121110" overlap="30vh">
+      <div ref={section} className={s.stage} data-cursor="ver">
         {webgl ? (
-          <PortraitCanvas active={inView} narrow={narrow} touch={touch} />
+          <PortraitCanvas active={inView} narrow={narrow} touch={touch} enter={enter} />
         ) : (
           <img className={s.fallback} src="/assets/room-04/abraxas/retrato-base.jpg" alt="Abraxas sentada en la casa museo, con blusa amarilla bordada" />
         )}
@@ -53,7 +59,7 @@ export function AbraxasSection() {
         </header>
         <p className={s.hint} aria-hidden="true">
           <Icon name="lupa" size={18} />
-          {touch ? "Toca el retrato" : "Pasa el cursor por el retrato"}
+          {touch ? "Toca la figura" : "Mueve el cursor: las capas se abren"}
         </p>
       </div>
 
@@ -71,6 +77,6 @@ export function AbraxasSection() {
           </li>
         ))}
       </ol>
-    </section>
+    </OverlayScene>
   );
 }

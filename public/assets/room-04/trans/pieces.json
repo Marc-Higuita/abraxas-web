@@ -1,0 +1,314 @@
+{
+"d8-2": {
+"cat": "cabezas",
+"src": "/assets/room-04/trans/d8-2.webp",
+"w": 139,
+"h": 262
+},
+"d8-3": {
+"cat": "cabezas",
+"src": "/assets/room-04/trans/d8-3.webp",
+"w": 120,
+"h": 245
+},
+"d26-1": {
+"cat": "cabezas",
+"src": "/assets/room-04/trans/d26-1.webp",
+"w": 403,
+"h": 560
+},
+"d25-1": {
+"cat": "cabezas",
+"src": "/assets/room-04/trans/d25-1.webp",
+"w": 352,
+"h": 560
+},
+"d15-2": {
+"cat": "cabezas",
+"src": "/assets/room-04/trans/d15-2.webp",
+"w": 245,
+"h": 348
+},
+"hair-19": {
+"cat": "pelo",
+"src": "/assets/room-04/trans/hair-19.webp",
+"w": 169,
+"h": 176
+},
+"hair-18": {
+"cat": "pelo",
+"src": "/assets/room-04/trans/hair-18.webp",
+"w": 103,
+"h": 95
+},
+"hair-1": {
+"cat": "pelo",
+"src": "/assets/room-04/trans/hair-1.webp",
+"w": 118,
+"h": 136
+},
+"d19-7": {
+"cat": "pelo",
+"src": "/assets/room-04/trans/d19-7.webp",
+"w": 285,
+"h": 315
+},
+"hair-11": {
+"cat": "pelo",
+"src": "/assets/room-04/trans/hair-11.webp",
+"w": 153,
+"h": 152
+},
+"d8-8": {
+"cat": "torsos",
+"src": "/assets/room-04/trans/d8-8.webp",
+"w": 179,
+"h": 225
+},
+"d8-1": {
+"cat": "torsos",
+"src": "/assets/room-04/trans/d8-1.webp",
+"w": 176,
+"h": 448
+},
+"d8-4": {
+"cat": "torsos",
+"src": "/assets/room-04/trans/d8-4.webp",
+"w": 168,
+"h": 293
+},
+"d9-2": {
+"cat": "brazos",
+"src": "/assets/room-04/trans/d9-2.webp",
+"w": 233,
+"h": 245
+},
+"d9-4": {
+"cat": "brazos",
+"src": "/assets/room-04/trans/d9-4.webp",
+"w": 168,
+"h": 215
+},
+"d9-6": {
+"cat": "brazos",
+"src": "/assets/room-04/trans/d9-6.webp",
+"w": 209,
+"h": 230
+},
+"d9-9": {
+"cat": "brazos",
+"src": "/assets/room-04/trans/d9-9.webp",
+"w": 331,
+"h": 487
+},
+"d9-3": {
+"cat": "brazos",
+"src": "/assets/room-04/trans/d9-3.webp",
+"w": 152,
+"h": 374
+},
+"untitled-11": {
+"cat": "piernas",
+"src": "/assets/room-04/trans/untitled-11.webp",
+"w": 277,
+"h": 467
+},
+"d8-5": {
+"cat": "piernas",
+"src": "/assets/room-04/trans/d8-5.webp",
+"w": 219,
+"h": 322
+},
+"d8-7": {
+"cat": "piernas",
+"src": "/assets/room-04/trans/d8-7.webp",
+"w": 99,
+"h": 257
+},
+"piernas-bn-2": {
+"cat": "piernas",
+"src": "/assets/room-04/trans/piernas-bn-2.webp",
+"w": 218,
+"h": 394
+},
+"piernas-bn-5": {
+"cat": "piernas",
+"src": "/assets/room-04/trans/piernas-bn-5.webp",
+"w": 145,
+"h": 232
+},
+"d7-12": {
+"cat": "piernas",
+"src": "/assets/room-04/trans/d7-12.webp",
+"w": 276,
+"h": 99
+},
+"d2-3": {
+"cat": "piernas",
+"src": "/assets/room-04/trans/d2-3.webp",
+"w": 251,
+"h": 528
+},
+"d2-2": {
+"cat": "piernas",
+"src": "/assets/room-04/trans/d2-2.webp",
+"w": 249,
+"h": 560
+},
+"d4-1": {
+"cat": "manos",
+"src": "/assets/room-04/trans/d4-1.webp",
+"w": 509,
+"h": 560
+},
+"d10-3": {
+"cat": "manos",
+"src": "/assets/room-04/trans/d10-3.webp",
+"w": 93,
+"h": 164
+},
+"d20-1": {
+"cat": "manos",
+"src": "/assets/room-04/trans/d20-1.webp",
+"w": 304,
+"h": 395
+},
+"d13-7": {
+"cat": "manos",
+"src": "/assets/room-04/trans/d13-7.webp",
+"w": 275,
+"h": 398
+},
+"faces-9": {
+"cat": "ojos",
+"src": "/assets/room-04/trans/faces-9.webp",
+"w": 200,
+"h": 117
+},
+"faces-10": {
+"cat": "ojos",
+"src": "/assets/room-04/trans/faces-10.webp",
+"w": 161,
+"h": 131
+},
+"d18-3": {
+"cat": "ojos",
+"src": "/assets/room-04/trans/d18-3.webp",
+"w": 376,
+"h": 167
+},
+"d18-6": {
+"cat": "ojos",
+"src": "/assets/room-04/trans/d18-6.webp",
+"w": 240,
+"h": 122
+},
+"untitled-4": {
+"cat": "ojos",
+"src": "/assets/room-04/trans/untitled-4.webp",
+"w": 101,
+"h": 99
+},
+"d21-1": {
+"cat": "ojos",
+"src": "/assets/room-04/trans/d21-1.webp",
+"w": 404,
+"h": 560
+},
+"d17-13": {
+"cat": "bocas",
+"src": "/assets/room-04/trans/d17-13.webp",
+"w": 242,
+"h": 136
+},
+"d17-6": {
+"cat": "bocas",
+"src": "/assets/room-04/trans/d17-6.webp",
+"w": 201,
+"h": 179
+},
+"d17-14": {
+"cat": "bocas",
+"src": "/assets/room-04/trans/d17-14.webp",
+"w": 256,
+"h": 156
+},
+"faces-12": {
+"cat": "bocas",
+"src": "/assets/room-04/trans/faces-12.webp",
+"w": 271,
+"h": 112
+},
+"d13-5": {
+"cat": "bocas",
+"src": "/assets/room-04/trans/d13-5.webp",
+"w": 496,
+"h": 243
+},
+"d6-3": {
+"cat": "rasgos",
+"src": "/assets/room-04/trans/d6-3.webp",
+"w": 183,
+"h": 249
+},
+"d11-6": {
+"cat": "rasgos",
+"src": "/assets/room-04/trans/d11-6.webp",
+"w": 123,
+"h": 219
+},
+"d2-1": {
+"cat": "rasgos",
+"src": "/assets/room-04/trans/d2-1.webp",
+"w": 235,
+"h": 560
+},
+"d3-2": {
+"cat": "rasgos",
+"src": "/assets/room-04/trans/d3-2.webp",
+"w": 194,
+"h": 208
+},
+"d22-7": {
+"cat": "sujetar",
+"src": "/assets/room-04/trans/d22-7.webp",
+"w": 130,
+"h": 165
+},
+"d22-4": {
+"cat": "sujetar",
+"src": "/assets/room-04/trans/d22-4.webp",
+"w": 136,
+"h": 165
+},
+"d23-6": {
+"cat": "sujetar",
+"src": "/assets/room-04/trans/d23-6.webp",
+"w": 124,
+"h": 180
+},
+"d23-9": {
+"cat": "sujetar",
+"src": "/assets/room-04/trans/d23-9.webp",
+"w": 184,
+"h": 220
+},
+"d23-15": {
+"cat": "sujetar",
+"src": "/assets/room-04/trans/d23-15.webp",
+"w": 207,
+"h": 167
+},
+"d23-18": {
+"cat": "sujetar",
+"src": "/assets/room-04/trans/d23-18.webp",
+"w": 228,
+"h": 181
+},
+"d23-21": {
+"cat": "sujetar",
+"src": "/assets/room-04/trans/d23-21.webp",
+"w": 196,
+"h": 112
+}
+}

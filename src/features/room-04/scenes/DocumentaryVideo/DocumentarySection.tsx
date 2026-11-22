@@ -4,15 +4,26 @@ import { useScrollProgress } from "../../hooks/useScrollProgress";
 import { DOCUMENTARY } from "../../data/media";
 import { useRoom } from "../../store";
 import { Ticket, Sticker } from "@/components/abx/Ticket";
-import { DottedOval, StitchLine } from "@/components/abx/Ornaments";
+import { StitchLine } from "@/components/abx/Ornaments";
 import s from "./documentary.module.css";
+
+/** Recortes de las paredes de la habitación (bordes rasgados, sin marco) que construyen el fondo. */
+const FRAGS: { n: number; x: number; y: number; w: number; r: number; d: number }[] = [
+  { n: 0, x: -3, y: 6, w: 15, r: -8, d: 0.5 }, { n: 4, x: 9, y: -4, w: 13, r: 6, d: 0.8 }, { n: 5, x: 74, y: -6, w: 14, r: -5, d: 0.6 },
+  { n: 8, x: 87, y: 10, w: 15, r: 9, d: 0.9 }, { n: 9, x: -5, y: 38, w: 14, r: 4, d: 0.7 }, { n: 10, x: 88, y: 40, w: 13, r: -7, d: 0.5 },
+  { n: 12, x: 2, y: 66, w: 16, r: -4, d: 1 }, { n: 13, x: 80, y: 68, w: 15, r: 6, d: 0.8 }, { n: 14, x: 20, y: 80, w: 13, r: 10, d: 0.6 },
+  { n: 16, x: 62, y: 82, w: 14, r: -9, d: 0.9 }, { n: 17, x: 40, y: 88, w: 12, r: 3, d: 0.5 }, { n: 18, x: 24, y: -8, w: 12, r: -12, d: 0.7 },
+  { n: 19, x: 58, y: -10, w: 12, r: 8, d: 0.6 }, { n: 20, x: 93, y: 76, w: 11, r: -3, d: 1.1 }, { n: 21, x: -6, y: 86, w: 12, r: 7, d: 0.9 },
+  { n: 22, x: 70, y: 26, w: 10, r: 14, d: 1.2 }, { n: 23, x: 14, y: 24, w: 11, r: -14, d: 1.1 }, { n: 25, x: 46, y: -12, w: 11, r: -6, d: 0.8 },
+];
+const VC = "/assets/room-04/video-collage";
 
 const fmt = (t: number) => (Number.isFinite(t) ? `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, "0")}` : "0:00");
 
 /**
- * 02 · La imagen que habla. El video del equipo es el protagonista, al centro.
- * Sin frases: solo capas de material de la casa (fotos rasgadas, papel, cinta, costura)
- * unas detrás y otras delante del video. Entra como una puerta que se abre desde el túnel.
+ * 02 · La imagen que habla. El video es el protagonista, al centro.
+ * Detrás: un collage de recortes rasgados de las mismas paredes de la habitación y una silueta
+ * hecha de fragmentos, en tres capas con parallax. Se llega desde la puerta de vidrio de la habitación.
  */
 export function DocumentarySection() {
   const section = useRef<HTMLElement>(null);
@@ -29,12 +40,18 @@ export function DocumentarySection() {
   useScrollProgress(section, (p) => {
     const el = stage.current;
     if (!el) return;
-    // la puerta: dos hojas que se abren desde el centro (0 → 0.4), luego las capas se asientan
-    const k = reduced ? 1 : Math.min(1, p / 0.4);
-    const e = 1 - Math.pow(1 - k, 3);
-    el.style.setProperty("--open", String(e));
-    el.style.setProperty("--settle", String(reduced ? 1 : Math.min(1, Math.max(0, (p - 0.15) / 0.45))));
+    // las capas llegan y se asientan mientras la sección entra
+    const k = reduced ? 1 : Math.min(1, p / 0.45);
+    el.style.setProperty("--open", String(1 - Math.pow(1 - k, 3)));
+    el.style.setProperty("--settle", String(reduced ? 1 : Math.min(1, Math.max(0, (p - 0.1) / 0.45))));
   }, { start: "top bottom", end: "bottom bottom" });
+  const onMove = (e: React.PointerEvent) => {
+    if (reduced || e.pointerType !== "mouse") return;
+    const el = stage.current;
+    if (!el) return;
+    el.style.setProperty("--mx", ((e.clientX / innerWidth) * 2 - 1).toFixed(3));
+    el.style.setProperty("--my", ((e.clientY / innerHeight) * 2 - 1).toFixed(3));
+  };
 
   useEffect(() => { if (video.current) video.current.muted = muted; }, [muted]);
   useEffect(() => {
@@ -67,15 +84,27 @@ export function DocumentarySection() {
   return (
     <section ref={section} id="video" className={`${s.section} tx-kraft`} aria-labelledby="act2-title" style={{ minHeight: reduced ? "100svh" : "130svh" }}>
       <h2 id="act2-title" className="sr-only">02 · La imagen que habla: video documental</h2>
-      <div className={s.sticky}>
+      <div className={s.sticky} onPointerMove={onMove}>
         <div ref={stage} className={s.stage}>
-          {/* capas DETRÁS del video */}
+          {/* capas DETRÁS del video: recortes de las paredes y una silueta hecha de fragmentos */}
           <div className={s.back} aria-hidden="true">
             <span className={`${s.paper} ${s.paperLima}`} />
             <span className={`${s.paper} ${s.paperPapel}`} />
-            <img className={`${s.shard} ${s.shardA}`} src="/assets/room-04/archive/parte2-img_1414.jpg" alt="" loading="lazy" />
-            <img className={`${s.shard} ${s.shardB}`} src="/assets/room-04/archive/parte2-img_09801.jpg" alt="" loading="lazy" />
-            <DottedOval className={s.oval} color="rgba(18,17,16,.55)" />
+            {FRAGS.map((f, i) => (
+              <img
+                key={f.n}
+                className={s.frag}
+                src={`${VC}/frag-${String(f.n).padStart(2, "0")}.webp`}
+                alt=""
+                loading="lazy"
+                style={{ left: `${f.x}%`, top: `${f.y}%`, width: `${f.w}%`, ["--r" as string]: `${f.r}deg`, ["--d" as string]: f.d, ["--i" as string]: i }}
+              />
+            ))}
+            <div className={s.figure}>
+              <img className={`${s.fig} ${s.figA}`} src={`${VC}/silueta-atras.webp`} alt="" loading="lazy" />
+              <img className={`${s.fig} ${s.figB}`} src={`${VC}/silueta-cuerpo.webp`} alt="" loading="lazy" />
+              <img className={`${s.fig} ${s.figC}`} src={`${VC}/silueta-delante.webp`} alt="" loading="lazy" />
+            </div>
             <StitchLine className={s.stitchBack} color="var(--negro)" width={900} />
           </div>
 
@@ -85,8 +114,6 @@ export function DocumentarySection() {
           </div>
 
           <div ref={frame} className={s.frame} data-cursor="play">
-            <span className={`${s.leaf} ${s.leafL}`} aria-hidden="true" />
-            <span className={`${s.leaf} ${s.leafR}`} aria-hidden="true" />
             {available === false ? (
               <div className={s.pending}><img src={DOCUMENTARY.poster} alt="" /><p>El video no está disponible.</p></div>
             ) : (

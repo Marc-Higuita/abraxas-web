@@ -1,0 +1,72 @@
+{
+ "pelo-rosa": {
+  "w": 136,
+  "h": 53,
+  "src": "images.jpg"
+ },
+ "cara-roja": {
+  "w": 208,
+  "h": 237,
+  "src": "AUYF7QL3BJNNVEY3IAQOXMNXBY.jpg"
+ },
+ "ojos-tira": {
+  "w": 233,
+  "h": 66,
+  "src": "Murio-Abraxas-Aguilar-la-mente-detras-del-museo-del-collage-en-el-centro-de-Medellin.webp"
+ },
+ "boca-tira": {
+  "w": 144,
+  "h": 72,
+  "src": "maxresdefault.jpg"
+ },
+ "cara-blanca": {
+  "w": 204,
+  "h": 259,
+  "src": "taller-de-abraxas-aguilar-m_51929056_20261020130323.webp"
+ },
+ "cara-risa": {
+  "w": 122,
+  "h": 144,
+  "src": "images.jpg"
+ },
+ "torso-tigre": {
+  "w": 314,
+  "h": 222,
+  "src": "images.jpg"
+ },
+ "blusa-serpiente": {
+  "w": 372,
+  "h": 412,
+  "src": "taller-de-abraxas-aguilar-m-18_49166523_20251104171742.webp"
+ },
+ "camisa-satin": {
+  "w": 575,
+  "h": 455,
+  "src": "Murio-Abraxas-Aguilar-la-mente-detras-del-museo-del-collage-en-el-centro-de-Medellin.webp"
+ },
+ "manos": {
+  "w": 463,
+  "h": 167,
+  "src": "maxresdefault.jpg"
+ },
+ "brazo-baile": {
+  "w": 120,
+  "h": 241,
+  "src": "ABRAXAS-web.jpg"
+ },
+ "libro-manos": {
+  "w": 482,
+  "h": 273,
+  "src": "taller-de-abraxas-aguilar-m_51929056_20261020130323.webp"
+ },
+ "espejo-baile": {
+  "w": 352,
+  "h": 534,
+  "src": "ABRAXAS-web.jpg"
+ },
+ "risa-hojas": {
+  "w": 578,
+  "h": 760,
+  "src": "DSC_0244.JPG"
+ }
+}

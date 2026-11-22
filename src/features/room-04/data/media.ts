@@ -1,12 +1,12 @@
 /** Recursos multimedia configurables. Cambiar aquí, no en los componentes. */
 export const DOCUMENTARY = {
-  /** Sube el MP4 a public/assets/room-04/videos/ con este nombre (H.264, ~1080p, 6–8 Mbps). */
-  src: "/assets/room-04/videos/abraxas.mp4",
+  /** H.264 1080p comprimido (CRF 28, máx. 700 kb/s), +faststart. Fuente: Abraxas_Obra_y_autor.mp4 del equipo. */
+  src: "/assets/room-04/videos/abraxas-obra-y-autor.mp4",
   poster: "/assets/room-04/misc/video-poster.jpg",
   /** Subtítulos WebVTT opcionales. */
-  title: "Abraxas",
+  title: "Abraxas: obra y autor",
   description: "",
-  duration: "2:51",
+  duration: "2:52",
   credits: "Equipo Sala 04",
   source: "Video del equipo · subtítulos incrustados",
 };

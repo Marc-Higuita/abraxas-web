@@ -7,38 +7,14 @@ import { hasWebGL } from "../../hooks/useDevice";
 import { useRoom } from "../../store";
 import { Ticket, Sticker } from "@/components/abx/Ticket";
 import type { FlipState } from "./BooksCanvas";
+import type { FloatQuote } from "./QuotePapers";
 import s from "./books.module.css";
 
 const BooksCanvas = dynamic(() => import("./BooksCanvas").then((m) => m.BooksCanvas), { ssr: false });
 
-/** Papeles reales recortados (cutouts/papeles) donde se escriben las frases. */
-const PAPERS = [
-  { src: "tira-rasgada-01.png", w: 260, ratio: 588 / 270, pad: "18% 11% 18% 9%" },
-  { src: "papel-rayado-01.png", w: 270, ratio: 646 / 263, pad: "14% 9% 12% 12%" },
-  { src: "papel-rasgado-01.png", w: 160, ratio: 275 / 520, pad: "22% 13% 18% 14%" },
-  { src: "papel-cuadriculado-01.png", w: 300, ratio: 900 / 292, pad: "11% 8% 11% 8%" },
-  { src: "nota-cinta-01.png", w: 200, ratio: 419 / 458, pad: "24% 13% 14% 13%" },
-  { src: "papel-acuarela-01.png", w: 180, ratio: 416 / 520, pad: "18% 13% 14% 13%" },
-] as const;
-
-/** Huecos alrededor de la biblioteca (en % del escenario), lejos del centro donde están los libros. */
-const LIB_SLOTS = [
-  { x: 50, y: 9 }, { x: 73, y: 13 }, { x: 84, y: 34 }, { x: 82, y: 60 }, { x: 64, y: 80 },
-  { x: 38, y: 82 }, { x: 12, y: 78 }, { x: 2, y: 52 }, { x: 4, y: 31 }, { x: 88, y: 82 },
-];
-const OPEN_SLOTS = [
-  { x: 1.5, y: 18 }, { x: 1.5, y: 44 }, { x: 1.5, y: 68 }, { x: 85, y: 16 }, { x: 85, y: 42 }, { x: 85, y: 66 },
-];
-
-/** Variaciones deterministas (sin aleatoriedad en el render). */
-const rot = (i: number) => (((i * 37) % 13) - 6) * 1.1;
-const depth = (i: number) => 0.4 + ((i * 53) % 7) / 10;
-
-interface FloatQuote { key: string; book: number; text: string; page: number; title: string; theme: string }
 
 export function BooksSection() {
   const section = useRef<HTMLElement>(null);
-  const layer = useRef<HTMLDivElement>(null);
   const inView = useInView(section);
   const [webgl] = useState(() => hasWebGL());
   const [narrow, setNarrow] = useState(false);
@@ -47,7 +23,7 @@ export function BooksSection() {
   const [flip, setFlip] = useState<FlipState>({ spread: 0, flip: null });
   const [focus, setFocus] = useState<"left" | "right">("right");
   const [announce, setAnnounce] = useState("");
-  const [activeQuote, setActiveQuote] = useState<string | null>(null);
+  const [focusKey, setFocusKey] = useState<string | null>(null);
   const openFicha = useRoom((st) => st.openFicha);
   const reduced = useRoom((st) => st.reducedMotion);
   const book = selected !== null ? BOOKS[selected] : null;
@@ -60,22 +36,26 @@ export function BooksSection() {
     return () => mq.removeEventListener("change", on);
   }, []);
 
-  const quotes = useMemo<FloatQuote[]>(() => {
-    const per = BOOKS.map((b, bi) => b.quotes.map((q) => ({ key: q.id, book: bi, text: q.text, page: q.pdfPage, title: b.title, theme: q.theme })));
-    // se intercalan los libros para que la composición mezcle voces
-    const out: FloatQuote[] = [];
-    for (let i = 0; out.length < 40; i++) {
+  // Las frases se reparten en dos grupos sin repetir: unas para la biblioteca y otras para el libro abierto.
+  const { library, openQuotes } = useMemo(() => {
+    const lib: FloatQuote[][] = [], open: FloatQuote[] = [];
+    BOOKS.forEach((b, bi) => {
+      const list = b.quotes.map((q) => ({ key: q.id, book: bi, text: q.text, page: q.pdfPage, title: b.title }));
+      lib.push(list.filter((_, i) => i % 2 === 1));
+      open.push(...list.filter((_, i) => i % 2 === 0));
+    });
+    // biblioteca: se intercalan los libros (las más breves primero en cada libro, para que respiren)
+    lib.forEach((l) => l.sort((a, b) => a.text.length - b.text.length));
+    const mixed: FloatQuote[] = [];
+    for (let i = 0; mixed.length < 12; i++) {
       let added = false;
-      per.forEach((list) => { if (list[i]) { out.push(list[i]); added = true; } });
+      lib.forEach((l) => { if (l[i]) { mixed.push(l[i]); added = true; } });
       if (!added) break;
     }
-    return out;
+    return { library: mixed, openQuotes: open };
   }, []);
-
-  const visibleQuotes = useMemo(() => {
-    if (book) return narrow ? [] : quotes.filter((q) => q.book === selected).slice(0, OPEN_SLOTS.length);
-    return quotes.slice(0, narrow ? 4 : LIB_SLOTS.length);
-  }, [book, selected, narrow, quotes]);
+  const bookHasQuotes = book ? openQuotes.some((q) => q.book === selected) : false;
+  const bookFrac = book && !narrow && bookHasQuotes ? 0.56 : 1;
 
   const openBook = useCallback((i: number, page?: number) => {
     const b = BOOKS[i];
@@ -89,7 +69,7 @@ export function BooksSection() {
 
   const close = useCallback(() => {
     setSelected(null);
-    setActiveQuote(null);
+    setFocusKey(null);
     setAnnounce("Libro cerrado. De vuelta a la biblioteca.");
   }, []);
 
@@ -118,6 +98,7 @@ export function BooksSection() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && focusKey) { setFocusKey(null); return; }
       if (!book) return;
       if (e.key === "Escape") close();
       if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
@@ -125,15 +106,14 @@ export function BooksSection() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [book, step, close]);
+  }, [book, step, close, focusKey]);
 
-  // parallax de los papeles con el puntero (variables CSS, sin re-render)
-  const onMove = (e: React.PointerEvent) => {
-    if (reduced || !layer.current) return;
-    const r = e.currentTarget.getBoundingClientRect();
-    layer.current.style.setProperty("--mx", (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3));
-    layer.current.style.setProperty("--my", (((e.clientY - r.top) / r.height) * 2 - 1).toFixed(3));
-  };
+  // clic en una frase: en la biblioteca abre el libro en su página; en el libro abierto la acerca para leerla
+  const onPick = useCallback((q: FloatQuote, inBook: boolean) => {
+    if (focusKey === q.key || !q.text) { setFocusKey(null); return; }
+    if (inBook) { setFocusKey(q.key); setAnnounce(`«${q.text}» — ${q.title}, página ${q.page}.`); return; }
+    openBook(q.book, q.page);
+  }, [focusKey, openBook]);
 
   // arrastre horizontal sobre el libro abierto
   const drag = useRef<{ x: number; y: number } | null>(null);
@@ -156,7 +136,7 @@ export function BooksSection() {
 
   return (
     <section ref={section} id="libros" className={s.section} aria-labelledby="act3-title">
-      <div className={`${s.stage} ${book ? s.isOpen : ""}`} onPointerMove={onMove}>
+      <div className={`${s.stage} ${book ? s.isOpen : ""}`} style={{ ["--bookw" as string]: `${bookFrac * 100}%` }}>
         {webgl && (
           <BooksCanvas
             books={BOOKS}
@@ -169,6 +149,11 @@ export function BooksSection() {
             active={inView}
             narrow={narrow}
             focus={focus}
+            library={library}
+            openQuotes={openQuotes}
+            focusKey={focusKey}
+            onPick={onPick}
+            bookFrac={bookFrac}
           />
         )}
 
@@ -184,43 +169,12 @@ export function BooksSection() {
           <h2 id="act3-title" className={s.title}>Tres libros escritos por Abraxas. Toca uno para abrirlo.</h2>
         </header>
 
-        {/* frases en papeles flotantes */}
-        <div ref={layer} className={`${s.papers} ${inView ? s.papersIn : ""}`} aria-label="Frases de los libros">
-          {visibleQuotes.map((q, i) => {
-            const slot = (book ? OPEN_SLOTS : LIB_SLOTS)[i];
-            const pp = PAPERS[(i + q.book) % PAPERS.length];
-            const wide = narrow ? Math.min(pp.w, 210) : pp.w;
-            return (
-              <button
-                key={q.key}
-                className={`${s.paper} ${activeQuote === q.key ? s.paperOn : ""}`}
-                data-cursor="lee"
-                style={{
-                  left: narrow ? undefined : `${slot.x}%`,
-                  top: narrow ? undefined : `${slot.y}%`,
-                  width: wide,
-                  aspectRatio: String(pp.ratio),
-                  backgroundImage: `url(/assets/room-04/cutouts/papeles/${pp.src})`,
-                  padding: pp.pad.split(" ").map((v) => `${Math.round((parseFloat(v) / 100) * wide)}px`).join(" "),
-                  overflow: "hidden",
-                  ["--r" as string]: `${rot(i)}deg`,
-                  ["--d" as string]: depth(i),
-                  ["--i" as string]: i,
-                }}
-                onClick={() => { setActiveQuote(q.key); openBook(q.book, q.page); }}
-                aria-label={`«${q.text}» — ${q.title}, página ${q.page}. Abrir el libro en esa página.`}
-              >
-                <span className={s.paperText}>«{q.text}»</span>
-                <span className={s.paperSrc}>{q.title} · p. {q.page}</span>
-              </button>
-            );
-          })}
-        </div>
-
         {/* libro abierto: zonas de la página (clic o arrastre) */}
         {book && (
           <>
+            {focusKey && <p className={s.focusHint}>Toca de nuevo la frase o fuera de ella para devolverla.</p>}
             <button
+              hidden={!!focusKey}
               className={`${s.zone} ${s.zoneL}`}
               aria-label="Página anterior"
               data-cursor="pasa"
@@ -230,6 +184,7 @@ export function BooksSection() {
               onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); step(-1); } }}
             />
             <button
+              hidden={!!focusKey}
               className={`${s.zone} ${s.zoneR}`}
               aria-label="Página siguiente"
               data-cursor="pasa"

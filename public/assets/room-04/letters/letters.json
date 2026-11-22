@@ -1,0 +1,877 @@
+{
+ "sets": [
+  {
+   "id": "revista",
+   "label": "Letras de revista",
+   "items": [
+    {
+     "id": "revista-a-1",
+     "char": "a",
+     "src": "/assets/room-04/letters/revista/a-1.webp",
+     "w": 92,
+     "h": 88
+    },
+    {
+     "id": "revista-a-2",
+     "char": "a",
+     "src": "/assets/room-04/letters/revista/a-2.webp",
+     "w": 81,
+     "h": 88
+    },
+    {
+     "id": "revista-a-3",
+     "char": "a",
+     "src": "/assets/room-04/letters/revista/a-3.webp",
+     "w": 99,
+     "h": 90
+    },
+    {
+     "id": "revista-a-4",
+     "char": "a",
+     "src": "/assets/room-04/letters/revista/a-4.webp",
+     "w": 87,
+     "h": 88
+    },
+    {
+     "id": "revista-b-1",
+     "char": "b",
+     "src": "/assets/room-04/letters/revista/b-1.webp",
+     "w": 86,
+     "h": 92
+    },
+    {
+     "id": "revista-b-2",
+     "char": "b",
+     "src": "/assets/room-04/letters/revista/b-2.webp",
+     "w": 80,
+     "h": 93
+    },
+    {
+     "id": "revista-b-3",
+     "char": "b",
+     "src": "/assets/room-04/letters/revista/b-3.webp",
+     "w": 69,
+     "h": 91
+    },
+    {
+     "id": "revista-b-4",
+     "char": "b",
+     "src": "/assets/room-04/letters/revista/b-4.webp",
+     "w": 83,
+     "h": 93
+    },
+    {
+     "id": "revista-c-1",
+     "char": "c",
+     "src": "/assets/room-04/letters/revista/c-1.webp",
+     "w": 96,
+     "h": 93
+    },
+    {
+     "id": "revista-c-2",
+     "char": "c",
+     "src": "/assets/room-04/letters/revista/c-2.webp",
+     "w": 71,
+     "h": 96
+    },
+    {
+     "id": "revista-c-3",
+     "char": "c",
+     "src": "/assets/room-04/letters/revista/c-3.webp",
+     "w": 74,
+     "h": 89
+    },
+    {
+     "id": "revista-c-4",
+     "char": "c",
+     "src": "/assets/room-04/letters/revista/c-4.webp",
+     "w": 77,
+     "h": 89
+    },
+    {
+     "id": "revista-d-1",
+     "char": "d",
+     "src": "/assets/room-04/letters/revista/d-1.webp",
+     "w": 76,
+     "h": 106
+    },
+    {
+     "id": "revista-d-2",
+     "char": "d",
+     "src": "/assets/room-04/letters/revista/d-2.webp",
+     "w": 69,
+     "h": 107
+    },
+    {
+     "id": "revista-d-3",
+     "char": "d",
+     "src": "/assets/room-04/letters/revista/d-3.webp",
+     "w": 105,
+     "h": 100
+    },
+    {
+     "id": "revista-d-4",
+     "char": "d",
+     "src": "/assets/room-04/letters/revista/d-4.webp",
+     "w": 93,
+     "h": 111
+    },
+    {
+     "id": "revista-e-1",
+     "char": "e",
+     "src": "/assets/room-04/letters/revista/e-1.webp",
+     "w": 80,
+     "h": 96
+    },
+    {
+     "id": "revista-e-2",
+     "char": "e",
+     "src": "/assets/room-04/letters/revista/e-2.webp",
+     "w": 95,
+     "h": 94
+    },
+    {
+     "id": "revista-e-3",
+     "char": "e",
+     "src": "/assets/room-04/letters/revista/e-3.webp",
+     "w": 82,
+     "h": 94
+    },
+    {
+     "id": "revista-e-4",
+     "char": "e",
+     "src": "/assets/room-04/letters/revista/e-4.webp",
+     "w": 85,
+     "h": 96
+    },
+    {
+     "id": "revista-f-1",
+     "char": "f",
+     "src": "/assets/room-04/letters/revista/f-1.webp",
+     "w": 92,
+     "h": 104
+    },
+    {
+     "id": "revista-f-2",
+     "char": "f",
+     "src": "/assets/room-04/letters/revista/f-2.webp",
+     "w": 82,
+     "h": 106
+    },
+    {
+     "id": "revista-f-3",
+     "char": "f",
+     "src": "/assets/room-04/letters/revista/f-3.webp",
+     "w": 69,
+     "h": 103
+    },
+    {
+     "id": "revista-f-4",
+     "char": "f",
+     "src": "/assets/room-04/letters/revista/f-4.webp",
+     "w": 85,
+     "h": 101
+    },
+    {
+     "id": "revista-g-1",
+     "char": "g",
+     "src": "/assets/room-04/letters/revista/g-1.webp",
+     "w": 103,
+     "h": 97
+    },
+    {
+     "id": "revista-g-2",
+     "char": "g",
+     "src": "/assets/room-04/letters/revista/g-2.webp",
+     "w": 67,
+     "h": 96
+    },
+    {
+     "id": "revista-g-3",
+     "char": "g",
+     "src": "/assets/room-04/letters/revista/g-3.webp",
+     "w": 88,
+     "h": 94
+    },
+    {
+     "id": "revista-g-4",
+     "char": "g",
+     "src": "/assets/room-04/letters/revista/g-4.webp",
+     "w": 95,
+     "h": 96
+    },
+    {
+     "id": "revista-h-1",
+     "char": "h",
+     "src": "/assets/room-04/letters/revista/h-1.webp",
+     "w": 81,
+     "h": 97
+    },
+    {
+     "id": "revista-h-2",
+     "char": "h",
+     "src": "/assets/room-04/letters/revista/h-2.webp",
+     "w": 77,
+     "h": 95
+    },
+    {
+     "id": "revista-h-3",
+     "char": "h",
+     "src": "/assets/room-04/letters/revista/h-3.webp",
+     "w": 85,
+     "h": 97
+    },
+    {
+     "id": "revista-h-4",
+     "char": "h",
+     "src": "/assets/room-04/letters/revista/h-4.webp",
+     "w": 83,
+     "h": 98
+    },
+    {
+     "id": "revista-i-1",
+     "char": "i",
+     "src": "/assets/room-04/letters/revista/i-1.webp",
+     "w": 64,
+     "h": 104
+    },
+    {
+     "id": "revista-i-2",
+     "char": "i",
+     "src": "/assets/room-04/letters/revista/i-2.webp",
+     "w": 60,
+     "h": 105
+    },
+    {
+     "id": "revista-i-3",
+     "char": "i",
+     "src": "/assets/room-04/letters/revista/i-3.webp",
+     "w": 51,
+     "h": 107
+    },
+    {
+     "id": "revista-i-4",
+     "char": "i",
+     "src": "/assets/room-04/letters/revista/i-4.webp",
+     "w": 71,
+     "h": 105
+    },
+    {
+     "id": "revista-j-1",
+     "char": "j",
+     "src": "/assets/room-04/letters/revista/j-1.webp",
+     "w": 66,
+     "h": 109
+    },
+    {
+     "id": "revista-j-2",
+     "char": "j",
+     "src": "/assets/room-04/letters/revista/j-2.webp",
+     "w": 109,
+     "h": 101
+    },
+    {
+     "id": "revista-j-3",
+     "char": "j",
+     "src": "/assets/room-04/letters/revista/j-3.webp",
+     "w": 71,
+     "h": 117
+    },
+    {
+     "id": "revista-j-4",
+     "char": "j",
+     "src": "/assets/room-04/letters/revista/j-4.webp",
+     "w": 88,
+     "h": 119
+    },
+    {
+     "id": "revista-k-1",
+     "char": "k",
+     "src": "/assets/room-04/letters/revista/k-1.webp",
+     "w": 67,
+     "h": 98
+    },
+    {
+     "id": "revista-k-2",
+     "char": "k",
+     "src": "/assets/room-04/letters/revista/k-2.webp",
+     "w": 82,
+     "h": 101
+    },
+    {
+     "id": "revista-k-3",
+     "char": "k",
+     "src": "/assets/room-04/letters/revista/k-3.webp",
+     "w": 69,
+     "h": 98
+    },
+    {
+     "id": "revista-k-4",
+     "char": "k",
+     "src": "/assets/room-04/letters/revista/k-4.webp",
+     "w": 88,
+     "h": 104
+    },
+    {
+     "id": "revista-l-1",
+     "char": "l",
+     "src": "/assets/room-04/letters/revista/l-1.webp",
+     "w": 70,
+     "h": 96
+    },
+    {
+     "id": "revista-l-2",
+     "char": "l",
+     "src": "/assets/room-04/letters/revista/l-2.webp",
+     "w": 80,
+     "h": 99
+    },
+    {
+     "id": "revista-l-3",
+     "char": "l",
+     "src": "/assets/room-04/letters/revista/l-3.webp",
+     "w": 76,
+     "h": 91
+    },
+    {
+     "id": "revista-l-4",
+     "char": "l",
+     "src": "/assets/room-04/letters/revista/l-4.webp",
+     "w": 61,
+     "h": 94
+    },
+    {
+     "id": "revista-m-1",
+     "char": "m",
+     "src": "/assets/room-04/letters/revista/m-1.webp",
+     "w": 82,
+     "h": 61
+    },
+    {
+     "id": "revista-m-2",
+     "char": "m",
+     "src": "/assets/room-04/letters/revista/m-2.webp",
+     "w": 91,
+     "h": 75
+    },
+    {
+     "id": "revista-m-3",
+     "char": "m",
+     "src": "/assets/room-04/letters/revista/m-3.webp",
+     "w": 85,
+     "h": 74
+    },
+    {
+     "id": "revista-n-1",
+     "char": "n",
+     "src": "/assets/room-04/letters/revista/n-1.webp",
+     "w": 80,
+     "h": 78
+    },
+    {
+     "id": "revista-n-2",
+     "char": "n",
+     "src": "/assets/room-04/letters/revista/n-2.webp",
+     "w": 48,
+     "h": 62
+    },
+    {
+     "id": "revista-n-3",
+     "char": "n",
+     "src": "/assets/room-04/letters/revista/n-3.webp",
+     "w": 82,
+     "h": 90
+    },
+    {
+     "id": "revista-n-4",
+     "char": "n",
+     "src": "/assets/room-04/letters/revista/n-4.webp",
+     "w": 90,
+     "h": 77
+    },
+    {
+     "id": "revista-o-1",
+     "char": "o",
+     "src": "/assets/room-04/letters/revista/o-1.webp",
+     "w": 80,
+     "h": 97
+    },
+    {
+     "id": "revista-o-2",
+     "char": "o",
+     "src": "/assets/room-04/letters/revista/o-2.webp",
+     "w": 73,
+     "h": 92
+    },
+    {
+     "id": "revista-o-3",
+     "char": "o",
+     "src": "/assets/room-04/letters/revista/o-3.webp",
+     "w": 75,
+     "h": 103
+    },
+    {
+     "id": "revista-o-4",
+     "char": "o",
+     "src": "/assets/room-04/letters/revista/o-4.webp",
+     "w": 82,
+     "h": 76
+    },
+    {
+     "id": "revista-p-1",
+     "char": "p",
+     "src": "/assets/room-04/letters/revista/p-1.webp",
+     "w": 71,
+     "h": 87
+    },
+    {
+     "id": "revista-p-2",
+     "char": "p",
+     "src": "/assets/room-04/letters/revista/p-2.webp",
+     "w": 79,
+     "h": 90
+    },
+    {
+     "id": "revista-p-3",
+     "char": "p",
+     "src": "/assets/room-04/letters/revista/p-3.webp",
+     "w": 75,
+     "h": 91
+    },
+    {
+     "id": "revista-p-4",
+     "char": "p",
+     "src": "/assets/room-04/letters/revista/p-4.webp",
+     "w": 87,
+     "h": 93
+    },
+    {
+     "id": "revista-q-1",
+     "char": "q",
+     "src": "/assets/room-04/letters/revista/q-1.webp",
+     "w": 70,
+     "h": 86
+    },
+    {
+     "id": "revista-q-2",
+     "char": "q",
+     "src": "/assets/room-04/letters/revista/q-2.webp",
+     "w": 72,
+     "h": 89
+    },
+    {
+     "id": "revista-q-3",
+     "char": "q",
+     "src": "/assets/room-04/letters/revista/q-3.webp",
+     "w": 80,
+     "h": 93
+    },
+    {
+     "id": "revista-q-4",
+     "char": "q",
+     "src": "/assets/room-04/letters/revista/q-4.webp",
+     "w": 80,
+     "h": 93
+    },
+    {
+     "id": "revista-r-1",
+     "char": "r",
+     "src": "/assets/room-04/letters/revista/r-1.webp",
+     "w": 88,
+     "h": 93
+    },
+    {
+     "id": "revista-r-2",
+     "char": "r",
+     "src": "/assets/room-04/letters/revista/r-2.webp",
+     "w": 83,
+     "h": 95
+    },
+    {
+     "id": "revista-r-3",
+     "char": "r",
+     "src": "/assets/room-04/letters/revista/r-3.webp",
+     "w": 83,
+     "h": 93
+    },
+    {
+     "id": "revista-r-4",
+     "char": "r",
+     "src": "/assets/room-04/letters/revista/r-4.webp",
+     "w": 71,
+     "h": 91
+    },
+    {
+     "id": "revista-s-1",
+     "char": "s",
+     "src": "/assets/room-04/letters/revista/s-1.webp",
+     "w": 80,
+     "h": 90
+    },
+    {
+     "id": "revista-s-2",
+     "char": "s",
+     "src": "/assets/room-04/letters/revista/s-2.webp",
+     "w": 65,
+     "h": 82
+    },
+    {
+     "id": "revista-s-3",
+     "char": "s",
+     "src": "/assets/room-04/letters/revista/s-3.webp",
+     "w": 81,
+     "h": 82
+    },
+    {
+     "id": "revista-s-4",
+     "char": "s",
+     "src": "/assets/room-04/letters/revista/s-4.webp",
+     "w": 75,
+     "h": 86
+    },
+    {
+     "id": "revista-t-1",
+     "char": "t",
+     "src": "/assets/room-04/letters/revista/t-1.webp",
+     "w": 73,
+     "h": 93
+    },
+    {
+     "id": "revista-t-2",
+     "char": "t",
+     "src": "/assets/room-04/letters/revista/t-2.webp",
+     "w": 64,
+     "h": 93
+    },
+    {
+     "id": "revista-t-3",
+     "char": "t",
+     "src": "/assets/room-04/letters/revista/t-3.webp",
+     "w": 64,
+     "h": 101
+    },
+    {
+     "id": "revista-t-4",
+     "char": "t",
+     "src": "/assets/room-04/letters/revista/t-4.webp",
+     "w": 70,
+     "h": 104
+    },
+    {
+     "id": "revista-u-1",
+     "char": "u",
+     "src": "/assets/room-04/letters/revista/u-1.webp",
+     "w": 71,
+     "h": 89
+    },
+    {
+     "id": "revista-u-2",
+     "char": "u",
+     "src": "/assets/room-04/letters/revista/u-2.webp",
+     "w": 78,
+     "h": 90
+    },
+    {
+     "id": "revista-u-3",
+     "char": "u",
+     "src": "/assets/room-04/letters/revista/u-3.webp",
+     "w": 85,
+     "h": 86
+    },
+    {
+     "id": "revista-u-4",
+     "char": "u",
+     "src": "/assets/room-04/letters/revista/u-4.webp",
+     "w": 84,
+     "h": 82
+    },
+    {
+     "id": "revista-v-1",
+     "char": "v",
+     "src": "/assets/room-04/letters/revista/v-1.webp",
+     "w": 78,
+     "h": 88
+    },
+    {
+     "id": "revista-v-2",
+     "char": "v",
+     "src": "/assets/room-04/letters/revista/v-2.webp",
+     "w": 86,
+     "h": 86
+    },
+    {
+     "id": "revista-v-3",
+     "char": "v",
+     "src": "/assets/room-04/letters/revista/v-3.webp",
+     "w": 83,
+     "h": 89
+    },
+    {
+     "id": "revista-v-4",
+     "char": "v",
+     "src": "/assets/room-04/letters/revista/v-4.webp",
+     "w": 79,
+     "h": 88
+    },
+    {
+     "id": "revista-w-1",
+     "char": "w",
+     "src": "/assets/room-04/letters/revista/w-1.webp",
+     "w": 98,
+     "h": 79
+    },
+    {
+     "id": "revista-w-2",
+     "char": "w",
+     "src": "/assets/room-04/letters/revista/w-2.webp",
+     "w": 98,
+     "h": 80
+    },
+    {
+     "id": "revista-w-3",
+     "char": "w",
+     "src": "/assets/room-04/letters/revista/w-3.webp",
+     "w": 97,
+     "h": 77
+    },
+    {
+     "id": "revista-x-1",
+     "char": "x",
+     "src": "/assets/room-04/letters/revista/x-1.webp",
+     "w": 103,
+     "h": 92
+    },
+    {
+     "id": "revista-x-2",
+     "char": "x",
+     "src": "/assets/room-04/letters/revista/x-2.webp",
+     "w": 73,
+     "h": 92
+    },
+    {
+     "id": "revista-y-1",
+     "char": "y",
+     "src": "/assets/room-04/letters/revista/y-1.webp",
+     "w": 72,
+     "h": 90
+    },
+    {
+     "id": "revista-y-2",
+     "char": "y",
+     "src": "/assets/room-04/letters/revista/y-2.webp",
+     "w": 71,
+     "h": 89
+    },
+    {
+     "id": "revista-z-1",
+     "char": "z",
+     "src": "/assets/room-04/letters/revista/z-1.webp",
+     "w": 76,
+     "h": 89
+    },
+    {
+     "id": "revista-z-2",
+     "char": "z",
+     "src": "/assets/room-04/letters/revista/z-2.webp",
+     "w": 74,
+     "h": 99
+    },
+    {
+     "id": "revista-z-3",
+     "char": "z",
+     "src": "/assets/room-04/letters/revista/z-3.webp",
+     "w": 84,
+     "h": 96
+    }
+   ]
+  },
+  {
+   "id": "papel",
+   "label": "Letras de papel",
+   "items": [
+    {
+     "id": "papel-a-1",
+     "char": "a",
+     "src": "/assets/room-04/letters/papel/a-1.webp",
+     "w": 141,
+     "h": 129
+    },
+    {
+     "id": "papel-b-1",
+     "char": "b",
+     "src": "/assets/room-04/letters/papel/b-1.webp",
+     "w": 102,
+     "h": 150
+    },
+    {
+     "id": "papel-c-1",
+     "char": "c",
+     "src": "/assets/room-04/letters/papel/c-1.webp",
+     "w": 95,
+     "h": 120
+    },
+    {
+     "id": "papel-d-1",
+     "char": "d",
+     "src": "/assets/room-04/letters/papel/d-1.webp",
+     "w": 98,
+     "h": 140
+    },
+    {
+     "id": "papel-e-1",
+     "char": "e",
+     "src": "/assets/room-04/letters/papel/e-1.webp",
+     "w": 100,
+     "h": 142
+    },
+    {
+     "id": "papel-f-1",
+     "char": "f",
+     "src": "/assets/room-04/letters/papel/f-1.webp",
+     "w": 94,
+     "h": 178
+    },
+    {
+     "id": "papel-g-1",
+     "char": "g",
+     "src": "/assets/room-04/letters/papel/g-1.webp",
+     "w": 137,
+     "h": 145
+    },
+    {
+     "id": "papel-h-1",
+     "char": "h",
+     "src": "/assets/room-04/letters/papel/h-1.webp",
+     "w": 103,
+     "h": 153
+    },
+    {
+     "id": "papel-i-1",
+     "char": "i",
+     "src": "/assets/room-04/letters/papel/i-1.webp",
+     "w": 53,
+     "h": 159
+    },
+    {
+     "id": "papel-j-1",
+     "char": "j",
+     "src": "/assets/room-04/letters/papel/j-1.webp",
+     "w": 120,
+     "h": 145
+    },
+    {
+     "id": "papel-k-1",
+     "char": "k",
+     "src": "/assets/room-04/letters/papel/k-1.webp",
+     "w": 121,
+     "h": 142
+    },
+    {
+     "id": "papel-l-1",
+     "char": "l",
+     "src": "/assets/room-04/letters/papel/l-1.webp",
+     "w": 85,
+     "h": 163
+    },
+    {
+     "id": "papel-m-1",
+     "char": "m",
+     "src": "/assets/room-04/letters/papel/m-1.webp",
+     "w": 146,
+     "h": 172
+    },
+    {
+     "id": "papel-n-1",
+     "char": "n",
+     "src": "/assets/room-04/letters/papel/n-1.webp",
+     "w": 132,
+     "h": 139
+    },
+    {
+     "id": "papel-o-1",
+     "char": "o",
+     "src": "/assets/room-04/letters/papel/o-1.webp",
+     "w": 130,
+     "h": 145
+    },
+    {
+     "id": "papel-p-1",
+     "char": "p",
+     "src": "/assets/room-04/letters/papel/p-1.webp",
+     "w": 98,
+     "h": 141
+    },
+    {
+     "id": "papel-q-1",
+     "char": "q",
+     "src": "/assets/room-04/letters/papel/q-1.webp",
+     "w": 112,
+     "h": 158
+    },
+    {
+     "id": "papel-r-1",
+     "char": "r",
+     "src": "/assets/room-04/letters/papel/r-1.webp",
+     "w": 108,
+     "h": 163
+    },
+    {
+     "id": "papel-s-1",
+     "char": "s",
+     "src": "/assets/room-04/letters/papel/s-1.webp",
+     "w": 125,
+     "h": 159
+    },
+    {
+     "id": "papel-t-1",
+     "char": "t",
+     "src": "/assets/room-04/letters/papel/t-1.webp",
+     "w": 115,
+     "h": 127
+    },
+    {
+     "id": "papel-u-1",
+     "char": "u",
+     "src": "/assets/room-04/letters/papel/u-1.webp",
+     "w": 115,
+     "h": 112
+    },
+    {
+     "id": "papel-v-1",
+     "char": "v",
+     "src": "/assets/room-04/letters/papel/v-1.webp",
+     "w": 139,
+     "h": 112
+    },
+    {
+     "id": "papel-w-1",
+     "char": "w",
+     "src": "/assets/room-04/letters/papel/w-1.webp",
+     "w": 138,
+     "h": 129
+    },
+    {
+     "id": "papel-x-1",
+     "char": "x",
+     "src": "/assets/room-04/letters/papel/x-1.webp",
+     "w": 121,
+     "h": 145
+    },
+    {
+     "id": "papel-y-1",
+     "char": "y",
+     "src": "/assets/room-04/letters/papel/y-1.webp",
+     "w": 109,
+     "h": 175
+    },
+    {
+     "id": "papel-z-1",
+     "char": "z",
+     "src": "/assets/room-04/letters/papel/z-1.webp",
+     "w": 130,
+     "h": 135
+    }
+   ]
+  }
+ ]
+}

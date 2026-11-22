@@ -1,11 +1,13 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { MeshReflectorMaterial } from "@react-three/drei";
+import { Html, MeshReflectorMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { PublishedPiece } from "../../lib/pieces";
 import { CARD_H, THREADS, slots } from "./layout";
+import { CubeProvider, Installation, Mirrors, onMirror } from "./Decor";
+import s from "./messageroom.module.css";
 
 interface Props {
   pieces: PublishedPiece[];
@@ -32,12 +34,15 @@ export function MessageRoomCanvas(props: Props) {
       onCreated={({ gl, scene }) => { gl.setClearColor(BG); scene.fog = new THREE.Fog(BG, 8, 17); }}
       onPointerMissed={() => props.onSelect(null)}
     >
+      <CubeProvider low={props.low}>
       <Env />
       <ambientLight intensity={0.55} color="#ffe2c0" />
       <spotLight position={[0, 4.5, 2.5]} angle={0.75} penumbra={0.8} intensity={38} color="#ffd9a8" decay={2} />
       <pointLight position={[-4, 1, -2]} intensity={6} color="#e07bf0" decay={2} />
       <pointLight position={[4, 0.5, 0]} intensity={5} color="#a8e6e8" decay={2} />
       <Architecture low={props.low} />
+      <Mirrors />
+      <Suspense fallback={null}><Installation reduced={props.reduced} low={props.low} /></Suspense>
       <Threads />
       {slots().map((s, i) => {
         const p = props.pieces[i];
@@ -46,6 +51,7 @@ export function MessageRoomCanvas(props: Props) {
       <Player playing={props.playing} onClick={props.onPlayer} reduced={props.reduced} />
       {!props.reduced && <Dust count={props.low ? 120 : 320} />}
       <Rig {...props} />
+      </CubeProvider>
     </Canvas>
   );
 }
@@ -125,14 +131,14 @@ function Architecture({ low }: { low: boolean }) {
       <mesh position={[0, 4.4, -1]} rotation={[Math.PI / 2, 0, 0]}><planeGeometry args={[16, 14]} /><meshStandardMaterial color="#241b15" /></mesh>
 
       {/* piso espejado: reflejo real de toda la instalación */}
-      <mesh position={[0, -2.2, -1]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh position={[0, -2.2, -1]} rotation={[-Math.PI / 2, 0, 0]} onUpdate={onMirror}>
         <planeGeometry args={[16, 14]} />
         <MeshReflectorMaterial resolution={low ? 256 : 768} blur={low ? [200, 60] : [320, 90]} mixBlur={0.9} mixStrength={low ? 1.4 : 2.2} roughness={0.75} depthScale={1} minDepthThreshold={0.4} maxDepthThreshold={1.3} color="#2a211b" metalness={0.5} mirror={0.55} />
       </mesh>
 
       {/* espejo ovalado en la pared izquierda, marco punteado dorado */}
       <group position={[-6.45, 0.6, -2.4]} rotation={[0, Math.PI / 2, 0]}>
-        <mesh scale={[1, 1.35, 1]}>
+        <mesh scale={[1, 1.35, 1]} onUpdate={onMirror}>
           <circleGeometry args={[1.25, 64]} />
           {low ? <meshStandardMaterial color="#c9cdd3" metalness={1} roughness={0.08} /> : <MeshReflectorMaterial resolution={512} mirror={1} blur={[0, 0]} mixBlur={0} mixStrength={1} color="#d8dce2" metalness={0} roughness={0} />}
         </mesh>
@@ -141,7 +147,7 @@ function Architecture({ low }: { low: boolean }) {
 
       {/* espejo alto en el fondo: duplica los hilos y alarga la habitación */}
       <group position={[3.4, 0.7, -6.15]}>
-        <mesh>
+        <mesh onUpdate={onMirror}>
           <planeGeometry args={[1.9, 3.6]} />
           {low ? <meshStandardMaterial color="#c9cdd3" metalness={1} roughness={0.1} /> : <MeshReflectorMaterial resolution={512} mirror={1} blur={[0, 0]} mixBlur={0} mixStrength={1} color="#d8dce2" metalness={0} roughness={0} />}
         </mesh>
@@ -265,7 +271,7 @@ function HangingPiece({ piece, slot, fresh, reduced, onSelect, index }: { piece:
       <mesh position={[0, -0.06 - hh / 2, -0.005]}><planeGeometry args={[w + 0.08, hh + 0.08]} /><meshStandardMaterial color={hover ? "#f6dc8c" : "#e9dfcb"} roughness={0.95} /></mesh>
       <mesh position={[0, -0.06 - hh / 2, 0]}>
         <planeGeometry args={[w, hh]} />
-        {img ? <meshStandardMaterial map={img.tex} transparent alphaTest={0.05} roughness={0.85} /> : <meshStandardMaterial color="#c9a878" />}
+        {img ? <meshBasicMaterial map={img.tex} transparent alphaTest={0.05} toneMapped={false} side={THREE.DoubleSide} /> : <meshBasicMaterial color="#c9a878" />}
       </mesh>
       {/* hilo corto y tarjeta del mensaje debajo */}
       <mesh position={[0, -0.12 - hh - 0.08, 0]}><cylinderGeometry args={[0.004, 0.004, 0.16, 4]} /><meshBasicMaterial color="#e8dcc4" /></mesh>
@@ -278,53 +284,89 @@ function HangingPiece({ piece, slot, fresh, reduced, onSelect, index }: { piece:
   );
 }
 
-/** Tocadiscos de archivo: el vinilo gira solo cuando el reproductor oficial está sonando. */
+/**
+ * Tocadiscos: objeto protagonista al frente a la derecha, con su propia luz cálida.
+ * Tocarlo inicia la playlist (controlador oficial de Spotify) y tocarlo de nuevo la pausa.
+ * El vinilo gira solo mientras suena.
+ */
 function Player({ playing, onClick, reduced }: { playing: boolean; onClick: () => void; reduced: boolean }) {
   const disc = useRef<THREE.Mesh>(null);
   const arm = useRef<THREE.Group>(null);
+  const spot = useRef<THREE.SpotLight>(null);
+  const root = useRef<THREE.Group>(null);
+  const halo = useRef<THREE.Mesh>(null);
   const speed = useRef(0);
   const [hover, setHover] = useState(false);
   const label = useMemo(() => {
-    const c = document.createElement("canvas"); c.width = c.height = 256;
+    const c = document.createElement("canvas"); c.width = c.height = 512;
     const g = c.getContext("2d")!;
-    g.fillStyle = "#c81e6e"; g.beginPath(); g.arc(128, 128, 128, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#f2b90f"; g.beginPath(); g.arc(128, 128, 84, 0, Math.PI * 2); g.fill();
-    g.fillStyle = "#121110"; g.font = "bold 30px Arial"; g.textAlign = "center"; g.fillText("ABRAXAS", 128, 118); g.font = "18px Arial"; g.fillText("playlist · sala 04", 128, 148);
-    g.beginPath(); g.arc(128, 128, 8, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#c81e6e"; g.beginPath(); g.arc(256, 256, 256, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "#f2b90f"; g.beginPath(); g.arc(256, 256, 170, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = "rgba(18,17,16,.5)"; g.setLineDash([6, 8]); g.lineWidth = 4; g.beginPath(); g.arc(256, 256, 150, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = "#121110"; g.font = "bold 62px Arial"; g.textAlign = "center"; g.fillText("ABRAXAS", 256, 238); g.font = "34px Arial"; g.fillText("playlist · sala 04", 256, 296);
+    g.beginPath(); g.arc(256, 256, 14, 0, Math.PI * 2); g.fill();
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; return t;
+  }, []);
+  const grooves = useMemo(() => {
+    const c = document.createElement("canvas"); c.width = c.height = 512;
+    const g = c.getContext("2d")!;
+    g.fillStyle = "#0c0b0a"; g.fillRect(0, 0, 512, 512);
+    for (let r = 120; r < 256; r += 3) { g.strokeStyle = `rgba(255,255,255,${0.03 + (r % 9 === 0 ? 0.05 : 0)})`; g.beginPath(); g.arc(256, 256, r, 0, Math.PI * 2); g.stroke(); }
     const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
   }, []);
-  useEffect(() => () => label.dispose(), [label]);
+  useEffect(() => () => { label.dispose(); grooves.dispose(); }, [label, grooves]);
+  useEffect(() => { if (spot.current && root.current) spot.current.target = root.current; }, []);
 
-  useFrame((_, dt) => {
+  useFrame((st, dt) => {
     speed.current = THREE.MathUtils.lerp(speed.current, playing ? 3.5 : 0, Math.min(dt * 2, 1));
     if (disc.current && !reduced) disc.current.rotation.y -= speed.current * dt;
     if (arm.current) arm.current.rotation.y = THREE.MathUtils.lerp(arm.current.rotation.y, playing ? -0.42 : 0, Math.min(dt * 3, 1));
+    if (halo.current) {
+      const m = halo.current.material as THREE.MeshBasicMaterial;
+      const pulse = reduced ? 0.5 : 0.45 + Math.sin(st.clock.elapsedTime * 2.2) * 0.15;
+      m.opacity = THREE.MathUtils.lerp(m.opacity, hover ? 0.9 : playing ? 0.55 : pulse, 0.1);
+    }
   });
 
+  const over = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); setHover(true); document.body.style.cursor = "pointer"; };
+  const out = () => { setHover(false); document.body.style.cursor = ""; };
+  const tap = (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(); };
+
   return (
-    <group position={[2.35, -1.25, 0.9]} rotation={[0.18, -0.55, 0]} scale={hover ? 1.04 : 1}
-      onClick={(e) => { e.stopPropagation(); onClick(); }}
-      onPointerOver={(e) => { e.stopPropagation(); setHover(true); document.body.style.cursor = "pointer"; }}
-      onPointerOut={() => { setHover(false); document.body.style.cursor = ""; }}>
-      {/* pedestal de cartón */}
-      <mesh position={[0, -0.55, 0]}><boxGeometry args={[1.25, 0.9, 1.0]} /><meshStandardMaterial color="#8a6a43" roughness={0.9} /></mesh>
-      <mesh position={[0, -0.1, 0]}><boxGeometry args={[1.35, 0.16, 1.05]} /><meshStandardMaterial color={hover ? "#d9f24a" : "#c9a878"} roughness={0.85} /></mesh>
-      <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}><planeGeometry args={[1.3, 1.0]} /><meshStandardMaterial color="#f3eee3" roughness={1} /></mesh>
-      {/* plato y vinilo */}
-      <mesh position={[-0.12, 0.02, 0]}><cylinderGeometry args={[0.43, 0.43, 0.04, 48]} /><meshStandardMaterial color="#3a3631" metalness={0.6} roughness={0.35} /></mesh>
-      <mesh ref={disc} position={[-0.12, 0.05, 0]}>
-        <cylinderGeometry args={[0.4, 0.4, 0.012, 64]} />
-        <meshStandardMaterial attach="material-0" color="#121110" />
-        <meshStandardMaterial attach="material-1" map={label} roughness={0.4} />
-        <meshStandardMaterial attach="material-2" color="#121110" />
-      </mesh>
-      {/* brazo */}
-      <group ref={arm} position={[0.42, 0.08, -0.32]}>
-        <mesh position={[0, 0.02, 0]}><cylinderGeometry args={[0.05, 0.05, 0.08, 16]} /><meshStandardMaterial color="#d4a12a" metalness={0.8} roughness={0.3} /></mesh>
-        <mesh position={[-0.08, 0.06, 0.24]} rotation={[0, 0.3, 0]}><boxGeometry args={[0.025, 0.02, 0.55]} /><meshStandardMaterial color="#c9cdd3" metalness={0.9} roughness={0.2} /></mesh>
+    <group position={[1.95, -1.12, 0.95]} rotation={[0.12, -0.5, 0]}>
+      <spotLight ref={spot} position={[0.6, 3.2, 1.6]} angle={0.42} penumbra={0.7} intensity={26} color="#ffcf8a" decay={1.6} distance={9} />
+      <pointLight position={[0, 0.9, 0.6]} intensity={2.2} color="#ffd9a8" decay={2} distance={3} />
+      <group ref={root} scale={1.45} onClick={tap} onPointerOver={over} onPointerOut={out}>
+        {/* mueble de nogal con pata dorada */}
+        <mesh position={[0, -0.62, 0]}><boxGeometry args={[1.3, 1.0, 1.02]} /><meshStandardMaterial color="#4a2f1c" roughness={0.55} metalness={0.05} /></mesh>
+        <mesh position={[0, -0.62, 0.515]}><planeGeometry args={[1.1, 0.8]} /><meshStandardMaterial color="#c9a878" roughness={0.9} /></mesh>
+        <mesh position={[0, -0.1, 0]}><boxGeometry args={[1.38, 0.14, 1.08]} /><meshStandardMaterial color="#6b4428" roughness={0.4} metalness={0.1} /></mesh>
+        <mesh position={[0, -0.025, 0]}><boxGeometry args={[1.4, 0.012, 1.1]} /><meshStandardMaterial color="#d4a12a" metalness={0.9} roughness={0.25} /></mesh>
+        {/* halo de invitación bajo el plato */}
+        <mesh ref={halo} position={[-0.12, -0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[0.47, 0.58, 64]} />
+          <meshBasicMaterial color="#f2b90f" transparent opacity={0.5} toneMapped={false} />
+        </mesh>
+        {/* plato metálico y vinilo con surcos */}
+        <mesh position={[-0.12, 0.0, 0]}><cylinderGeometry args={[0.46, 0.46, 0.045, 64]} /><meshStandardMaterial color="#c9cdd3" metalness={0.95} roughness={0.18} /></mesh>
+        <mesh ref={disc} position={[-0.12, 0.035, 0]}>
+          <cylinderGeometry args={[0.43, 0.43, 0.012, 96]} />
+          <meshStandardMaterial attach="material-0" color="#121110" />
+          <meshStandardMaterial attach="material-1" map={label} roughness={0.35} />
+          <meshStandardMaterial attach="material-2" map={grooves} roughness={0.25} metalness={0.3} />
+        </mesh>
+        {/* brazo */}
+        <group ref={arm} position={[0.46, 0.06, -0.34]}>
+          <mesh position={[0, 0.03, 0]}><cylinderGeometry args={[0.06, 0.07, 0.1, 24]} /><meshStandardMaterial color="#d4a12a" metalness={0.85} roughness={0.25} /></mesh>
+          <mesh position={[-0.08, 0.08, 0.26]} rotation={[0, 0.3, 0]}><boxGeometry args={[0.03, 0.022, 0.6]} /><meshStandardMaterial color="#e3e7ec" metalness={0.95} roughness={0.15} /></mesh>
+          <mesh position={[-0.17, 0.07, 0.55]} rotation={[0, 0.3, 0]}><boxGeometry args={[0.07, 0.03, 0.1]} /><meshStandardMaterial color="#121110" /></mesh>
+        </group>
+        {/* botón */}
+        <mesh position={[0.5, 0.0, 0.36]}><cylinderGeometry args={[0.07, 0.07, 0.05, 24]} /><meshStandardMaterial color={playing ? "#d9f24a" : "#d9341f"} emissive={playing ? "#556b00" : "#5a1208"} emissiveIntensity={1.2} /></mesh>
+        <Html position={[0, 0.62, 0]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
+          <span className={`${s.playTag} ${playing ? s.playTagOn : ""}`}>{playing ? "Sonando · toca para pausar" : "Toca para escuchar"}</span>
+        </Html>
       </group>
-      {/* botón */}
-      <mesh position={[0.45, 0.04, 0.32]}><cylinderGeometry args={[0.08, 0.08, 0.05, 24]} /><meshStandardMaterial color={playing ? "#d9f24a" : "#d9341f"} emissive={playing ? "#556b00" : "#3a0c06"} /></mesh>
     </group>
   );
 }

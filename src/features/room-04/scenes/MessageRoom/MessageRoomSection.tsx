@@ -11,6 +11,7 @@ import { SEED, pageCount, pageOf } from "./layout";
 import { useSpotify } from "./useSpotify";
 import { Sticker, Ticket } from "@/components/abx/Ticket";
 import { Icon } from "@/components/abx/Icon";
+import { OverlayScene } from "../../components/OverlayScene";
 import s from "./messageroom.module.css";
 
 const MessageRoomCanvas = dynamic(() => import("./MessageRoomCanvas").then((m) => m.MessageRoomCanvas), { ssr: false });
@@ -19,9 +20,10 @@ const fmt = (iso: string) => { try { return new Date(iso).toLocaleDateString("es
 
 /** 07 · Habitación de los mensajes: cada figura publicada en el tablero queda colgada aquí, entre espejos y vidrio. */
 export function MessageRoomSection() {
-  const section = useRef<HTMLElement>(null);
+  const section = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const inView = useInView(section, "300px");
-  const progress = useScrollProgress(section, undefined, { start: "top bottom", end: "center center" });
+  const progress = useScrollProgress(stageRef, undefined, { start: "top bottom", end: "center center" });
   const [webgl, setWebgl] = useState(false);
   useEffect(() => setWebgl(hasWebGL()), []);
   const low = useRoom((st) => st.lowPower);
@@ -75,8 +77,25 @@ export function MessageRoomSection() {
   }, [spot]);
 
   return (
-    <section ref={section} id="mensajes" className={s.section} aria-labelledby="mensajes-title">
-      <div className={s.stage} data-cursor="arrastra">
+    <OverlayScene id="mensajes" labelledBy="mensajes-title" tone="#1c1714" className={s.section}>
+      <div ref={section}>
+      {/* introducción en su propio bloque: la habitación queda libre debajo */}
+        <header className={s.intro}>
+          <div className={s.stickers}>
+            <Sticker tone="lila" rotate={-5}>07</Sticker>
+            <Sticker tone="papel" shape="flag" rotate={3}>{real ? `${items.length} ${items.length === 1 ? "mensaje" : "mensajes"}` : "Aún sin mensajes"}</Sticker>
+          </div>
+          <h2 id="mensajes-title" className={s.title}>La habitación de los mensajes</h2>
+          <p className={s.lede}>Cada figura publicada en el tablero queda colgada aquí, entre espejos y vidrio. Toca el tocadiscos para escuchar la playlist.</p>
+          {!real && <p className={s.note}>Las piezas que ves son ejemplos del equipo. La primera figura real será la tuya.</p>}
+          {connected === false && real && <p className={s.note}>Las piezas marcadas con un punto verde están guardadas solo en este navegador mientras el mural se conecta a la base de datos.</p>}
+          <div className={s.actions}>
+            <a href="#collage" className="ticket t-lima t-md" data-cursor="toca"><span className="ticket-stub"><Icon name="tijeras" size={22} /></span><span className="ticket-body">Crear mi figura</span></a>
+            <Ticket icon="menu" tone="papel" size="sm" aria-pressed={listMode} onClick={() => setListMode((v) => !v)}>{listMode ? "Ver la habitación" : "Ver como lista"}</Ticket>
+          </div>
+        </header>
+
+      <div ref={stageRef} className={s.stage} data-cursor="arrastra">
         {webgl && !listMode ? (
           <MessageRoomCanvas pieces={shown} freshIds={fresh} selected={selected} onSelect={setSelected} active={inView} low={low} reduced={reduced} progress={progress} playing={spot.playing} onPlayer={playerAction} />
         ) : (
@@ -90,21 +109,13 @@ export function MessageRoomSection() {
           </div>
         )}
 
-        <header className={s.head}>
-          <div className={s.stickers}>
-            <Sticker tone="lila" rotate={-5}>07</Sticker>
-            <Sticker tone="papel" shape="flag" rotate={3}>{real ? `${items.length} ${items.length === 1 ? "mensaje" : "mensajes"}` : "Aún sin mensajes"}</Sticker>
-          </div>
-          <h2 id="mensajes-title" className={s.title}>La habitación de los mensajes</h2>
-          <p className={s.lede}>Cada figura publicada en el tablero queda colgada aquí, entre espejos y vidrio. Arrastra para mirar alrededor y toca una pieza para leerla.</p>
-          {!real && <p className={s.note}>Las piezas que ves son ejemplos del equipo. La primera figura real será la tuya.</p>}
-          {connected === false && real && <p className={s.note}>Las piezas marcadas con un punto verde están guardadas solo en este navegador mientras el mural se conecta a la base de datos.</p>}
-          <div className={s.actions}>
-            <a href="#collage" className="ticket t-lima t-md" data-cursor="toca"><span className="ticket-stub"><Icon name="tijeras" size={22} /></span><span className="ticket-body">Crear mi figura</span></a>
-            <Ticket icon="menu" tone="papel" size="sm" aria-pressed={listMode} onClick={() => setListMode((v) => !v)}>{listMode ? "Ver la habitación" : "Ver como lista"}</Ticket>
-          </div>
-        </header>
 
+        <div className={s.controls}>
+          <span className={s.hintPill}>Arrastra para mirar · toca una pieza para leerla</span>
+          {spot.playing && (
+            <Ticket icon="pausa" tone="lima" size="sm" onClick={spot.toggle} aria-label="Pausar la música">Pausar música</Ticket>
+          )}
+        </div>
         {pages > 1 && (
           <nav className={s.pager} aria-label="Páginas de mensajes">
             <Ticket icon="atras" tone="papel" size="sm" disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} aria-label="Mensajes más recientes" />
@@ -175,6 +186,7 @@ export function MessageRoomSection() {
         </div>
       )}
       <p className="sr-only" aria-live="polite">{fresh.size ? "Tu figura ya está colgada en la habitación." : ""}</p>
-    </section>
+      </div>
+    </OverlayScene>
   );
 }
