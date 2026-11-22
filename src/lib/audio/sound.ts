@@ -41,7 +41,6 @@ const SFX: Record<SfxName, { vol: number; gap: number; duck?: boolean; maxDur?: 
   recortar: { vol: 0.7, gap: 300 },
   "composicion-completa": { vol: 0.85, gap: 1500, duck: true },
 };
-const PRELOAD: SfxName[] = ["libro-abrir", "pagina", "libro-cerrar", "recorte-tomar", "recorte-pegar", "recorte-arrastrar"];
 const MAX_VOICES = 4;
 
 type Listener = () => void;
@@ -59,6 +58,8 @@ class SoundManager {
   private duckUntil = 0;
   private videoActive = false;
   private listeners = new Set<Listener>();
+  private detach: () => void = () => {};
+  private mediaConnected = false;
   state: State = { musicOn: true, sfxOn: true, unlocked: false };
 
   constructor() {
@@ -68,15 +69,30 @@ class SoundManager {
       if (typeof saved.musicOn === "boolean") this.state.musicOn = saved.musicOn;
       if (typeof saved.sfxOn === "boolean") this.state.sfxOn = saved.sfxOn;
     } catch { /* sin almacenamiento */ }
+    // Eventos que los navegadores aceptan como gesto de activación. Se mantienen hasta que el
+    // contexto queda "running" y la música arrancó (en móviles pointerdown táctil NO activa; touchend sí).
     const unlock = () => this.unlock();
-    window.addEventListener("pointerdown", unlock, { once: true, passive: true });
-    window.addEventListener("keydown", unlock, { once: true });
+    const evs = ["pointerdown", "pointerup", "mousedown", "touchend", "keydown", "click", "wheel"] as const;
+    evs.forEach((e) => window.addEventListener(e, unlock, { passive: true, capture: true }));
+    this.detach = () => evs.forEach((e) => window.removeEventListener(e, unlock, { capture: true } as EventListenerOptions));
+    // la pista de fondo se descarga desde el inicio para que suene apenas haya permiso
+    this.musicEl = new Audio(MUSIC_SRC);
+    this.musicEl.loop = true;
+    this.musicEl.preload = "auto";
+    this.musicEl.crossOrigin = "anonymous";
     document.addEventListener("visibilitychange", () => {
       if (!this.ctx) return;
       if (document.hidden) { this.musicEl?.pause(); this.ctx.suspend().catch(() => {}); }
       else { this.ctx.resume().catch(() => {}); if (this.state.musicOn && this.state.unlocked) this.musicEl?.play().catch(() => {}); }
     });
   }
+
+  /** la música se retoma si algo externo la pausó mientras debía sonar */
+  private watchdog = typeof window !== "undefined" ? window.setInterval(() => {
+    if (!this.ctx || !this.musicEl || !this.state.unlocked || !this.state.musicOn || document.hidden) return;
+    if (this.ctx.state === "suspended") this.ctx.resume().catch(() => {});
+    if (this.musicEl.paused) this.musicEl.play().catch(() => {});
+  }, 2500) : 0;
 
   subscribe(fn: Listener) { this.listeners.add(fn); return () => { this.listeners.delete(fn); }; }
   private emit() {
@@ -98,13 +114,12 @@ class SoundManager {
     this.sfxGain = this.ctx.createGain();
     this.sfxGain.gain.value = this.state.sfxOn ? 1 : 0;
     this.sfxGain.connect(this.master);
-    const el = new Audio(MUSIC_SRC);
-    el.loop = true;
-    el.preload = "auto";
-    el.crossOrigin = "anonymous";
-    this.musicEl = el;
-    try { this.ctx.createMediaElementSource(el).connect(this.musicGain); } catch { /* ya conectado */ }
-    PRELOAD.forEach((n) => this.load(n));
+    if (this.musicEl && !this.mediaConnected) {
+      try { this.ctx.createMediaElementSource(this.musicEl).connect(this.musicGain); this.mediaConnected = true; }
+      catch { /* sin Web Audio para el elemento: se usa su volumen propio */ }
+    }
+    // todos los efectos pesan ~1 MB: se descargan y decodifican de una vez para que suenen sin retraso
+    (Object.keys(SFX) as SfxName[]).forEach((n) => this.load(n));
     return this.ctx;
   }
 
@@ -112,14 +127,24 @@ class SoundManager {
   unlock() {
     const ctx = this.ensure();
     if (!ctx) return;
-    ctx.resume().catch(() => {});
-    if (!this.state.unlocked) { this.state.unlocked = true; this.emit(); }
-    if (this.state.musicOn) this.startMusic();
+    const done = () => {
+      if (ctx.state !== "running") return;
+      if (!this.state.unlocked) { this.state.unlocked = true; this.emit(); }
+      // iOS: un búfer silencioso dentro del gesto termina de habilitar el canal de efectos
+      try { const b = ctx.createBuffer(1, 1, 22050); const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); } catch { /* */ }
+      if (this.state.musicOn) this.startMusic();
+      else this.detach();
+    };
+    if (ctx.state === "running") done();
+    else ctx.resume().then(done).catch(() => {});
   }
 
   private startMusic() {
     if (!this.ctx || !this.musicEl) return;
-    this.musicEl.play().catch(() => {});
+    const el = this.musicEl;
+    if (!this.mediaConnected) el.volume = this.targetMusic() / MUSIC_VOL * 0.3;
+    const p = el.play();
+    if (p) p.then(() => this.detach()).catch(() => { /* sigue esperando un gesto válido */ });
     this.rampMusic();
   }
 
@@ -213,6 +238,20 @@ class SoundManager {
       if (cfg.duck) this.duck(Math.min(2400, dur * 1000));
     });
     return true;
+  }
+
+  /** tecla de máquina de escribir: golpe corto sintetizado (el paquete del equipo no trae este sonido) */
+  typeKey(strength = 1) {
+    if (!this.state.sfxOn || !this.state.unlocked || !this.ctx) return;
+    const ctx = this.ctx, t0 = ctx.currentTime, len = 0.045;
+    const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * len), ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 6);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 1800 + Math.random() * 900; bp.Q.value = 1.4;
+    const g = ctx.createGain(); g.gain.value = 0.22 * strength;
+    src.connect(bp).connect(g).connect(this.sfxGain);
+    src.start(t0);
   }
 
   /** corta los efectos largos de una sección al salir de ella */

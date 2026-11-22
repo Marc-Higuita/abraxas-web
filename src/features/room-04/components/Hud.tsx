@@ -63,6 +63,11 @@ export function Hud() {
           </button>
         ))}
       </div>
+      {!audio.unlocked && (
+        <button type="button" className={s.audioPill} onClick={() => sound.unlock()} aria-label="Activar el sonido de la exposición">
+          <Icon name="sonido" size={16} /> Toca para activar el sonido
+        </button>
+      )}
       <div className={s.buttons}>
         <Ticket size="sm" tone="papel" icon="atras" onClick={back} aria-label="Sección anterior" disabled={i === 0} />
         <Ticket size="sm" tone="lima" icon="menu" onClick={() => setIndex(true)} aria-label="Índice">
