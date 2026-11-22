@@ -7,6 +7,7 @@ import { CITAS, TRANSCRIPCIONES_PENDIENTES } from "../data/phrases";
 import { Ticket, Sticker } from "@/components/abx/Ticket";
 import { Icon } from "@/components/abx/Icon";
 import { DottedOval } from "@/components/abx/Ornaments";
+import { sound, useSoundState } from "@/lib/audio/useSound";
 import s from "./hud.module.css";
 
 export const scrollToAct = (id: ActId) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -16,8 +17,7 @@ export function Hud() {
   const setAct = useRoom((st) => st.setAct);
   const progress = useRoom((st) => st.progress);
   const setProgress = useRoom((st) => st.setProgress);
-  const muted = useRoom((st) => st.muted);
-  const toggleMuted = useRoom((st) => st.toggleMuted);
+  const audio = useSoundState();
   const reduced = useRoom((st) => st.reducedMotion);
   const setReduced = useRoom((st) => st.setReducedMotion);
   const setInfo = useRoom((st) => st.setInfo);
@@ -68,7 +68,10 @@ export function Hud() {
         <Ticket size="sm" tone="lima" icon="menu" onClick={() => setIndex(true)} aria-label="Índice">
           <span className={s.hideSm}>Índice</span>
         </Ticket>
-        <Ticket size="sm" tone="lila" icon={muted ? "silencio" : "sonido"} onClick={toggleMuted} aria-label={muted ? "Activar sonido" : "Silenciar"} aria-pressed={!muted} />
+        <Ticket size="sm" tone="lila" icon={audio.musicOn ? "disco" : "silencio"} onClick={() => sound.toggleMusic()} aria-label={audio.musicOn ? "Silenciar la música de fondo" : "Activar la música de fondo"} aria-pressed={audio.musicOn} title="Música de fondo">
+          <span className={s.hideSm}>Música</span>
+        </Ticket>
+        <Ticket size="sm" tone="papel" icon={audio.sfxOn ? "sonido" : "silencio"} onClick={() => sound.toggleSfx()} aria-label={audio.sfxOn ? "Desactivar los efectos de sonido" : "Activar los efectos de sonido"} aria-pressed={audio.sfxOn} title="Efectos de sonido" />
         <Ticket size="sm" tone="naranja" icon={reduced ? "quieto" : "movimiento"} onClick={toggleReduced} aria-pressed={reduced} aria-label={reduced ? "Activar movimiento" : "Reducir movimiento"} />
         <Ticket size="sm" tone="papel" icon="info" onClick={() => setInfo(true)} aria-label="Sobre la sala" />
       </div>

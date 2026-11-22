@@ -135,16 +135,11 @@ button { font: inherit; color: inherit; }
 .tx-paper { background-color: var(--papel); background-image: radial-gradient(rgba(58,54,49,.06) 1px, transparent 1.4px); background-size: 6px 6px; }
 
 /* Cursor propio */
-.abx-cursor-on, .abx-cursor-on * { cursor: none !important; }
-.abx-water { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 95; mix-blend-mode: screen; }
-.abx-dot, .abx-ring { position: fixed; left: 0; top: 0; pointer-events: none; z-index: 100; will-change: transform; }
-.abx-dot { width: 14px; height: 14px; margin: -7px 0 0 -7px; color: var(--papel); mix-blend-mode: difference; }
-.abx-ring { width: 0; height: 0; }
-.abx-ring-inner { position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid rgba(243,238,227,.7); display: grid; place-items: center; transition: transform 260ms var(--ease-spring), background 200ms, border-color 200ms; mix-blend-mode: difference; color: var(--negro); }
-.abx-ring.is-active .abx-ring-inner { transform: scale(1.7); border-color: var(--oro-sombra); background: rgba(242,193,78,.18); mix-blend-mode: normal; }
-.abx-ring.has-icon .abx-ring-inner { background: var(--oro-sombra); border-color: var(--oro-sombra); transform: scale(1.55); }
-.abx-ring.down .abx-ring-inner { transform: scale(.8); }
-.abx-ring-label { position: absolute; left: 34px; top: -11px; font-family: var(--font-caos); font-weight: 500; font-size: 13px; background: var(--negro); color: var(--papel); padding: 4px 8px; border-radius: 999px; white-space: nowrap; }
+/* cursor nativo (corrección 00): sin sistema de cursor propio */
+button, [role="button"], a, label[for], summary, [data-cursor="toca"], [data-cursor="abre"], [data-cursor="ver"], [data-cursor="lee"], [data-cursor="play"], [data-cursor="pasa"] { cursor: pointer; }
+[data-cursor="arrastra"] { cursor: grab; }
+[data-cursor="arrastra"]:active { cursor: grabbing; }
+button:disabled { cursor: not-allowed; }
 
 /* Entradas */
 @keyframes abx-rise { from { opacity: 0; transform: translateY(26px) rotate(var(--r0, 0deg)); } to { opacity: 1; transform: none; } }

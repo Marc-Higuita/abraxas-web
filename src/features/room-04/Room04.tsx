@@ -7,7 +7,6 @@ import { CollectiveSection } from "./scenes/CollectiveCollage/CollectiveSection"
 import { AbraxasSection } from "./scenes/AbraxasPortrait/AbraxasSection";
 import { MessageRoomSection } from "./scenes/MessageRoom/MessageRoomSection";
 import { Hud, Overlays, RevealObserver } from "./components/Hud";
-import { CursorFX } from "@/components/abx/CursorFX";
 import { Interlude } from "./components/Interlude";
 import { QuoteCollage } from "./components/QuoteCollage";
 import { TransInterlude } from "./components/TransInterlude";
@@ -38,7 +37,6 @@ export function Room04() {
       </main>
       <Overlays />
       <RevealObserver />
-      <CursorFX />
     </>
   );
 }
