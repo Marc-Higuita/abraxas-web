@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, type MutableRefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import photosData from "../../data/room-photos.json";
@@ -48,15 +48,24 @@ function pickPhotos(low: boolean) {
   return ALL.filter((p) => keep.has(p.id));
 }
 
+/** la habitación ya se armó una vez en esta visita: al volver no se repite la espera */
+let assembledOnce = false;
+
 export function PhotoRoomCanvas(props: Props) {
   const low = useRoom((s) => s.lowPower);
+  // si el navegador recicla el contexto WebGL (muchas escenas 3D en la página), se recrea el lienzo
+  const [ctxKey, setCtxKey] = useState(0);
   return (
     <Canvas
+      key={ctxKey}
       dpr={low ? 1 : [1, 1.6]}
       frameloop={props.active ? "always" : "never"}
       camera={{ fov: 46, near: 0.05, far: 60, position: [0, 0, 0] }}
       gl={{ antialias: !low, powerPreference: "high-performance" }}
-      onCreated={({ gl, scene }) => { gl.setClearColor(BG); scene.fog = new THREE.Fog(BG, 9, 26); }}
+      onCreated={({ gl, scene }) => {
+        gl.setClearColor(BG); scene.fog = new THREE.Fog(BG, 9, 26);
+        gl.domElement.addEventListener("webglcontextlost", (e) => { e.preventDefault(); window.setTimeout(() => setCtxKey((k) => k + 1), 60); }, { once: true });
+      }}
     >
       <Scene {...props} low={low} />
     </Canvas>
@@ -116,7 +125,7 @@ function Scene({ progress, onPhase, onLoad, low, door: doorState, onDoor, onCurs
   const setPhase = (p: RoomPhase) => {
     if (phaseRef.current === p) return;
     phaseRef.current = p; onPhase(p);
-    if (p === "assembled") sound.play("cuarto-magico");
+    if (p === "assembled") { if (!assembledOnce) sound.play("cuarto-magico"); assembledOnce = true; }
   };
 
   // instante en que cada textura quedó lista (para mostrar la foto solo entonces, con un fundido corto)
@@ -211,7 +220,7 @@ function Scene({ progress, onPhase, onLoad, low, door: doorState, onDoor, onCurs
     let a = 0;
     if (readyAt.current !== null) {
       const t0 = readyAt.current + (reduced ? 0 : ASSEMBLY_DELAY);
-      a = reduced ? 1 : THREE.MathUtils.clamp((now - t0) / ASSEMBLY_DURATION, 0, 1);
+      a = reduced || assembledOnce ? 1 : THREE.MathUtils.clamp((now - t0) / ASSEMBLY_DURATION, 0, 1);
       setPhase(a <= 0 ? "scattered" : a < 1 ? "assembling" : "assembled");
     }
     const p = progress.current;

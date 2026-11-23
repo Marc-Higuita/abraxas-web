@@ -34,6 +34,8 @@ export function PhotoRoomSection() {
   const reduced = useRoom((st) => st.reducedMotion);
   const openFicha = useRoom((st) => st.openFicha);
   const inView = useInView(section);
+  // el lienzo se libera lejos de la habitación y se recrea al volver (evita contextos WebGL perdidos)
+  const near = useInView(section, "120% 0px");
   const [webgl] = useState(() => hasWebGL());
   const sticky = useRef<HTMLDivElement>(null);
   const doorHint = useRef<HTMLDivElement>(null);
@@ -167,7 +169,7 @@ export function PhotoRoomSection() {
     <section ref={section} id="habitacion" className={s.section} aria-labelledby="act1-title" style={{ height: reduced ? "200vh" : "300vh" }}>
       <div ref={sticky} className={`${s.sticky} ${opening ? s.isOpening : ""}`}>
         {webgl ? (
-          <PhotoRoomCanvas progress={progress} onPhase={setPhase} onLoad={onLoad} active={inView} door={door} onDoor={openDoor} onCursor={onCursor} />
+          near ? <PhotoRoomCanvas progress={progress} onPhase={setPhase} onLoad={onLoad} active={inView} door={door} onDoor={openDoor} onCursor={onCursor} /> : null
         ) : (
           <img className={s.fallback} src="/assets/room-04/portrait/oficina-collage-equipo.jpg" alt="Collage fotográfico de la oficina de Abraxas hecho por el equipo" />
         )}

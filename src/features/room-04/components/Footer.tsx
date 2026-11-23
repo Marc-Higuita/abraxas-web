@@ -27,7 +27,7 @@ export function Footer() {
             <dt>Proyecto</dt><dd>Museo Abraxas · museo digital experimental de la Casa Museo del Collage</dd>
             <dt>Sala</dt><dd>04 · Vida y obra</dd>
             <dt>Realización</dt><dd className={s.names}><span>Marco Emilio Higuita García</span><span>Santiago Marín Vargas</span></dd>
-            <dt>Curso</dt><dd>Creación de Espacios Interactivos · Universidad de Antioquia</dd>
+            <dt>Curso</dt><dd>Creación de Espacios Interactivos</dd>
             <dt>Docente</dt><dd className={s.names}><span>Laura Rodríguez Hurtado</span></dd>
             <dt>Año</dt><dd>2026</dd>
           </dl>
@@ -37,7 +37,7 @@ export function Footer() {
 
       <StitchLine className={s.stitch} color="var(--oro)" width={1200} />
       <div className={s.bottom}>
-        <span>© 2026 · Museo Abraxas · Sala 04 · Universidad de Antioquia. Proyecto académico sin fines comerciales.</span>
+        <span>© 2026 · Museo Abraxas · Sala 04. Proyecto académico sin fines comerciales.</span>
         <img src="/assets/brand/isotipo-papel.png" alt="" width={32} height={40} />
       </div>
     </footer>

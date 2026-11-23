@@ -43,9 +43,15 @@ export function TimelineSection() {
   // al cambiar de momento: en celular la tarjeta se vuelve a plegar; un salto grande suena discreto
   useEffect(() => {
     setCardOpen(!narrow);
-    if (Math.abs(idx - lastIdx.current) >= 3) sound.play("fotos-desplazamiento", { volume: 0.6 });
+    if (idx !== lastIdx.current) {
+      // cada momento "se pega" en su sitio; un salto grande suena a fotos desplazándose; Guinness, a collage que se arma
+      const id = events[idx]?.id;
+      if (Math.abs(idx - lastIdx.current) >= 3) sound.play("fotos-desplazamiento", { volume: 0.55 });
+      else sound.play("recorte-pegar", { volume: 0.6 });
+      if (id === "guinness") sound.play("collage-ensambla", { volume: 0.7 });
+    }
     lastIdx.current = idx;
-  }, [idx, narrow]);
+  }, [idx, narrow, events]);
 
   /* scroll vertical → posición en el pasillo */
   useEffect(() => {
