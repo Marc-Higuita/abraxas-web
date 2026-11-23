@@ -224,7 +224,8 @@ function Scene({ progress, onPhase, onLoad, low, door: doorState, onDoor, onCurs
     const oAt = doorState.current.openAt;
     const o = oAt === null ? 0 : THREE.MathUtils.clamp((now - oAt) / 1.5, 0, 1);
     const open = easeInOut(o);
-    const pass = oAt === null ? 0 : easeInOut(THREE.MathUtils.clamp((now - oAt - 0.35) / 1.4, 0, 1));
+    // al volver a la habitación con la puerta ya abierta, la cámara regresa; al bajar de nuevo, la cruza
+    const pass = oAt === null ? 0 : easeInOut(THREE.MathUtils.clamp((now - oAt - 0.35) / 1.4, 0, 1)) * smooth(0.74, 0.82, p);
 
     for (let i = 0; i < items.length; i++) {
       const m = meshes.current[i];

@@ -1,12 +1,15 @@
 "use client";
 import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Html, MeshReflectorMaterial } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { PublishedPiece } from "../../lib/pieces";
 import { CARD_H, PORTALS, ROOM, THREADS, slots, type Portal } from "./layout";
 import { CubeProvider, Installation, MirrorMat, Mirrors, WallArt, onMirror } from "./Decor";
+import { FloorMirrors, ReflectiveFloorMat } from "./FloorMirrors";
+import { WallCutouts } from "./WallCutouts";
+import { RoomObjects } from "./Objects";
 import { InfinityMirror } from "./InfinityMirror";
 import s from "./messageroom.module.css";
 
@@ -51,6 +54,11 @@ export function MessageRoomCanvas(props: Props) {
       <Portals portal={props.portal} onPortal={props.onPortal} low={props.low} />
       <Suspense fallback={null}><Installation reduced={props.reduced} low={props.low} /></Suspense>
       <Suspense fallback={null}><WallArt reduced={props.reduced} low={props.low} /></Suspense>
+      {/* R4-D objetos */}
+      <Suspense fallback={null}><WallCutouts low={props.low} /></Suspense>
+      <FloorMirrors low={props.low} />
+      <Suspense fallback={null}><RoomObjects reduced={props.reduced} low={props.low} /></Suspense>
+      {/* /R4-D */}
       <Threads />
       {slots().map((s, i) => {
         const p = props.pieces[i];
@@ -179,7 +187,7 @@ function Architecture({ low }: { low: boolean }) {
       {/* piso espejado: reflejo real de toda la instalación */}
       <mesh position={[0, floor, mid]} rotation={[-Math.PI / 2, 0, 0]} onUpdate={onMirror}>
         <planeGeometry args={[halfW * 2, len]} />
-        <MeshReflectorMaterial resolution={low ? 256 : 768} blur={low ? [200, 60] : [320, 90]} mixBlur={0.9} mixStrength={low ? 1.4 : 2.2} roughness={0.75} depthScale={1} minDepthThreshold={0.4} maxDepthThreshold={1.3} color="#2a211b" metalness={0.5} mirror={0.55} />
+        <ReflectiveFloorMat low={low} />
       </mesh>
 
       {/* dos marcos dorados que cruzan el pasillo: planos de profundidad hacia el fondo */}
@@ -240,7 +248,12 @@ function Portals({ portal, onPortal, low }: { portal: string | null; onPortal: (
           </InfinityMirror>
         ) : (
           <group key={p.id} position={p.pos} rotation={[0, p.rotY, 0]}>
-            <mesh onUpdate={onMirror} {...ev(p)}><planeGeometry args={p.size} /><MirrorMat /></mesh>
+            {/* el espejo vive en la capa de reflejos (no la ve el raycaster): un plano de toque invisible en la capa 0 recibe el clic */}
+            <mesh onUpdate={onMirror}><planeGeometry args={p.size} /><MirrorMat /></mesh>
+            <mesh position={[0, 0, 0.06]} {...ev(p)}>
+              <planeGeometry args={[p.size[0] + 0.3, p.size[1] + 0.3]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} colorWrite={false} />
+            </mesh>
             {border}
           </group>
         );
@@ -427,12 +440,13 @@ function Player({ playing, onClick, reduced }: { playing: boolean; onClick: () =
   const tap = (e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); onClick(); };
 
   return (
-    <group position={[1.15, -1.2, 2.3]} rotation={[0.16, -0.32, 0]}>
+    // más alto, más cerca del centro y de frente: el mueble llega al piso y el plato queda a la altura de la vista
+    <group position={[1.75, -0.3, 0.9]} rotation={[0.1, -0.38, 0]}>
       <spotLight ref={spot} position={[0.3, 3.4, 1.4]} angle={0.4} penumbra={0.6} intensity={hover ? 48 : 36} color="#ffcf8a" decay={1.5} distance={9} />
       <pointLight position={[0, 1.0, 0.8]} intensity={hover ? 4 : 2.8} color="#ffd9a8" decay={2} distance={3.5} />
       {/* contraluz frío: separa el tocadiscos del fondo oscuro */}
       <pointLight position={[-0.6, 0.6, -1.4]} intensity={2.4} color="#a8e6e8" decay={2} distance={3} />
-      <group ref={root} scale={1.6} onClick={tap} onPointerOver={over} onPointerOut={out}>
+      <group ref={root} scale={1.75} onClick={tap} onPointerOver={over} onPointerOut={out}>
         {/* mueble de nogal con pata dorada */}
         <mesh position={[0, -0.62, 0]}><boxGeometry args={[1.3, 1.0, 1.02]} /><meshStandardMaterial color="#4a2f1c" roughness={0.55} metalness={0.05} /></mesh>
         <mesh position={[0, -0.62, 0.515]}><planeGeometry args={[1.1, 0.8]} /><meshStandardMaterial color="#c9a878" roughness={0.9} /></mesh>

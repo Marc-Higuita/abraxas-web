@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Icon, type IconName } from "@/components/abx/Icon";
-import { Sticker, Ticket } from "@/components/abx/Ticket";
+import { Ticket } from "@/components/abx/Ticket";
 import { CreditosBody, PrivacidadBody, TerminosBody } from "@/app/legal/content";
 import { RIGHTS } from "./rights";
 import s from "./footer.module.css";
@@ -20,7 +20,7 @@ const DOCS: Record<DocId, { title: string; icon: IconName; href: string; label: 
 function RightsTable() {
   return (
     <>
-      <p>No todos los materiales tienen el mismo titular. Lo marcado en rosado falta por confirmar.</p>
+      <p>No todos los materiales tienen el mismo titular. Las obras, fotografías y documentos de Abraxas pertenecen a sus titulares; se usan con fines académicos y sin ánimo de lucro. Si eres titular de algún material y quieres que lo revisemos, escríbenos a través del curso Creación de Espacios Interactivos de la Universidad de Antioquia.</p>
       <div className={s.tableWrap} tabIndex={0} role="region" aria-label="Tabla de derechos por material">
         <table className={s.table}>
           <thead><tr><th scope="col">Material</th><th scope="col">Dónde aparece</th><th scope="col">Titular</th><th scope="col">Uso en el sitio</th></tr></thead>
@@ -30,7 +30,7 @@ function RightsTable() {
                 <th scope="row">{r.material}</th>
                 <td>{r.donde}</td>
                 <td>{r.titular}</td>
-                <td>{r.uso}{r.pendiente && <span className={s.todo}>Por completar: {r.pendiente}</span>}</td>
+                <td>{r.uso}</td>
               </tr>
             ))}
           </tbody>
@@ -88,12 +88,10 @@ function Dialog({ doc, onClose }: { doc: DocId; onClose: () => void }) {
           <Ticket size="sm" icon="cerrar" tone="negro" onClick={onClose} aria-label="Cerrar ventana" data-close>Cerrar</Ticket>
         </header>
         <div className={s.dialogBody} tabIndex={0}>
-          <div className={legal.draft} role="note">BORRADOR PARA REVISIÓN · este texto todavía no es definitivo y debe revisarlo el equipo antes de publicarse como versión final.</div>
           <div className={legal.body}>{BODY[doc]()}</div>
         </div>
         <footer className={s.dialogFoot}>
           <Link href={d.href} target="_blank" rel="noreferrer">Abrir como página</Link>
-          <Sticker tone="bermellon" shape="flag" rotate={2}>Borrador</Sticker>
         </footer>
       </div>
     </div>

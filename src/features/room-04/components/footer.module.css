@@ -43,3 +43,6 @@
   .credits { transform: none; }
 }
 @media (prefers-reduced-motion: reduce) { .legal button { transition: none; } .backdrop, .dialog { animation: none; } }
+
+/* nombres del equipo: jerarquía clara, uno por línea */
+.names { display: grid; gap: 2px; font-family: var(--font-caos, Arial), sans-serif; font-weight: 500; font-size: 17px; color: var(--negro, #121110); }

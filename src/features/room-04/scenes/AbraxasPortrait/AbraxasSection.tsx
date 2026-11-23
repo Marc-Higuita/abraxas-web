@@ -17,7 +17,7 @@ const PortraitCanvas = dynamic(() => import("./PortraitCanvas").then((m) => m.Po
 /**
  * 04 · Abraxas, por capas. Escultura fotográfica: fragmentos recortados de fotos de Abraxas de distintos
  * momentos, ensamblados en planos de profundidad. Entra SUPERPUESTA a la sección anterior y se arma con
- * el scroll; el cursor separa las capas y dos lupas de vidrio real cuelgan de hilos.
+ * el scroll; el cursor separa las capas y algunas fotos se abren hacia adentro (efecto Droste).
  * Alrededor flotan miniaturas del archivo cosidas a la figura: cada una abre su ficha con fuente.
  */
 export function AbraxasSection() {

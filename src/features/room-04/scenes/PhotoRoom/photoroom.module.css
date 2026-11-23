@@ -28,3 +28,7 @@
 @media (prefers-reduced-motion: reduce) { .doorHint[data-on="1"] :global(.ticket) { animation: none; } }
 /* al cruzar la puerta, la luz kraft llena la pantalla sin velos ni textos encima */
 .isOpening .overlay { opacity: 0; transition: opacity 500ms ease; }
+/* el visitante intentó seguir bajando con la puerta cerrada: el aviso salta un instante */
+.doorHint[data-pulse="1"] :global(.ticket) { animation: abx-door-nudge 0.9s var(--ease-spring, ease) 1; }
+@keyframes abx-door-nudge { 0%, 100% { transform: translateY(0) scale(1); } 30% { transform: translateY(-8px) scale(1.08); } 60% { transform: translateY(2px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .doorHint[data-pulse="1"] :global(.ticket) { animation: none; outline: 2px dashed var(--oro, #d4a12a); } }

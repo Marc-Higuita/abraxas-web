@@ -1,37 +1,90 @@
-.section { position: relative; height: 210vh; background: #121110; color: var(--papel); }
+.section { position: relative; height: 210vh; background: #121110; color: var(--negro, #121110); }
 .sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
-.bg { position: absolute; inset: -6%; transform-origin: 60% 50%; will-change: transform; }
+.bg { position: absolute; inset: -6%; transform-origin: 50% 50%; will-change: transform; }
 .bg img { width: 100%; height: 100%; object-fit: cover; object-position: 55% 45%; display: block; }
-/* velo moderado: más denso detrás del texto, la foto conserva su detalle a la derecha */
+/* velo moderado: más denso en el centro (donde cuelga la frase); los bordes conservan el detalle de la foto */
 .veil {
   position: absolute; inset: 0; pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(18, 17, 16, 0.74) 0%, rgba(18, 17, 16, 0.52) 42%, rgba(18, 17, 16, 0.12) 78%, rgba(18, 17, 16, 0.05) 100%),
-    linear-gradient(0deg, rgba(18, 17, 16, 0.45) 0%, rgba(18, 17, 16, 0) 30%);
+    radial-gradient(ellipse 64% 56% at 50% 50%, rgba(18, 17, 16, 0.72) 0%, rgba(18, 17, 16, 0.5) 60%, rgba(18, 17, 16, 0.2) 100%),
+    linear-gradient(0deg, rgba(18, 17, 16, 0.4) 0%, rgba(18, 17, 16, 0) 26%);
 }
-.figure { position: absolute; left: max(18px, 6vw); top: 50%; transform: translateY(-50%); margin: 0; width: min(60vw, 980px); perspective: 1100px; }
-.quote {
-  margin: 0; transform-style: preserve-3d;
-  font-family: var(--font-caos); font-weight: 500; font-size: clamp(34px, 5.1vw, 86px); line-height: 1.04; letter-spacing: -0.02em;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55);
+
+/* la instalación, centrada */
+.figure {
+  position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%);
+  margin: 0; width: min(92vw, 1180px); display: flex; flex-direction: column; align-items: center;
 }
-.mark { display: inline-block; margin-right: 0.04em; color: var(--amarillo); }
-.word { display: inline-block; margin-right: 0.24em; transform-style: preserve-3d; will-change: transform, opacity; backface-visibility: hidden; }
-.cut { display: inline-flex; align-items: flex-end; gap: 0.02em; margin-right: 0; white-space: nowrap; }
-.letter { height: 1.08em; width: auto; display: block; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45)); }
-.ellipsis { margin-left: 0.06em; }
-.attrib { margin: 28px 0 0; font-size: 15px; letter-spacing: 0.02em; color: rgba(243, 238, 227, 0.85); opacity: 0; }
-.attrib::before { content: ""; display: block; width: 180px; height: 10px; margin-bottom: 14px;
+/* dos cuerdas del techo a la primera línea */
+.anchor { position: absolute; top: -60vh; height: calc(60vh + 6px); width: 1px; background: rgba(243, 238, 227, 0.55); box-shadow: 1px 0 0 rgba(0, 0, 0, 0.35); }
+
+.quote { margin: 0; display: flex; flex-direction: column; align-items: center; gap: clamp(26px, 3.6vw, 48px); width: 100%; }
+.row { position: relative; display: flex; justify-content: center; align-items: flex-start; gap: clamp(10px, 1.3vw, 20px); padding-top: 4px; width: 100%; }
+/* cuerda horizontal de la que cuelga cada línea */
+.wire {
+  position: absolute; top: 0; left: 4%; right: 4%; height: 2px; transform-origin: 50% 50%;
+  background: linear-gradient(90deg, transparent, rgba(243, 238, 227, 0.7) 6%, rgba(243, 238, 227, 0.7) 94%, transparent);
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* cada pieza cuelga de su hilo y se mece apenas (el eje está arriba, en la cuerda) */
+.hang {
+  position: relative; display: inline-flex; flex-direction: column; align-items: center;
+  transform-origin: 50% 0; will-change: translate, transform;
+  animation: sway 6s ease-in-out infinite alternate;
+}
+@keyframes sway { from { transform: rotate(calc(var(--tilt, 0deg) - 1.1deg)); } to { transform: rotate(calc(var(--tilt, 0deg) + 1.1deg)); } }
+.thread { display: block; width: 1px; height: var(--thread, 16px); background: rgba(243, 238, 227, 0.75); }
+.thread::after { content: ""; display: block; width: 5px; height: 5px; margin: -1px 0 0 -2px; border-radius: 50%; background: #d4a12a; }
+
+/* la pieza de papel: texto real (nítido), bordes recortados distintos, sombra sobre el fondo */
+.tag {
+  display: inline-block; position: relative; margin-top: -2px;
+  padding: 0.12em 0.32em 0.16em;
+  font-family: var(--font-caos), Arial, sans-serif; font-weight: 500;
+  font-size: clamp(30px, 4.3vw, 72px); line-height: 1; letter-spacing: -0.015em;
+  color: #121110;
+  filter: drop-shadow(5px 9px 7px rgba(0, 0, 0, 0.5));
+  clip-path: polygon(0 4%, 6% 0, 18% 3%, 34% 0, 52% 2%, 70% 0, 86% 3%, 100% 1%, 98% 26%, 100% 52%, 98% 78%, 100% 97%, 82% 100%, 64% 97%, 46% 100%, 28% 97%, 12% 100%, 0 97%, 2% 72%, 0 48%, 2% 22%);
+}
+.hang:nth-child(3n) .tag { clip-path: polygon(2% 0, 100% 3%, 97% 50%, 100% 100%, 50% 96%, 0 100%, 3% 52%); }
+.hang:nth-child(4n+1) .tag { clip-path: polygon(0 0, 30% 4%, 60% 0, 100% 2%, 100% 100%, 66% 96%, 34% 100%, 0 97%); }
+.mark { color: #d9341f; margin-right: 0.04em; }
+
+/* papeles */
+.crema { background: #efe6d2; }
+.blanco { background: #faf8f2; }
+.kraft { background: radial-gradient(rgba(0, 0, 0, 0.1) 0.6px, transparent 0.8px) 0 0 / 4px 4px, #c9a878; }
+.prensa { background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.05) 0 1px, transparent 1px 5px), #e4e0d6; }
+.rayado { background: linear-gradient(transparent calc(100% - 2px), rgba(35, 64, 168, 0.28) 0) 0 0 / 100% 0.36em, #fbfaf5; }
+.cuadro { background: linear-gradient(rgba(35, 64, 168, 0.16) 1px, transparent 1px) 0 0 / 0.3em 0.3em, linear-gradient(90deg, rgba(35, 64, 168, 0.16) 1px, transparent 1px) 0 0 / 0.3em 0.3em, #f7f6f0; }
+.rosa { background: #f3b3cf; }
+
+/* «adherido»: letras de revista con su propio hilo */
+.hangLetter { margin: 0 -0.2vw; }
+.letter { height: clamp(44px, 5.6vw, 92px); width: auto; display: block; filter: drop-shadow(5px 9px 7px rgba(0, 0, 0, 0.5)); }
+.ellipsis {
+  position: absolute; left: 100%; bottom: 0.05em; margin-left: 0.12em; white-space: nowrap;
+  font-family: var(--font-caos), Arial, sans-serif; font-weight: 500; font-size: clamp(30px, 4.3vw, 72px); line-height: 1;
+  color: var(--papel, #f3eee3); text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.attrib { margin: clamp(24px, 3vw, 40px) 0 0; font-size: 15px; letter-spacing: 0.02em; color: rgba(243, 238, 227, 0.88); opacity: 0; text-align: center; }
+.attrib::before { content: ""; display: block; width: 180px; height: 10px; margin: 0 auto 14px;
   background: radial-gradient(circle at 5px 5px, var(--bermellon) 2px, transparent 2.6px) 0 0 / 12px 10px repeat-x; }
 .dash { color: var(--amarillo); }
 
 @media (max-width: 760px) {
   .section { height: 190vh; }
   .bg img { object-position: 30% 50%; }
-  .veil { background: linear-gradient(0deg, rgba(18, 17, 16, 0.84) 0%, rgba(18, 17, 16, 0.6) 55%, rgba(18, 17, 16, 0.2) 100%); }
-  .figure { top: auto; bottom: 10vh; transform: none; width: auto; right: 18px; }
-  .quote { font-size: clamp(30px, 8.6vw, 44px); }
+  .figure { top: 50%; width: 94vw; }
+  .anchor { top: -55vh; height: calc(55vh + 6px); }
+  .quote { gap: 22px; }
+  .row { gap: 8px; }
+  .tag, .ellipsis { font-size: clamp(22px, 7vw, 34px); }
+  .letter { height: clamp(34px, 10vw, 50px); }
+  .thread { height: calc(var(--thread, 16px) * 0.7); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .word { will-change: auto; }
+  .hang { animation: none; transform: rotate(var(--tilt, 0deg)); will-change: auto; }
 }

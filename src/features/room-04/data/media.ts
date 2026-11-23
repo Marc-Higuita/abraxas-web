@@ -1,12 +1,12 @@
 /** Recursos multimedia configurables. Cambiar aquí, no en los componentes. */
 export const DOCUMENTARY = {
-  /** H.264 1080p comprimido (CRF 28, máx. 700 kb/s), +faststart. Fuente: Abraxas_Obra_y_autor.mp4 del equipo. */
-  src: "/assets/room-04/videos/abraxas-obra-y-autor.mp4",
-  poster: "/assets/room-04/misc/video-poster.jpg",
+  /** Versión corregida del equipo (22 nov 2026). H.264 1080p (CRF 28, máx. 800 kb/s), AAC 128k, +faststart. */
+  src: "/assets/room-04/videos/abraxas-obra-y-autor-v2.mp4",
+  poster: "/assets/room-04/misc/video-poster-v2.jpg",
   /** Subtítulos WebVTT opcionales. */
   title: "Abraxas: obra y autor",
   description: "",
-  duration: "2:52",
+  duration: "2:48",
   credits: "Equipo Sala 04",
   source: "Video del equipo · subtítulos incrustados",
 };

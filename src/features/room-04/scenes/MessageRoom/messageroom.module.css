@@ -84,13 +84,18 @@
 .portalTagOn { background: #d4a12a; color: #121110; border-style: solid; transform: scale(1.08); }
 
 /* collage detrás del espejo */
-.portalView { position: fixed; inset: 0; z-index: 120; background: rgba(12, 10, 8, 0); display: grid; grid-template-rows: auto 1fr auto; pointer-events: none; transition: background .45s ease; }
-.portalViewOn { background: rgba(12, 10, 8, .94); pointer-events: auto; }
+/* experiencia dedicada del espejo: por encima de todo (incluido el HUD), fondo opaco, nada de otras secciones detrás */
+.portalView { position: fixed; inset: 0; z-index: 200; background: rgba(12, 10, 8, 0); pointer-events: none; transition: background .4s ease; overscroll-behavior: contain; }
+.portalViewOn { background: #0c0a08; pointer-events: auto; }
+.kaleido { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; opacity: 0; transition: opacity .5s ease; }
+.portalViewOn .kaleido { opacity: 1; }
+.kaleido:active { cursor: grabbing; }
+.portalActions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; flex-shrink: 0; }
 .portalCanvas { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none; opacity: 0; transform: scale(.92); transition: opacity .45s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
 .portalViewOn .portalCanvas { opacity: 1; transform: none; }
 .portalCanvas:active { cursor: grabbing; }
 .portalCanvas img { position: absolute; left: 50%; top: 50%; max-width: none; user-select: none; -webkit-user-drag: none; transform-origin: 50% 50%; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
-.portalHead { position: relative; z-index: 2; display: flex; gap: 18px; align-items: flex-start; justify-content: space-between; padding: 18px max(16px, 4vw); background: linear-gradient(rgba(12,10,8,.85), rgba(12,10,8,0)); color: #f3eee3; opacity: 0; transition: opacity .4s .2s; }
+.portalHead { position: absolute; top: 0; left: 0; right: 0; z-index: 2; display: flex; gap: 18px; align-items: flex-start; justify-content: space-between; padding: 18px max(16px, 4vw); background: linear-gradient(rgba(12,10,8,.85), rgba(12,10,8,0)); color: #f3eee3; opacity: 0; transition: opacity .4s .2s; }
 .portalViewOn .portalHead { opacity: 1; }
 .portalHead h3 { margin: 0 0 4px; font-family: var(--font-caos); font-weight: 500; font-size: clamp(20px, 2.4vw, 30px); }
 .portalHead p { margin: 0; max-width: 60ch; font: 14px/1.45 Arial, sans-serif; color: #e9dfcb; }
@@ -101,6 +106,7 @@
 @media (max-width: 760px) {
   .portalHead { flex-direction: column; gap: 10px; }
   .portalHint { display: none; }
+  .portalActions { justify-content: flex-start; }
   .portalZoom { left: 50%; right: auto; transform: translateX(-50%); }
 }
-@media (prefers-reduced-motion: reduce) { .portalView, .portalCanvas, .portalHead, .portalZoom, .portalHint { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .portalView, .portalCanvas, .portalHead, .portalZoom, .portalHint, .kaleido { transition: none; } }

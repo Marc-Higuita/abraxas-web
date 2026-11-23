@@ -1,0 +1,131 @@
+/* Interludio «Aquí las fotos no se toman, se hacen.»: mesa de revelado entre el video y la biblioteca.
+   Sección alta con escena fija: la frase tiene su propio tiempo y una separación clara de los libros. */
+.wrap {
+  --p: 0;
+  position: relative;
+  height: 175vh;
+  margin-bottom: 14vh;
+  overflow: clip;
+}
+.dark { background: radial-gradient(120% 90% at 50% 45%, #241d18 0%, #121110 62%); color: var(--papel, #f3eee3); }
+.light { background: var(--papel, #f3eee3); color: var(--negro, #121110); }
+/* costura que separa del bloque siguiente */
+.wrap::after {
+  content: ""; position: absolute; left: 6%; right: 6%; bottom: 4vh; height: 2px;
+  background: repeating-linear-gradient(90deg, rgba(243, 238, 227, 0.35) 0 14px, transparent 14px 24px);
+}
+
+.stage {
+  --mx: 0; --my: 0;
+  position: sticky; top: 0; height: 100svh; width: 100%;
+  overflow: hidden;
+}
+
+/* toda capa se mueve según su profundidad --d (1 cerca, 3 lejos) */
+.layer {
+  position: absolute;
+  --px: calc(var(--mx) * (4 - var(--d, 2)) * -16px);
+  --py: calc(var(--my) * (4 - var(--d, 2)) * -12px + (0.5 - var(--p)) * (4 - var(--d, 2)) * 26px);
+  transform: translate3d(var(--px), var(--py), 0) rotate(var(--r, 0deg));
+  transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.7s ease, filter 0.5s ease;
+  opacity: 0;
+}
+.wrap[data-on="1"] .layer { opacity: 1; }
+.wrap[data-on="1"] .layer { transition-delay: calc(var(--i, 0) * 70ms); }
+
+/* hoja de contacto con lupa (capa trasera) */
+.sheet {
+  left: 3%; bottom: 7%; width: min(30vw, 470px); --r: -4deg;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+  cursor: zoom-in; overflow: hidden; border-radius: 2px;
+}
+.sheet img { display: block; width: 100%; height: auto; filter: saturate(0.9); }
+.loupe {
+  position: absolute; left: var(--lx, 50%); top: var(--ly, 50%);
+  width: 150px; height: 150px; margin: -75px 0 0 -75px; border-radius: 50%;
+  border: 3px solid #d4a12a; box-shadow: 0 0 0 2px #121110, 0 10px 24px rgba(0, 0, 0, 0.5), inset 0 0 18px rgba(255, 255, 255, 0.25);
+  background-size: 300% auto; background-position: var(--bx, 50%) var(--by, 50%); background-repeat: no-repeat;
+  opacity: 0; transform: scale(0.6); transition: opacity 0.2s, transform 0.25s; pointer-events: none;
+}
+.sheet[data-loupe="1"] .loupe { opacity: 1; transform: scale(1); }
+
+/* tira de negativos cruzando arriba */
+.strip { top: 5%; left: 26%; width: min(48vw, 760px); --r: 2.5deg; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45); }
+
+/* fotos rasgadas de los muros: sin marcos, borde de papel del propio recorte */
+.cut { left: var(--x); top: var(--y); width: calc(var(--w) * 1vw); max-width: 230px; margin: 0; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.45)); }
+.cut img { display: block; width: 100%; height: auto; }
+.tape {
+  position: absolute; left: 50%; top: -9px; width: 46%; height: 18px; transform: translateX(-50%) rotate(-4deg);
+  background: rgba(224, 123, 240, 0.72); clip-path: polygon(3% 0, 97% 6%, 100% 92%, 0 100%);
+}
+
+/* negativos: se ven invertidos hasta tocarlos */
+.neg {
+  left: var(--x); top: var(--y); width: min(9vw, 150px); aspect-ratio: 4 / 3; padding: 7px 7px 18px;
+  background: #1b1714; border: 0; border-radius: 2px; cursor: pointer;
+  box-shadow: 0 12px 22px rgba(0, 0, 0, 0.5);
+}
+.neg img { display: block; width: 100%; height: 100%; object-fit: cover; filter: invert(1) sepia(0.6) hue-rotate(160deg) contrast(0.9) brightness(0.8); transition: filter 0.9s ease; }
+.neg::after { content: ""; position: absolute; left: 7px; right: 7px; bottom: 6px; height: 6px; background: repeating-linear-gradient(90deg, #c9a878 0 6px, transparent 6px 12px); opacity: 0.7; }
+.neg:hover { --r: 0deg; z-index: 4; }
+.neg:focus-visible { outline: 2px dashed #f2b90f; outline-offset: 4px; }
+.revealed { background: #f3eee3; }
+.revealed img { filter: none; }
+
+/* cámara de papel con lente que mira las paredes */
+.camera { right: 5%; bottom: 9%; width: min(15vw, 230px); --r: -6deg; filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.5)); }
+.camBody { display: block; width: 100%; height: auto; }
+.lens {
+  position: absolute; left: 50%; top: 58%; width: 38%; aspect-ratio: 1; transform: translate(-50%, -50%);
+  border-radius: 50%; border: 4px solid #121110; box-shadow: 0 0 0 3px #d4a12a, inset 0 0 14px rgba(0, 0, 0, 0.6); overflow: hidden;
+}
+.lens > span {
+  position: absolute; inset: -30%; background-size: cover; background-position: center;
+  transform: translate(calc(var(--mx) * 30%), calc(var(--my) * 30%)) scale(1.1);
+  transition: transform 0.4s ease;
+}
+
+/* la frase: protagonista, centrada */
+.quote {
+  position: absolute; left: 50%; top: 50%; width: min(62vw, 980px); margin: 0;
+  transform: translate(-50%, -50%); text-align: center; z-index: 5;
+}
+.quote p {
+  margin: 0; font-family: var(--font-caos, "Jost", Arial, sans-serif); font-weight: 500;
+  font-size: clamp(40px, 6.2vw, 104px); line-height: 1.02; letter-spacing: -0.02em;
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.55);
+}
+.light .quote p { text-shadow: 0 2px 18px rgba(243, 238, 227, 0.8); }
+.word {
+  display: inline-block; margin-right: 0.26em; opacity: 0; transform: translateY(0.4em) rotate(-2deg);
+  transition: opacity 0.6s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: calc(0.25s + var(--i) * 90ms);
+}
+.wrap[data-on="1"] .word { opacity: 1; transform: none; }
+.stitch { display: block; width: min(320px, 50%); margin: 22px auto 12px; }
+.quote cite { display: block; font: 400 15px/1.4 Arial, sans-serif; font-style: normal; opacity: 0.75; }
+.hint {
+  display: inline-block; margin-top: 18px; padding: 6px 12px; border-radius: 999px;
+  font: 600 12px/1 var(--font-caos, Arial), sans-serif; letter-spacing: 0.04em;
+  background: rgba(217, 242, 74, 0.92); color: #121110;
+}
+
+@media (max-width: 760px) {
+  .wrap { height: 150vh; margin-bottom: 10vh; }
+  .quote { width: 88vw; top: 46%; }
+  .quote p { font-size: clamp(34px, 10.5vw, 56px); }
+  .strip { left: 8%; width: 84vw; top: 6%; }
+  .sheet { width: 46vw; left: 3%; bottom: 5%; }
+  .camera { width: 30vw; right: 3%; bottom: 6%; }
+  .cut { width: calc(var(--w) * 2vw); }
+  .cut:nth-of-type(n + 4) { display: none; }
+  .neg { width: 17vw; }
+  .loupe { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer, .word, .lens > span { transition: none; }
+  .layer { --px: 0px; --py: 0px; opacity: 1; }
+  .word { opacity: 1; transform: none; }
+}

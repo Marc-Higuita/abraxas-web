@@ -9,6 +9,7 @@ import { useRoom } from "../../store";
 import type { RoomPhase } from "./PhotoRoomAssembly";
 import photosData from "../../data/room-photos.json";
 import type { RoomPhoto } from "../../types";
+import { DOOR_GATE_P, isDoorOpen, setDoorOpen } from "./doorState";
 import s from "./photoroom.module.css";
 import { Sticker, Ticket } from "@/components/abx/Ticket";
 import { Icon } from "@/components/abx/Icon";
@@ -45,10 +46,8 @@ export function PhotoRoomSection() {
     if (fade.current) fade.current.style.opacity = String(openingRef.current ? 0 : Math.max(0, (p - 0.94) / 0.06));
     if (head.current) head.current.style.opacity = String(Math.max(0, 1 - Math.max(0, p - 0.12) * 6));
     if (hint.current) hint.current.style.opacity = String(p < 0.2 ? 1 : Math.max(0, 1 - (p - 0.2) * 6));
-    const show = !reduced && webgl && !openingRef.current && p > 0.74 && p < 0.97;
+    const show = !reduced && webgl && !openingRef.current && p > 0.74;
     if (doorHint.current) { doorHint.current.dataset.on = show ? "1" : "0"; doorHint.current.inert = !show; }
-    // al volver atrás, la puerta se cierra otra vez
-    if (p < 0.7 && door.current.openAt !== null) { door.current.openAt = null; openingRef.current = false; setOpening(false); }
   });
   const onLoad = useCallback((n: number, of: number) => setLoad({ n, of }), []);
 
@@ -57,6 +56,7 @@ export function PhotoRoomSection() {
     if (door.current.openAt !== null) return;
     door.current.openAt = performance.now() / 1000;
     openingRef.current = true;
+    setDoorOpen(true);
     setOpening(true);
     if (doorHint.current) doorHint.current.dataset.on = "0";
     window.setTimeout(() => {
@@ -68,6 +68,74 @@ export function PhotoRoomSection() {
     const el = sticky.current;
     if (!el) return;
     if (mode) el.dataset.cursor = mode; else delete el.dataset.cursor;
+  }, []);
+
+  // PUERTA OBLIGATORIA: mientras esté cerrada, el scroll no pasa del punto de la puerta.
+  // Tope suave por scroll (cubre rueda, teclado, barra, anclas e índice) + bloqueo de gestos hacia
+  // abajo solo cuando ya se está en el tope. Hacia arriba la navegación queda siempre libre.
+  useEffect(() => {
+    if (reduced || !webgl) return;
+    const limit = () => {
+      const el = section.current;
+      if (!el) return Infinity;
+      return el.offsetTop + (el.offsetHeight - innerHeight) * DOOR_GATE_P;
+    };
+    let raf = 0, pulseT = 0;
+    const pulse = () => {
+      const h = doorHint.current;
+      if (!h) return;
+      h.dataset.on = "1"; h.inert = false; h.dataset.pulse = "1";
+      window.clearTimeout(pulseT);
+      pulseT = window.setTimeout(() => { if (doorHint.current) delete doorHint.current.dataset.pulse; }, 900);
+    };
+    const locked = () => !isDoorOpen() && !openingRef.current;
+    const atGate = () => scrollY >= limit() - 2;
+    const onScroll = () => {
+      if (!locked()) return;
+      const L = limit();
+      if (scrollY > L + 1) {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          if (!locked()) return;
+          window.scrollTo({ top: L, behavior: "instant" as ScrollBehavior });
+          pulse();
+        });
+      }
+    };
+    const onWheel = (e: WheelEvent) => {
+      if (locked() && e.deltaY > 0 && atGate()) { e.preventDefault(); pulse(); }
+    };
+    let touchY = 0;
+    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? 0; };
+    const onTouchMove = (e: TouchEvent) => {
+      const y = e.touches[0]?.clientY ?? touchY;
+      // dedo hacia arriba = la página baja
+      if (locked() && y < touchY - 2 && atGate() && e.cancelable) { e.preventDefault(); pulse(); }
+    };
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+      const down = ["ArrowDown", "PageDown", "End", " ", "Spacebar"].includes(e.key) && !(e.key === " " && e.shiftKey);
+      if (locked() && down && atGate()) { e.preventDefault(); pulse(); }
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+    addEventListener("wheel", onWheel, { passive: false });
+    addEventListener("touchstart", onTouchStart, { passive: true });
+    addEventListener("touchmove", onTouchMove, { passive: false });
+    addEventListener("keydown", onKey);
+    return () => {
+      removeEventListener("scroll", onScroll);
+      removeEventListener("wheel", onWheel);
+      removeEventListener("touchstart", onTouchStart);
+      removeEventListener("touchmove", onTouchMove);
+      removeEventListener("keydown", onKey);
+      cancelAnimationFrame(raf); window.clearTimeout(pulseT);
+    };
+  }, [reduced, webgl]);
+
+  // si la puerta ya se abrió en esta visita (p. ej. al volver a montar), queda abierta
+  useEffect(() => {
+    if (isDoorOpen() && door.current.openAt === null) { door.current.openAt = -100; openingRef.current = true; setOpening(true); }
   }, []);
 
   // parada controlada: si el visitante deja de hacer scroll cerca de la puerta (bajando), se acomoda frente a ella

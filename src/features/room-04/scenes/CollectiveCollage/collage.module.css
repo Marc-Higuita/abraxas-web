@@ -1,7 +1,9 @@
-.section { color: var(--papel); padding: 104px max(16px, 4vw) 72px; }
+/* el padding inferior absorbe la superposición (35vh) de la habitación siguiente: la mesa termina de estar fija antes de que entre */
+.section { color: var(--papel); padding: 104px max(16px, 4vw) calc(35vh + 40px); }
 /* estudio fijo: 100svh aislados durante la creación; el bloque .pin da el recorrido de scroll en el que queda fijo */
-.pin { position: relative; height: calc(100svh + 45svh); margin: 0 calc(max(16px, 4vw) * -1); }
-.studio { position: sticky; top: 0; height: 100svh; padding: 76px max(16px, 4vw) 14px; background: #1d1712; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; }
+.pin { position: relative; height: calc(100svh + 45svh); margin: 0 calc(max(16px, 4vw) * -1); scroll-margin-top: 0; }
+/* fijo debajo de la barra del HUD (≈72 px): el área de trabajo queda entera a la vista al subir o bajar */
+.studio { position: sticky; top: 0; height: 100svh; padding: 86px max(16px, 4vw) 16px; background: #1d1712; display: flex; flex-direction: column; gap: 8px; box-sizing: border-box; }
 .studio .workspace { flex: 1; min-height: 0; }
 .studio .stage { height: 100%; min-height: 0; }
 .studio .side { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 2px; }
@@ -71,7 +73,7 @@
   .studio .side { max-height: none; overflow: visible; }
 }
 @media (max-width: 760px) {
-  .section { padding: 88px 12px 56px; }
+  .section { padding: 88px 12px calc(35vh + 32px); }
   .stage, .studio .stage { height: 62vh; min-height: 420px; }
   .tools { left: 12px; bottom: 58px; justify-content: flex-start; }
   .side { display: flex; }

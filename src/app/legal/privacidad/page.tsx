@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LegalShell } from "../LegalShell";
 import { LEGAL_UPDATED, PrivacidadBody } from "../content";
 
-export const metadata: Metadata = { title: "Política de privacidad (borrador)", robots: { index: false } };
+export const metadata: Metadata = { title: "Política de privacidad", robots: { index: false } };
 
 export default function Privacidad() {
   return (

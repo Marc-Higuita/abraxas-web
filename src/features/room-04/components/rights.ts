@@ -1,9 +1,8 @@
 /**
- * Derechos por tipo de material (BORRADOR PARA REVISIÓN).
- * Cada material puede tener un titular distinto: no se asume uno solo para todo el sitio.
- * "Por completar" marca lo que el equipo debe confirmar antes de publicar como definitivo.
+ * Derechos por tipo de material. Cada material puede tener un titular distinto:
+ * no se asume uno solo para todo el sitio, y no se afirma ninguna autorización que no esté verificada.
  */
-export interface RightsRow { material: string; donde: string; titular: string; uso: string; pendiente?: string }
+export interface RightsRow { material: string; donde: string; titular: string; uso: string }
 
 export const RIGHTS: RightsRow[] = [
   {
@@ -11,28 +10,24 @@ export const RIGHTS: RightsRow[] = [
     donde: "Habitación de fotos, video, interludios, retrato, línea de tiempo",
     titular: "Abraxas Aguilar (Jorge Hernán Betancur Aguilar) y sus herederos o representantes",
     uso: "Reproducción fotográfica con fines culturales y académicos, sin uso comercial",
-    pendiente: "Autorización escrita de los herederos o de quien administre el legado de la Casa Museo",
   },
   {
     material: "Fotografías de la Casa Museo tomadas por el equipo",
     donde: "Habitación (1.176 fotos analizadas), túnel, retrato, habitación de mensajes",
     titular: "Equipo Sala 04 · Universidad de Antioquia (autoría de la toma); la obra fotografiada es de Abraxas",
     uso: "Licencia de uso dentro del proyecto",
-    pendiente: "Nombres de quienes tomaron cada lote de fotos",
   },
   {
     material: "Fotografías de prensa de Abraxas",
     donde: "Retrato y línea de tiempo",
     titular: "Medios y fotógrafos de origen (Telemedellín, El Colombiano y otros)",
-    uso: "El equipo confirma que tiene permiso de uso",
-    pendiente: "Medio, autor y fecha de cada foto, y copia del permiso",
+    uso: "Uso académico y sin ánimo de lucro; los derechos pertenecen a cada medio y a sus autores",
   },
   {
     material: "Libros y textos de Abraxas",
     donde: "Biblioteca: «Prohibido perder», «Por una ciudadanía global» (UNAULA, 2001) y Poemario",
     titular: "Abraxas Aguilar (Jorge Hernán Betancur Aguilar); la tesis también pertenece al repositorio de UNAULA",
-    uso: "Citas breves con su página y escaneos para consulta",
-    pendiente: "Autorización para mostrar los escaneos completos; datos editoriales del Poemario",
+    uso: "Citas breves con su página y escaneos para consulta con fines académicos",
   },
   {
     material: "Citas de Abraxas en entrevistas",
@@ -43,16 +38,14 @@ export const RIGHTS: RightsRow[] = [
   {
     material: "Video documental en collage",
     donde: "Sección 02 · La imagen que habla",
-    titular: "Equipo Sala 04",
-    uso: "Producción propia del curso",
-    pendiente: "Créditos completos: guion, animación, voz y música del video",
+    titular: "Equipo Sala 04 · Universidad de Antioquia",
+    uso: "Producción del curso Creación de Espacios Interactivos",
   },
   {
     material: "Recortes del tablero (cuerpos, rostros, pelo, pinzas) y alfabetos recortados",
     donde: "Tablero «Tu figura, tu mensaje»",
-    titular: "Autores de las láminas originales, en su mayoría sin identificar",
+    titular: "Autores de las láminas e imágenes originales",
     uso: "Fragmentos recortados como material de collage; no se reproducen obras completas ni fotos de personas identificables",
-    pendiente: "Origen y autoría de cada lámina, en especial los alfabetos",
   },
   {
     material: "Figuras y mensajes de los visitantes",
@@ -71,6 +64,5 @@ export const RIGHTS: RightsRow[] = [
     donde: "Todo el sitio",
     titular: "Equipo del proyecto Museo Abraxas · Universidad de Antioquia",
     uso: "Proyecto académico",
-    pendiente: "Licencia que se quiera dar al código (por ejemplo, abierta o reservada)",
   },
 ];

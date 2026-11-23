@@ -26,9 +26,9 @@ export function Footer() {
           <dl className={s.dl}>
             <dt>Proyecto</dt><dd>Museo Abraxas · museo digital experimental de la Casa Museo del Collage</dd>
             <dt>Sala</dt><dd>04 · Vida y obra</dd>
-            <dt>Equipo</dt><dd>Equipo Sala 04 <span className={s.todo}>nombres por completar</span></dd>
+            <dt>Realización</dt><dd className={s.names}><span>Marco Emilio Higuita García</span><span>Santiago Marín Vargas</span></dd>
             <dt>Curso</dt><dd>Creación de Espacios Interactivos · Universidad de Antioquia</dd>
-            <dt>Docente</dt><dd><span className={s.todo}>por completar</span></dd>
+            <dt>Docente</dt><dd className={s.names}><span>Laura Rodríguez Hurtado</span></dd>
             <dt>Año</dt><dd>2026</dd>
           </dl>
           <LegalLinks />

@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree, type ThreeEvent } from "@react-three/fiber";
-import { Html, MeshTransmissionMaterial, useFBO } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { useRoom } from "../../store";
@@ -13,8 +13,9 @@ import s from "./abraxas.module.css";
  * 04 · Abraxas, por capas: una ESCULTURA FOTOGRÁFICA.
  * Fragmentos recortados a mano de fotografías de Abraxas de distintos momentos (rostros, ojos, boca,
  * pelo, camisas, manos, el libro, el espejo) se ensamblan en planos de profundidad distintos.
- * El cursor separa las capas y deja ver las interiores; dos lupas de vidrio real (transmisión y
- * refracción) cuelgan de hilos y se mueven al interactuar. Las miniaturas del archivo siguen cosidas.
+ * El cursor separa las capas y deja ver las interiores; en cuatro zonas (rostro, torso, el espejo
+ * y el libro) un efecto Droste muestra la foto dentro de sí misma, hacia adentro, al acercarse.
+ * Las miniaturas del archivo siguen cosidas.
  */
 
 const A = "/assets/room-04";
@@ -150,9 +151,7 @@ function Scene({ narrow, touch, active, enter }: { narrow: boolean; touch: boole
   const build = useRef(reduced ? 1 : 0);
   const clockBuild = useRef(0);
   const { camera, size } = useThree();
-  const sfx = useRef({ built: false, open: false });
-  // las lupas y el espejo viven en la capa 2: la cámara principal los ve, la del espejo no (sin realimentación)
-  useEffect(() => { camera.layers.enable(2); }, [camera]);
+  const sfx = useRef({ built: false });
   const frags = useMemo(() => (low ? FRAGS.filter((f) => !f.inner || f.id === "cara-blanca" || f.id === "cara-taller") : narrow ? FRAGS.filter((f) => !["risa-hojas", "figura-guinness", "papa-noel"].includes(f.id)) : FRAGS), [low, narrow]);
 
   // Encuadre: en anchas cabe la figura con las miniaturas; en angostas, solo la figura.
@@ -183,8 +182,6 @@ function Scene({ narrow, touch, active, enter }: { narrow: boolean; touch: boole
     p.p.lerp(p.target, k);
     p.hover += (p.hoverTarget - p.hover) * (1 - Math.exp(-d * 4));
     // una "apertura" de capas = un sonido (el gestor evita repetirlo seguido)
-    if (!touch && p.hover > 0.6 && !sfx.current.open && build.current > 0.95) { sfx.current.open = true; sound.play("fotos-fragmentan"); }
-    if (p.hover < 0.2) sfx.current.open = false;
     if (group.current) {
       const g = group.current;
       const tx = reduced ? 0 : touch ? Math.sin(t * 0.2) * 0.1 : state.pointer.x * 0.28;
@@ -209,11 +206,9 @@ function Scene({ narrow, touch, active, enter }: { narrow: boolean; touch: boole
       <directionalLight position={[-4, -1, 3]} intensity={0.5} color="#d4a12a" />
       <group ref={group}>
         {frags.map((f, i) => (
-          <Fragment key={f.id} f={f} i={i} n={frags.length} ptr={ptr} build={build} reduced={reduced} shadows={!low} />
+          <Fragment key={f.id} f={f} i={i} n={frags.length} ptr={ptr} build={build} reduced={reduced} shadows={!low} droste={low || narrow ? 4 : 7} />
         ))}
         <Strips ptr={ptr} build={build} low={low} />
-        <Lenses ptr={ptr} build={build} count={low || narrow ? 1 : 2} reduced={reduced} low={low} />
-        {!narrow && <InfiniteMirror build={build} group={group} low={low} reduced={reduced} />}
         {!narrow && PORTRAIT_FACTS.map((f, i) => <Fact key={f.id} fact={f} i={i} build={build} reduced={reduced} onOpen={() => openFicha(factFicha(f))} />)}
         {/* superficie invisible que recibe el puntero sobre la figura */}
         <mesh
@@ -245,7 +240,7 @@ function bentPlane(bend: number) {
   return g;
 }
 
-function Fragment({ f, i, n, ptr, build, reduced, shadows }: { f: Frag; i: number; n: number; ptr: React.RefObject<PointerState>; build: React.RefObject<number>; reduced: boolean; shadows: boolean }) {
+function Fragment({ f, i, n, ptr, build, reduced, shadows, droste }: { f: Frag; i: number; n: number; ptr: React.RefObject<PointerState>; build: React.RefObject<number>; reduced: boolean; shadows: boolean; droste: number }) {
   const tex = useSrgb(`${FR}/${f.id}.webp`);
   const geo = useMemo(() => bentPlane(f.bend), [f.bend]);
   useEffect(() => () => geo.dispose(), [geo]);
@@ -296,6 +291,7 @@ function Fragment({ f, i, n, ptr, build, reduced, shadows }: { f: Frag; i: numbe
       <mesh geometry={geo} scale={[f.w, h, 1]} renderOrder={2}>
         <meshStandardMaterial map={tex} alphaTest={0.5} roughness={0.85} metalness={0} envMapIntensity={0.25} side={THREE.DoubleSide} />
       </mesh>
+      {droste > 0 && DROSTE[f.id] && <DrosteZone f={f} tex={tex} h={h} geo={geo} ptr={ptr} build={build} levels={droste} reduced={reduced} />}
     </group>
   );
 }
@@ -342,264 +338,102 @@ function Strips({ ptr, build, low }: { ptr: React.RefObject<PointerState>; build
   );
 }
 
-/* --------------------------- Lupas de vidrio real colgadas de hilos -------------------------- */
+/* ------------------- Efecto Droste: la foto contiene su propia foto, hacia adentro ----------- */
 
-/** Lente biconvexa: esfera aplanada (el vidrio refracta y amplía lo que hay detrás). */
-function Lenses({ ptr, build, count, reduced, low }: { ptr: React.RefObject<PointerState>; build: React.RefObject<number>; count: number; reduced: boolean; low: boolean }) {
-  const R = 0.5;
-  const TOP = H / 2 + 2.2;
-  const defs = useMemo(
-    () => [
-      { rest: new THREE.Vector2(-0.75, 1.3), off: -0.3 },
-      { rest: new THREE.Vector2(0.95, -0.55), off: 0.4 },
-    ].slice(0, count),
-    [count],
-  );
-  const state = useRef(defs.map((d) => ({ x: d.rest.x, y: d.rest.y, vx: 0, vy: 0 })));
-  const lensRefs = useRef<(THREE.Group | null)[]>([]);
-  const threadRefs = useRef<(THREE.Mesh | null)[]>([]);
-  // lente biconvexa real: perfil torneado con canto plano (no una esfera aplastada)
-  const lensGeo = useMemo(() => {
-    const pts: THREE.Vector2[] = [];
-    const T = 0.11, EDGE = 0.018;
-    for (let i = 0; i <= 24; i++) {
-      const r = (i / 24) * R;
-      pts.push(new THREE.Vector2(r, EDGE + T * (1 - (r / R) ** 2)));
-    }
-    pts.push(new THREE.Vector2(R, -EDGE));
-    for (let i = 24; i >= 0; i--) {
-      const r = (i / 24) * R;
-      pts.push(new THREE.Vector2(r, -EDGE - T * (1 - (r / R) ** 2)));
-    }
-    const g = new THREE.LatheGeometry(pts, 72);
-    g.rotateX(Math.PI / 2);
-    g.computeVertexNormals();
-    return g;
-  }, []);
-  useEffect(() => () => lensGeo.dispose(), [lensGeo]);
+/**
+ * Zonas Droste: una ventana dentro del recorte muestra el MISMO recorte, que a su vez contiene la
+ * ventana, y así sucesivamente. Al acercar el cursor (o al tocar) la ventana se abre y la imagen
+ * avanza muy despacio hacia adentro, con un leve giro por nivel. En reposo solo queda un borde de
+ * papel que sugiere la profundidad. Todo sale de la textura del propio fragmento: sin espirales genéricas.
+ */
+interface DrosteCfg { cx: number; cy: number; hx: number; hy: number; rot: number }
+const DROSTE: Record<string, DrosteCfg> = {
+  "cara-roja": { cx: 0.5, cy: 0.5, hx: 0.21, hy: 0.19, rot: 0.07 },
+  "torso-tigre": { cx: 0.42, cy: 0.52, hx: 0.17, hy: 0.24, rot: -0.05 },
+  "espejo-baile": { cx: 0.56, cy: 0.5, hx: 0.24, hy: 0.22, rot: 0.04 },
+  "libro-manos": { cx: 0.62, cy: 0.5, hx: 0.16, hy: 0.26, rot: -0.06 },
+};
 
-  useFrame((_, dt) => {
-    const p = ptr.current;
-    if (!p) return;
-    const d = Math.min(dt, 0.04);
-    const show = clamp01((build.current - 0.85) / 0.15);
-    defs.forEach((def, i) => {
-      const s = state.current[i];
-      // con el cursor encima, cada lupa se acerca a él (con su desfase); sin él, vuelve a su sitio
-      const tx = THREE.MathUtils.lerp(def.rest.x, p.p.x + def.off, p.hover);
-      const ty = THREE.MathUtils.lerp(def.rest.y, p.p.y + (i ? -0.35 : 0.3), p.hover * 0.75);
-      if (reduced) { s.x = tx; s.y = ty; s.vx = 0; }
-      else {
-        s.vx += ((tx - s.x) * 16 - s.vx * 5) * d;
-        s.vy += ((ty - s.y) * 16 - s.vy * 5) * d;
-        s.x += s.vx * d;
-        s.y += s.vy * d;
-      }
-      const g = lensRefs.current[i];
-      const th = threadRefs.current[i];
-      const y = s.y + (1 - show) * 4.5;
-      if (g) {
-        g.position.set(s.x, y, 1.15);
-        // la lupa se mece como un péndulo y gira apenas hacia el espectador
-        g.rotation.z = THREE.MathUtils.clamp(-s.vx * 0.06, -0.35, 0.35);
-        g.rotation.y = THREE.MathUtils.clamp(s.vx * 0.12, -0.5, 0.5);
-        g.rotation.x = THREE.MathUtils.clamp(-s.vy * 0.08, -0.4, 0.4);
-      }
-      if (th) {
-        const topX = s.x * 0.6;
-        const len = Math.max(0.1, Math.hypot(s.x - topX, TOP - (y + R + 0.05)));
-        th.position.set((s.x + topX) / 2, (TOP + y + R + 0.05) / 2, 1.15);
-        th.scale.set(1, len, 1);
-        th.rotation.z = Math.atan2(s.x - topX, TOP - (y + R));
-      }
-    });
-  });
-
-  return (
-    <group>
-      {defs.map((_, i) => (
-        <group key={i}>
-          <mesh ref={(el) => { threadRefs.current[i] = el; }} layers={2}>
-            <cylinderGeometry args={[0.006, 0.006, 1, 6]} />
-            <meshStandardMaterial color="#efe6d2" roughness={0.9} />
-          </mesh>
-          <group ref={(el) => { lensRefs.current[i] = el; }}>
-            {/* vidrio */}
-            <mesh geometry={lensGeo} renderOrder={5} layers={2}>
-              {low ? (
-                <meshPhysicalMaterial transmission={1} thickness={0.6} ior={1.52} roughness={0.02} clearcoat={1} clearcoatRoughness={0.05} envMapIntensity={1.2} color="#ffffff" attenuationColor="#fff7e0" attenuationDistance={2} />
-              ) : (
-                <MeshTransmissionMaterial
-                  transmission={1}
-                  thickness={1.1}
-                  ior={1.52}
-                  roughness={0.012}
-                  chromaticAberration={0.06}
-                  anisotropicBlur={0.06}
-                  distortion={0.08}
-                  distortionScale={0.4}
-                  temporalDistortion={0.02}
-                  clearcoat={1}
-                  clearcoatRoughness={0.04}
-                  envMapIntensity={1.4}
-                  samples={6}
-                  resolution={512}
-                  backside
-                  backsideThickness={0.4}
-                  attenuationColor="#fff6dc"
-                  attenuationDistance={2.5}
-                />
-              )}
-            </mesh>
-            {/* aro de latón */}
-            <mesh layers={2}>
-              <torusGeometry args={[R, 0.045, 18, 72]} />
-              <meshStandardMaterial color="#c99a2e" metalness={1} roughness={0.22} envMapIntensity={1.6} />
-            </mesh>
-            {/* argolla donde se ata el hilo */}
-            <mesh position={[0, R + 0.06, 0]} layers={2}>
-              <torusGeometry args={[0.05, 0.014, 10, 24]} />
-              <meshStandardMaterial color="#c99a2e" metalness={1} roughness={0.25} />
-            </mesh>
-            {/* brillo de espejo en el borde del vidrio */}
-            <mesh position={[-R * 0.32, R * 0.36, 0.14]} rotation={[0, 0, 0.7]} layers={2}>
-              <planeGeometry args={[0.32, 0.06]} />
-              <meshBasicMaterial color="#ffffff" transparent opacity={0.35} depthWrite={false} toneMapped={false} />
-            </mesh>
-          </group>
-        </group>
-      ))}
-    </group>
-  );
-}
-
-
-/* ------------------ Espejo de mano con reflejos que se repiten hacia el infinito -------------- */
-
-const TUNNEL_VS = /* glsl */ `
+const DROSTE_VS = /* glsl */ `
 varying vec2 vUv;
 void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
 `;
-// Túnel de espejos optimizado: se captura el retrato una vez (render target pequeño) y se repite
-// en óvalos anidados que se encogen hacia un punto de fuga que se mueve con la cámara y el cursor.
-const TUNNEL_FS = /* glsl */ `
+const DROSTE_FS = /* glsl */ `
 uniform sampler2D map;
-uniform vec2 vanish;
-uniform float time;
-uniform float show;
+uniform vec2 uC; uniform vec2 uH; uniform float uRot; uniform float uOpen; uniform float uTime; uniform int uLevels;
 varying vec2 vUv;
-const int LEVELS = 9;
-const float SHRINK = 0.74;
+vec2 rot2(vec2 p, float a) { float c = cos(a), s = sin(a); return vec2(c * p.x - s * p.y, s * p.x + c * p.y); }
+// distancia normalizada a la ventana: 1 = borde
+float box(vec2 p) { vec2 q = abs(p - uC) / uH; return max(q.x, q.y); }
 void main() {
-  vec2 p = vUv * 2.0 - 1.0;
-  if (dot(p, p) > 1.0) discard;
-  int level = 0;
-  float sc = 1.0;
-  vec2 c = vec2(0.0);
-  for (int i = 1; i < LEVELS; i++) {
-    float s = pow(SHRINK, float(i));
-    vec2 ci = vanish * (1.0 - s);
-    if (length(p - ci) < s) { level = i; sc = s; c = ci; }
+  vec2 uv = vUv;
+  float d0 = box(uv);
+  // la ventana se abre desde un marco fino (reposo) hasta su tamaño completo (abierta)
+  float open = smoothstep(0.0, 1.0, uOpen);
+  if (d0 > 1.0) discard;
+  float scale = max(uH.x, uH.y) * 2.0;            // cuánto ocupa la ventana dentro del recorte
+  // zoom infinito: avanza una fracción de nivel; al completar uno, la imagen es idéntica (sin salto)
+  float z = fract(uTime * 0.045) * open;
+  vec2 p = uC + (uv - uC) * pow(scale, z);
+  float level = 0.0;
+  float edge = 1.0;
+  for (int i = 0; i < 8; i++) {
+    if (i >= uLevels) break;
+    float d = box(p);
+    if (d > 1.0) break;
+    edge = min(edge, 1.0 - d);
+    // dentro de la ventana: el recorte completo, reducido, girado y algo desplazado (perspectiva)
+    vec2 local = (p - uC) / (uH * 2.0);
+    local = rot2(local, uRot * (1.0 + level * 0.15));
+    p = vec2(0.5) + local + vec2(0.01, -0.006) * level;
+    level += 1.0;
   }
-  vec2 q = (p - c) / sc;            // coordenadas dentro del óvalo de ese nivel
-  float r = length(q);
-  float lv = float(level);
-  vec3 col;
-  if (r > 0.9 && level > 0) {
-    // marco reflejado: canto dorado con sombra hacia adentro
-    float t = (r - 0.9) / 0.1;
-    col = mix(vec3(0.83, 0.63, 0.16), vec3(0.32, 0.22, 0.06), t) * (0.9 - 0.25 * t);
-  } else {
-    // cada reflejo invierte la imagen: los niveles impares se ven al derecho
-    float flip = mod(lv, 2.0) < 0.5 ? 1.0 : -1.0;
-    vec2 uv = vec2(0.5 - 0.5 * q.x * flip, 0.5 + 0.5 * q.y);
-    col = pow(max(texture2D(map, uv).rgb, vec3(0.0)), vec3(1.0 / 2.2)) * 1.3; // la captura es lineal
-  }
-  // los espejos reales se oscurecen y verdean en cada rebote
-  col *= pow(0.86, lv);
-  col = mix(col, col * vec3(0.86, 1.0, 0.93), clamp(lv / 6.0, 0.0, 1.0));
-  // brillo diagonal del vidrio
-  float streak = smoothstep(0.08, 0.0, abs(p.x * 0.7 + p.y * 0.7 - 0.35 + sin(time * 0.3) * 0.05));
-  col += streak * 0.12;
-  // fresnel suave en el borde
-  col += pow(clamp(length(p), 0.0, 1.0), 6.0) * 0.18;
-  // la aparición se hace con la escala del espejo; aquí el vidrio es opaco (evita el orden de transparencias)
-  gl_FragColor = vec4(col * (0.6 + 0.4 * show), 1.0);
+  vec4 c = texture2D(map, p);
+  vec3 paper = vec3(0.91, 0.87, 0.79);
+  vec3 col = mix(paper * 0.55, c.rgb, c.a);
+  // cada nivel un poco más hondo y cálido, como fotos apiladas
+  col *= 1.0 - 0.07 * level;
+  col = mix(col, col * vec3(1.02, 0.97, 0.9), min(level * 0.12, 0.5));
+  // borde de papel recortado en cada ventana + sombra interior
+  float rim = smoothstep(0.035, 0.0, edge);
+  col = mix(col, paper, rim * 0.9);
+  float shade = smoothstep(0.12, 0.0, edge) * 0.25;
+  col *= 1.0 - shade * (1.0 - rim);
+  // en reposo solo se ve el marco (la profundidad se sugiere)
+  float frame = smoothstep(0.84, 0.97, d0);
+  float alpha = mix(frame * 0.85, 1.0, open);
+  gl_FragColor = vec4(col, alpha);
+  #include <colorspace_fragment>
 }
 `;
 
-function InfiniteMirror({ build, group, low, reduced }: { build: React.RefObject<number>; group: React.RefObject<THREE.Group | null>; low: boolean; reduced: boolean }) {
-  const res = low ? 160 : 320;
-  const fbo = useFBO(res, res, { samples: 0 });
-  const capCam = useMemo(() => {
-    const c = new THREE.PerspectiveCamera(44, 1, 0.1, 40);
-    c.layers.set(0);
-    return c;
-  }, []);
-  const frame = useRef<THREE.Group>(null);
-  const POS = new THREE.Vector3(-1.85, -2.45, 1.25);
-  const uniforms = useMemo(
-    () => ({ map: { value: fbo.texture }, vanish: { value: new THREE.Vector2(0.15, 0.1) }, time: { value: 0 }, show: { value: 0 } }),
-    [fbo],
-  );
-  const tick = useRef(0);
-  const tmp = useMemo(() => ({ a: new THREE.Vector3(), b: new THREE.Vector3() }), []);
-
-  useFrame((state, dt) => {
-    const show = clamp01((build.current - 0.85) / 0.15);
-    uniforms.show.value = show;
-    uniforms.time.value = state.clock.elapsedTime;
-    const g = group.current;
-    if (frame.current && show <= 0) frame.current.scale.setScalar(0.0001);
-    if (!g || show <= 0) return;
-    // el punto de fuga sigue (con suavidad) el giro de la escultura y el cursor
-    const vx = reduced ? 0.15 : THREE.MathUtils.clamp(-g.rotation.y * 1.6 + state.pointer.x * 0.18 + 0.12, -0.55, 0.55);
-    const vy = reduced ? 0.1 : THREE.MathUtils.clamp(g.rotation.x * 1.6 + state.pointer.y * 0.12 + 0.08, -0.5, 0.5);
-    uniforms.vanish.value.lerp(new THREE.Vector2(vx, vy), 1 - Math.exp(-Math.min(dt, 0.05) * 5));
-    if (frame.current) {
-      frame.current.scale.setScalar(easeOut(show));
-      if (!reduced) frame.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.5) * 0.04 - 0.18;
-    }
-    // captura del retrato desde el espejo (cada pocos fotogramas, a baja resolución)
-    tick.current++;
-    if (tick.current % (low ? 6 : 3) !== 0) return;
-    // el espejo "ve" la escultura de frente y algo de lado, como quien se mira de reojo
-    g.localToWorld(tmp.a.set(POS.x * 0.7, POS.y * 0.25 + 0.4, 6.6));
-    g.localToWorld(tmp.b.set(0, 0.2, 0));
-    capCam.position.copy(tmp.a);
-    capCam.lookAt(tmp.b);
-    const gl = state.gl;
-    const prev = gl.getRenderTarget();
-    gl.setRenderTarget(fbo);
-    gl.setClearColor(0x0a0806, 1);
-    gl.clear();
-    gl.render(state.scene, capCam);
-    gl.setRenderTarget(prev);
-    gl.setClearColor(0x000000, 0);
+function DrosteZone({ f, tex, h, geo, ptr, build, levels, reduced }: { f: Frag; tex: THREE.Texture; h: number; geo: THREE.BufferGeometry; ptr: React.RefObject<PointerState>; build: React.RefObject<number>; levels: number; reduced: boolean }) {
+  const cfg = DROSTE[f.id];
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: {
+      map: { value: tex }, uC: { value: new THREE.Vector2(cfg.cx, cfg.cy) }, uH: { value: new THREE.Vector2(cfg.hx, cfg.hy) },
+      uRot: { value: cfg.rot }, uOpen: { value: 0 }, uTime: { value: 0 }, uLevels: { value: levels },
+    },
+    vertexShader: DROSTE_VS, fragmentShader: DROSTE_FS, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+  }), [tex, cfg, levels]);
+  useEffect(() => () => mat.dispose(), [mat]);
+  const opened = useRef(false);
+  const time = useRef(0);
+  useFrame((_, dt) => {
+    const p = ptr.current;
+    if (!p) return;
+    // centro de la ventana en coordenadas de la figura
+    const wx = f.x + (cfg.cx - 0.5) * f.w, wy = f.y + (cfg.cy - 0.5) * h;
+    const dist = Math.hypot(p.p.x - wx, p.p.y - wy);
+    const near = clamp01(1.25 - dist / Math.max(0.45, f.w * 0.42)) * p.hover * (build.current > 0.95 ? 1 : 0);
+    const u = mat.uniforms;
+    u.uOpen.value += (near - u.uOpen.value) * (1 - Math.exp(-Math.min(dt, 0.05) * 3));
+    if (!reduced) time.current += Math.min(dt, 0.05) * u.uOpen.value;
+    u.uTime.value = time.current;
+    if (u.uOpen.value > 0.55 && !opened.current) { opened.current = true; sound.play("fotos-fragmentan"); }
+    if (u.uOpen.value < 0.15) opened.current = false;
   });
-
-  return (
-    <group ref={frame} position={POS.toArray()} rotation={[0, 0.32, -0.18]} scale={0.0001}>
-      {/* vidrio con el túnel de reflejos */}
-      <mesh scale={[0.62, 0.78, 1]} layers={2} renderOrder={6}>
-        <circleGeometry args={[1, 64]} />
-        <shaderMaterial vertexShader={TUNNEL_VS} fragmentShader={TUNNEL_FS} uniforms={uniforms} toneMapped={false} />
-      </mesh>
-      {/* marco de latón y mango */}
-      <mesh scale={[0.62, 0.78, 1]} layers={2}>
-        <torusGeometry args={[1, 0.055, 16, 80]} />
-        <meshStandardMaterial color="#c99a2e" metalness={1} roughness={0.25} envMapIntensity={1.5} />
-      </mesh>
-      <mesh position={[0, -1.08, -0.02]} layers={2}>
-        <cylinderGeometry args={[0.05, 0.07, 0.62, 16]} />
-        <meshStandardMaterial color="#7d5a10" metalness={0.9} roughness={0.35} />
-      </mesh>
-      <mesh position={[0, 0, -0.03]} scale={[0.66, 0.82, 1]} layers={2}>
-        <circleGeometry args={[1, 48]} />
-        <meshStandardMaterial color="#3a2a12" metalness={0.6} roughness={0.5} />
-      </mesh>
-    </group>
-  );
+  return <mesh geometry={geo} scale={[f.w, h, 1]} position={[0, 0, 0.004]} renderOrder={3} material={mat} />;
 }
 
 /* ----------------------------- Miniaturas flotantes con rótulo ------------------------------- */

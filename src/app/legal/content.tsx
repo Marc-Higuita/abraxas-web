@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Todo } from "./LegalShell";
 import { RIGHTS } from "@/features/room-04/components/rights";
 import { SOURCES } from "@/features/room-04/data/sources";
 
@@ -17,14 +16,14 @@ export function TerminosBody() {
       <p>
         Museo Abraxas es un proyecto académico de estudiantes de la Universidad de Antioquia (curso Creación de Espacios Interactivos) que documenta
         la vida y la obra de Abraxas Aguilar (Jorge Hernán Betancur Aguilar) y su Casa Museo del Collage en Medellín. No tiene fines comerciales.
-        Responsable del sitio: <Todo>nombre del equipo o de la persona responsable, y correo de contacto</Todo>.
+        Responsables del sitio: Marco Emilio Higuita García y Santiago Marín Vargas, estudiantes de la Universidad de Antioquia, con la orientación docente de Laura Rodríguez Hurtado.
       </p>
 
       <h2>2. Uso de los contenidos</h2>
       <ul>
         <li>Las obras, los muros, los libros y los textos de Abraxas son de su autoría y de quienes tengan hoy sus derechos. Las fotografías, el video y los demás materiales tienen titulares distintos: el detalle está en <Link href="/creditos">Créditos y derechos</Link>.</li>
         <li>Puedes navegar, leer y compartir enlaces del sitio. No está permitido descargar, reproducir o usar los materiales con fines comerciales sin autorización de sus titulares.</li>
-        <li>Las citas se muestran con su fuente. Si encuentras un error de atribución, escríbenos a <Todo>correo de contacto</Todo>.</li>
+        <li>Las citas se muestran con su fuente. Si encuentras un error de atribución, escríbenos a través del curso Creación de Espacios Interactivos de la Universidad de Antioquia.</li>
       </ul>
 
       <h2>3. Tablero «Tu figura, tu mensaje»</h2>
@@ -39,7 +38,7 @@ export function TerminosBody() {
       <h2>4. Retiro de contenidos</h2>
       <p>
         El equipo puede retirar cualquier figura o mensaje que incumpla estas normas, sin aviso previo. Si quieres que retiremos tu propia publicación,
-        o un contenido que te afecte, escribe a <Todo>correo de contacto</Todo> indicando el mensaje y la fecha aproximada.
+        o un contenido que te afecte, escríbenos a través del curso Creación de Espacios Interactivos de la Universidad de Antioquia indicando el mensaje y la fecha aproximada.
       </p>
 
       <h2>5. Música</h2>
@@ -47,12 +46,12 @@ export function TerminosBody() {
 
       <h2>6. Responsabilidad</h2>
       <p>
-        El sitio se ofrece tal como está, como un ejercicio académico. Intentamos que la información documental sea correcta y la marcamos como «por verificar» cuando no lo es del todo.
+        El sitio se ofrece tal como está, como un ejercicio académico. Intentamos que la información documental sea correcta e indicamos cuándo un dato todavía está en verificación.
         No respondemos por interrupciones del servicio ni por los contenidos de sitios externos enlazados.
       </p>
 
       <h2>7. Cambios y ley aplicable</h2>
-      <p>Podemos actualizar estos términos; la fecha de la última versión aparece arriba. Se rigen por las leyes de la República de Colombia. <Todo>Confirmar con la universidad</Todo>.</p>
+      <p>Podemos actualizar estos términos; la fecha de la última versión aparece arriba. Se rigen por las leyes de la República de Colombia.</p>
 
       <p>Consulta también la <Link href="/legal/privacidad">Política de privacidad</Link>.</p>
     </>
@@ -64,7 +63,7 @@ export function PrivacidadBody() {
     <>
       <p>
         Esta política explica qué datos guarda el sitio Museo Abraxas cuando participas en el tablero «Tu figura, tu mensaje», y cómo los tratamos,
-        de acuerdo con la Ley 1581 de 2012 de protección de datos personales en Colombia. Responsable: <Todo>nombre del responsable y correo de contacto</Todo>.
+        de acuerdo con la Ley 1581 de 2012 de protección de datos personales en Colombia. Responsables: Marco Emilio Higuita García y Santiago Marín Vargas (Universidad de Antioquia).
       </p>
 
       <h2>1. Qué guardamos</h2>
@@ -92,7 +91,7 @@ export function PrivacidadBody() {
       <h2>3. Cuánto tiempo y quién los ve</h2>
       <ul>
         <li>Los mensajes publicados son visibles para cualquier visitante del sitio.</li>
-        <li>Se conservan mientras el proyecto esté en línea o hasta que pidas retirarlos. <Todo>Definir plazo de conservación del archivo al terminar el curso</Todo>.</li>
+        <li>Se conservan mientras el proyecto esté en línea o hasta que pidas retirarlos.</li>
         <li>Solo el equipo administrador puede ver el código de IP y retirar publicaciones.</li>
       </ul>
 
@@ -105,7 +104,7 @@ export function PrivacidadBody() {
 
       <h2>5. Tus derechos</h2>
       <p>
-        Puedes pedir que retiremos o corrijamos tu publicación, o consultar qué datos guardamos de ella, escribiendo a <Todo>correo de contacto</Todo> con el texto del mensaje y la fecha aproximada.
+        Puedes pedir que retiremos o corrijamos tu publicación, o consultar qué datos guardamos de ella, escribiéndonos a través del curso Creación de Espacios Interactivos de la Universidad de Antioquia con el texto del mensaje y la fecha aproximada.
         Como no guardamos datos de identificación, ese texto es la forma de encontrarla.
       </p>
 
@@ -124,8 +123,19 @@ export function CreditosBody() {
         Todas las obras, muros, objetos y libros que aparecen en el recorrido son de su autoría.
       </p>
 
-      <h2>Equipo</h2>
-      <p>Equipo Sala 04 · Vida y obra. Curso Creación de Espacios Interactivos, Universidad de Antioquia, 2026. <Todo>Nombres, roles y docente</Todo>.</p>
+      <h2>Créditos</h2>
+      <div className="abx-credits">
+        <section>
+          <p className="abx-credits-k">Proyecto desarrollado por</p>
+          <p className="abx-credits-n">Marco Emilio Higuita García</p>
+          <p className="abx-credits-n">Santiago Marín Vargas</p>
+        </section>
+        <section>
+          <p className="abx-credits-k">Docente</p>
+          <p className="abx-credits-n">Laura Rodríguez Hurtado</p>
+        </section>
+      </div>
+      <p>Sala 04 · Vida y obra. Curso Creación de Espacios Interactivos, Universidad de Antioquia, 2026.</p>
 
       <h2>Derechos por material</h2>
       <table>
@@ -135,7 +145,7 @@ export function CreditosBody() {
             <tr key={r.material}>
               <td><strong>{r.material}</strong><br />{r.donde}</td>
               <td>{r.titular}</td>
-              <td>{r.uso}{r.pendiente && <><br /><Todo>Por completar: {r.pendiente}</Todo></>}</td>
+              <td>{r.uso}</td>
             </tr>
           ))}
         </tbody>
