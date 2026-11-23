@@ -127,43 +127,119 @@ function Table() {
   );
 }
 
+/** Gato de Abraxas (ella tenía uno): hecho con volúmenes simples, echado sobre el cojín.
+ *  Respira, mueve la cola, parpadea, mueve las orejas y levanta la cabeza hacia el visitante. */
+function Cat({ reduced, alert }: { reduced: boolean; alert: boolean }) {
+  const body = useRef<THREE.Group>(null);
+  const head = useRef<THREE.Group>(null);
+  const tail = useRef<THREE.Group[]>([]);
+  const earL = useRef<THREE.Mesh>(null);
+  const earR = useRef<THREE.Mesh>(null);
+  const lids = useRef<THREE.Mesh[]>([]);
+  const fur = useMemo(() => new THREE.MeshStandardMaterial({ color: "#3a332e", roughness: 0.95 }), []);
+  const furL = useMemo(() => new THREE.MeshStandardMaterial({ color: "#d9cdb8", roughness: 0.95 }), []);
+  const eye = useMemo(() => new THREE.MeshStandardMaterial({ color: "#c8b23a", emissive: "#5a4a08", emissiveIntensity: 0.6, roughness: 0.3 }), []);
+  useEffect(() => () => { fur.dispose(); furL.dispose(); eye.dispose(); }, [fur, furL, eye]);
+  useFrame(({ clock }, dt) => {
+    const tt = clock.elapsedTime;
+    const k = Math.min(1, dt * 3);
+    if (body.current) body.current.scale.y = 1 + (reduced ? 0 : Math.sin(tt * 1.6) * 0.03);
+    if (head.current) {
+      const up = alert ? 0.32 : 0.05 + (reduced ? 0 : Math.max(0, Math.sin(tt * 0.23)) * 0.12);
+      head.current.rotation.x += (-up - head.current.rotation.x) * k;
+      head.current.rotation.y += ((alert ? 0.35 : Math.sin(tt * 0.17) * 0.25) - head.current.rotation.y) * k;
+    }
+    tail.current.forEach((seg, i) => {
+      if (!seg) return;
+      const sw = reduced ? 0 : Math.sin(tt * (alert ? 3.2 : 1.3) - i * 0.6) * (alert ? 0.32 : 0.18);
+      seg.rotation.y = sw;
+    });
+    const tw = reduced ? 0 : (Math.sin(tt * 0.9) > 0.97 ? 0.35 : 0);
+    if (earL.current) earL.current.rotation.z = 0.25 + tw;
+    if (earR.current) earR.current.rotation.z = -0.25 - (Math.sin(tt * 0.7 + 1) > 0.97 ? 0.35 : 0);
+    const blink = !reduced && Math.sin(tt * 0.8) > 0.985 ? 1 : alert ? 0.15 : 0.55;
+    lids.current.forEach((l) => l && (l.scale.y += (blink - l.scale.y) * Math.min(1, dt * 18)));
+  });
+  return (
+    <group position={[0, 0.53, 0.02]} scale={0.9}>
+      {/* cuerpo echado */}
+      <group ref={body}>
+        <mesh material={fur} position={[0, 0.07, 0]} scale={[0.17, 0.1, 0.22]}><sphereGeometry args={[1, 24, 16]} /></mesh>
+        <mesh material={furL} position={[0, 0.045, 0.12]} scale={[0.1, 0.06, 0.08]}><sphereGeometry args={[1, 16, 12]} /></mesh>
+        {/* patas delanteras recogidas */}
+        <mesh material={furL} position={[-0.06, 0.02, 0.2]} scale={[0.04, 0.03, 0.07]}><sphereGeometry args={[1, 12, 8]} /></mesh>
+        <mesh material={furL} position={[0.06, 0.02, 0.2]} scale={[0.04, 0.03, 0.07]}><sphereGeometry args={[1, 12, 8]} /></mesh>
+      </group>
+      {/* cabeza */}
+      <group ref={head} position={[0, 0.17, 0.17]}>
+        <mesh material={fur} scale={[0.1, 0.085, 0.09]}><sphereGeometry args={[1, 24, 16]} /></mesh>
+        <mesh material={furL} position={[0, -0.03, 0.07]} scale={[0.05, 0.035, 0.035]}><sphereGeometry args={[1, 16, 12]} /></mesh>
+        <mesh position={[0, -0.012, 0.098]}><sphereGeometry args={[0.009, 8, 6]} /><meshStandardMaterial color="#c97b7b" roughness={0.6} /></mesh>
+        <mesh ref={earL} material={fur} position={[-0.055, 0.075, 0]} rotation={[0, 0, 0.25]}><coneGeometry args={[0.03, 0.06, 4]} /></mesh>
+        <mesh ref={earR} material={fur} position={[0.055, 0.075, 0]} rotation={[0, 0, -0.25]}><coneGeometry args={[0.03, 0.06, 4]} /></mesh>
+        {[-0.035, 0.035].map((x, i) => (
+          <group key={x} position={[x, 0.012, 0.078]}>
+            <mesh material={eye}><sphereGeometry args={[0.014, 12, 8]} /></mesh>
+            <mesh position={[0, 0, 0.008]}><boxGeometry args={[0.004, 0.02, 0.002]} /><meshBasicMaterial color="#111" /></mesh>
+            {/* párpado: baja para entrecerrar y parpadear */}
+            <mesh ref={(m) => { if (m) lids.current[i] = m; }} material={fur} position={[0, 0.008, 0.004]} scale={[1, 0.55, 1]}>
+              <boxGeometry args={[0.032, 0.03, 0.006]} />
+            </mesh>
+          </group>
+        ))}
+      </group>
+      {/* cola en segmentos, enroscada alrededor del cuerpo */}
+      <group position={[0.1, 0.04, -0.17]} rotation={[0, -0.9, 0]}>
+        {Array.from({ length: 6 }, (_, i) => i).reduceRight<React.ReactNode>((child, i) => (
+          <group key={i} ref={(gr) => { if (gr) tail.current[i] = gr; }} position={i === 0 ? [0, 0, 0] : [0, 0, 0.055]}>
+            <mesh material={i > 3 ? furL : fur} position={[0, 0, 0.028]} rotation={[Math.PI / 2, 0, 0]}><capsuleGeometry args={[0.022 - i * 0.002, 0.04, 4, 8]} /></mesh>
+            {child}
+          </group>
+        ), null)}
+      </group>
+    </group>
+  );
+}
+
+/** Diploma de abogada (UNAULA) en 3D: marco de madera con vidrio, apoyado contra la silla. */
+function Diploma() {
+  const tex = useLoader(THREE.TextureLoader, "/assets/room-04/messageroom/diploma.jpg");
+  useMemo(() => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4; }, [tex]);
+  const aspect = tex.image ? (tex.image as HTMLImageElement).width / (tex.image as HTMLImageElement).height : 1.3;
+  const h = 0.46, w = h * aspect;
+  return (
+    <group>
+      <mesh castShadow><boxGeometry args={[w + 0.08, h + 0.08, 0.035]} /><meshStandardMaterial color="#5a3420" roughness={0.45} metalness={0.1} /></mesh>
+      <mesh position={[0, 0, 0.019]}><planeGeometry args={[w + 0.02, h + 0.02]} /><meshStandardMaterial color="#efe6d2" roughness={0.9} /></mesh>
+      <mesh position={[0, 0, 0.0205]}><planeGeometry args={[w, h]} /><meshStandardMaterial map={tex} roughness={0.85} /></mesh>
+      {/* vidrio del marco */}
+      <mesh position={[0, 0, 0.024]}><planeGeometry args={[w + 0.02, h + 0.02]} /><meshPhysicalMaterial transparent opacity={0.12} roughness={0.05} metalness={0} clearcoat={1} color="#ffffff" /></mesh>
+    </group>
+  );
+}
+
+/** Silla de su oficina con el cojín azul, en el centro de la sala, con el gato encima y el diploma apoyado. */
 function Chair({ reduced }: { reduced: boolean }) {
   const [near, setNear] = useState(false);
-  const g = useRef<THREE.Group>(null);
-  const photo = useRef<THREE.Mesh>(null);
-  const tex = useLoader(THREE.TextureLoader, "/assets/room-04/messageroom/diploma.jpg");
-  useMemo(() => { tex.colorSpace = THREE.SRGBColorSpace; }, [tex]);
-  useFrame((_, dt) => {
-    const k = Math.min(1, dt * (reduced ? 30 : 4));
-    if (g.current) g.current.rotation.y += ((near ? -0.55 : -0.2) - g.current.rotation.y) * k;
-    if (photo.current) {
-      const t = near ? 1 : 0;
-      photo.current.scale.setScalar(photo.current.scale.x + (0.001 + t - photo.current.scale.x) * k);
-      photo.current.position.y += ((near ? 0.62 : 0.5) - photo.current.position.y) * k;
-    }
-  });
+  useCursor(near);
   const leg = (x: number, z: number, h: number, y: number) => (
-    <mesh position={[x, y, z]}><boxGeometry args={[0.05, h, 0.05]} /><meshStandardMaterial color={WOOD_D} roughness={0.75} /></mesh>
+    <mesh position={[x, y, z]} castShadow><boxGeometry args={[0.05, h, 0.05]} /><meshStandardMaterial color={WOOD_D} roughness={0.75} /></mesh>
   );
   return (
-    <group ref={g} rotation={[0, -0.2, 0]} onPointerOver={(e) => { e.stopPropagation(); setNear(true); }} onPointerOut={() => setNear(false)}>
-      <mesh position={[0, 0.47, 0]}><boxGeometry args={[0.5, 0.05, 0.48]} /><meshStandardMaterial color={WOOD} roughness={0.7} /></mesh>
+    <group onPointerOver={(e) => { e.stopPropagation(); setNear(true); }} onPointerOut={() => setNear(false)}>
+      <mesh position={[0, 0.47, 0]} castShadow receiveShadow><boxGeometry args={[0.5, 0.05, 0.48]} /><meshStandardMaterial color={WOOD} roughness={0.7} /></mesh>
       {leg(-0.22, -0.21, 0.46, 0.23)}{leg(0.22, -0.21, 0.46, 0.23)}{leg(-0.22, 0.21, 0.46, 0.23)}{leg(0.22, 0.21, 0.46, 0.23)}
       {leg(-0.22, -0.22, 0.6, 0.79)}{leg(0.22, -0.22, 0.6, 0.79)}
       <mesh position={[0, 0.98, -0.22]}><boxGeometry args={[0.48, 0.16, 0.04]} /><meshStandardMaterial color={WOOD} roughness={0.7} /></mesh>
       <mesh position={[0, 0.72, -0.22]}><boxGeometry args={[0.48, 0.05, 0.03]} /><meshStandardMaterial color={WOOD_D} roughness={0.7} /></mesh>
       {/* cojín azul, como el de la silla del escritorio */}
-      <mesh position={[0, 0.51, 0.01]}><boxGeometry args={[0.44, 0.04, 0.42]} /><meshStandardMaterial color="#1c2a4a" roughness={0.9} /></mesh>
-      {/* foto de archivo que aparece apoyada en el asiento */}
-      <mesh ref={photo} position={[0, 0.5, -0.12]} rotation={[-0.25, 0, 0.06]} scale={0.001}>
-        <planeGeometry args={[0.34, 0.44]} />
-        <meshStandardMaterial map={tex} roughness={0.8} side={THREE.DoubleSide} />
-      </mesh>
-      {near && (
-        <Html position={[0, 1.25, 0]} center zIndexRange={[20, 0]}>
-          <span className={s.tag}>Diploma de abogada · UNAULA</span>
-        </Html>
-      )}
+      <mesh position={[0, 0.51, 0.01]} receiveShadow><boxGeometry args={[0.44, 0.04, 0.42]} /><meshStandardMaterial color="#1c2a4a" roughness={0.9} /></mesh>
+      <Cat reduced={reduced} alert={near} />
+      {/* diploma enmarcado apoyado contra el respaldo, detrás del gato */}
+      <group position={[0, 0.86, -0.17]} rotation={[-0.12, 0, 0.03]} scale={0.8}><Diploma /></group>
+      <Html position={[0, 1.3, 0]} center zIndexRange={[20, 0]}>
+        <span className={s.tag}>{near ? "Su gato y su diploma de abogada · UNAULA" : "La silla de Abraxas"}</span>
+      </Html>
     </group>
   );
 }
@@ -227,6 +303,16 @@ function LawBooks({ reduced }: { reduced: boolean }) {
   );
 }
 
+function ChairSpot() {
+  const target = useMemo(() => { const o = new THREE.Object3D(); o.position.set(-0.1, F + 0.9, -0.9); return o; }, []);
+  return (
+    <>
+      <primitive object={target} />
+      <spotLight position={[-0.1, F + 5.8, 0.4]} target={target} angle={0.36} penumbra={0.7} intensity={34} distance={9} decay={1.4} color="#ffe2b0" castShadow={false} />
+    </>
+  );
+}
+
 export function RoomObjects({ reduced }: { reduced: boolean; low?: boolean }) {
   return (
     <group>
@@ -236,11 +322,15 @@ export function RoomObjects({ reduced }: { reduced: boolean; low?: boolean }) {
         <Table />
         <Typewriter reduced={reduced} />
         <group position={[-0.58, 0.825, -0.12]} rotation={[0, 0.35, 0]} scale={0.62}><LawBooks reduced={reduced} /></group>
-        <group position={[-0.95, 0, 0.7]} rotation={[0, Math.PI * 0.82, 0]}><Chair reduced={reduced} /></group>
         {/* luz propia del rincón: cálida, desde arriba y delante, más un relleno suave */}
         <pointLight position={[0.4, 2.2, 1.3]} intensity={14} distance={5.5} decay={1.6} color="#ffd9a0" />
         <pointLight position={[-0.9, 1.4, 1.1]} intensity={3.2} distance={3.5} decay={1.8} color="#f3e3c4" />
       </group>
+      {/* la silla con el gato, al frente y en la mitad de la sala, bajo su propio foco */}
+      <group position={[-0.1, F, -0.9]} rotation={[0, -0.2, 0]} scale={1.75}>
+        <Chair reduced={reduced} />
+      </group>
+      <ChairSpot />
     </group>
   );
 }
