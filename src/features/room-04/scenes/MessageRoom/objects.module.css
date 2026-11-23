@@ -55,3 +55,5 @@
 @media (max-width: 640px) {
   .sheet { padding: 48px 22px 22px; }
 }
+
+.tagOn { transform: scale(1.06); background: #d4a12a !important; color: #121110 !important; }

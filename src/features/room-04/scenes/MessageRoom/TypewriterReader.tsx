@@ -1,25 +1,16 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { sound } from "@/lib/audio/useSound";
-import { CITAS } from "../../data/phrases";
-import { BOOKS } from "../../data/books";
+import { TYPEWRITER_QUOTES, type TypedQuote } from "../../data/typewriter";
 import s from "./objects.module.css";
 
 /**
  * Hoja de la máquina de escribir (R4-D · 08.6a).
- * Solo frases auténticas: citas documentadas de data/phrases.ts y citas verificadas de los libros
- * (data/books.ts), siempre con su fuente. Si no hubiera ninguna, la hoja queda en blanco con un aviso.
+ * Frases auténticas de Abraxas que no aparecen en otra parte del sitio (data/typewriter.ts),
+ * siempre con su fuente. Rota una frase por clic.
  */
-export interface TypedQuote { text: string; source: string }
-
-export const TYPEWRITER_QUOTES: TypedQuote[] = [
-  ...CITAS.filter((c) => c.kind === "cita" && (c.verification === "documentado" || c.verification === "verificado"))
-    .map((c) => ({ text: c.text, source: c.source ?? "" })),
-  ...BOOKS.flatMap((b) => b.quotes
-    .filter((q) => q.verification === "verificado" && q.kind === "literal" && q.text.length <= 140)
-    .slice(0, 3)
-    .map((q) => ({ text: q.text, source: `${b.title}, pág. PDF ${q.pdfPage}` }))),
-].filter((q) => q.text && q.source);
+export { TYPEWRITER_QUOTES };
+export type { TypedQuote };
 
 export function TypewriterReader({ index, reduced, onClose, onNext }: { index: number; reduced: boolean; onClose: () => void; onNext: () => void }) {
   const q = TYPEWRITER_QUOTES.length ? TYPEWRITER_QUOTES[index % TYPEWRITER_QUOTES.length] : null;

@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { ROOMS } from "@/config/rooms";
+import { GlobalMenu } from "@/components/site";
 import styles from "./home.module.css";
 
 export default function Home() {
   return (
-    <main className={styles.main}>
+    <>
+    <GlobalMenu />
+    <main className={styles.main} style={{ paddingTop: 56 }}>
       <header className={styles.head}>
         {/* Logotipo sobre cartela lisa negra, sin rotar ni recolorear */}
         <img src="/assets/brand/logo-papel.png" alt="Museo Abraxas · Collage Guinness World Records" width={320} height={150} className={styles.logo} />
@@ -33,5 +36,6 @@ export default function Home() {
         <img src="/assets/brand/isotipo-papel.png" alt="" width={32} height={40} />
       </footer>
     </main>
+    </>
   );
 }

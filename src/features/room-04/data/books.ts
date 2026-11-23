@@ -79,7 +79,20 @@ export const BOOKS: Book[] = [
     pageCount: 268,
     pageImage: page("poemario"),
     sourceNote:
-      "Poemario de portada verde, digitalizado por el equipo Sala 04 a partir de fotografías del ejemplar físico (22 nov. 2026): cada doble página se separó, enderezó y limpió sobre blanco; se descartaron tomas repetidas y borrosas. Sus citas se agregarán solo después de verificarlas contra la página.",
-    quotes: [],
+      "Poemario de portada verde, digitalizado por el equipo Sala 04 a partir de fotografías del ejemplar físico (22 nov. 2026): cada doble página se separó, enderezó y limpió sobre blanco; se descartaron tomas repetidas y borrosas. Las citas se transcribieron y verificaron contra la imagen de cada página; «pdfPage» es la página del visor y el contexto indica la página impresa.",
+    quotes: [
+      { id: "po-28", text: "El legendario Abraxas dijo: luego de entender las contradicciones del ser y desde su templo reflejante, saltó con todas las fuerzas de su impulso y rompió el salón de sus espejismos.", pdfPage: 28, theme: "Espejos", context: "Fragmento (pág. impresa 15)", kind: "literal", verification: "verificado" },
+      { id: "po-32", text: "Hermana, sangre de mi sangre, carne de mi carne, ¿cómo explicas que tus anhelos son de macho y de hembra a la vez, hoy igual que ayer, mañana igual que hoy?", pdfPage: 32, theme: "Cuerpo", context: "Pág. impresa 19", kind: "literal", verification: "verificado" },
+      { id: "po-196", text: "La ley de la tierra es tan absolutamente relativa como Abraxas; como el ayer y el mañana, como el ya que no es ya.", pdfPage: 196, theme: "Contrarios", context: "Fragmento (pág. impresa 205)", kind: "literal", verification: "verificado" },
+      { id: "po-85", text: "El hombre solo vive la esencia de un presente, escurridizo suspiro, segundos en permanente transición.", pdfPage: 85, theme: "Tiempo", context: "Fragmento (pág. impresa 78)", kind: "literal", verification: "verificado" },
+      { id: "po-196b", text: "Ley de la tierra enseña siempre que lo que la naturaleza engendra, la naturaleza transforma lentamente hasta lograr su punto de partida.", pdfPage: 196, theme: "Transformación", context: "Pág. impresa 205", kind: "literal", verification: "verificado" },
+      { id: "po-235", text: "Sólo será libre de tí, aquél que teniéndolo todo, está seguro que nada posee.", pdfPage: 235, theme: "Libertad", context: "Fragmento (pág. impresa 253)", kind: "literal", verification: "verificado" },
+      { id: "po-177", text: "El dominio sabio del padre sol, el diálogo con la madre tierra, el imaginar con la abuela luna, el meditar con el hermano mar.", pdfPage: 177, theme: "Naturaleza", context: "Fragmento (pág. impresa 183)", kind: "literal", verification: "verificado" },
+      { id: "po-88", text: "¿Serás la proyección existencial del tiempo incandescente de la brasa, consumida en el instante transitorio de la chispa y el carbón, de la vida y de la muerte?", pdfPage: 88, theme: "Vida / muerte", context: "Pág. impresa 81", kind: "literal", verification: "verificado" },
+      { id: "po-83", text: "Todo es pujanza al instante. Luego, decaimiento en el continuado devenir.", pdfPage: 83, theme: "Devenir", context: "Fragmento (pág. impresa 76)", kind: "literal", verification: "verificado" },
+      { id: "po-53", text: "Toda piel humana, es de zapa, encubridora de un sabio laboratorio.", pdfPage: 53, theme: "Piel", context: "Fragmento (pág. impresa 44)", kind: "literal", verification: "verificado" },
+      { id: "po-200", text: "En la ley de la tierra dioses y demonios se enlazan en la síntesis vivencial del sexo.", pdfPage: 200, theme: "Deseo", context: "Fragmento (pág. impresa 209)", kind: "literal", verification: "verificado" },
+      { id: "po-23", text: "La novela ha muerto, porque estamos en el siglo inhumano de lo atómico y la electrónica.", pdfPage: 23, theme: "Época", context: "Fragmento (pág. impresa 9)", kind: "literal", verification: "verificado" },
+    ],
   },
 ];

@@ -1,55 +1,114 @@
 "use client";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { StitchLine } from "@/components/abx/Ornaments";
+import { sound } from "@/lib/audio/useSound";
 import s from "./interlude.module.css";
 
 /**
  * Interludio «Aquí las fotos no se toman, se hacen.» (entre el video y la biblioteca).
- * Una mesa de revelado construida con recortes de las paredes de la casa: hoja de contacto con lupa,
- * tira de negativos, fotos rasgadas y una cámara de papel cuyo lente mira las paredes.
- * Interacciones: parallax por capas con el cursor; los negativos se revelan al tocarlos;
- * la lupa amplía la hoja de contacto. La frase es lo principal.
+ * Una impresora fotográfica (objeto 3D en CSS) expulsa, con calma, fotos en NEGATIVO de las paredes
+ * de la casa. Salen por la ranura y se deslizan hasta posarse alrededor de la frase (nunca encima).
+ * Al tocarlas se revelan: negativo → sepia → color, con un brillo, y se amplían un instante.
+ * La frase es la protagonista y queda en una zona protegida.
  */
-const I = (id: string) => `/assets/room-04/interludes/${id}.webp`;
-const F = (id: string) => `/assets/room-04/fotos-se-hacen/${id}.webp`;
-const P = (id: string) => `/assets/room-04/photos-lo/${id}.jpg`;
+const F = (n: number) => `/assets/room-04/fotos-se-hacen/f-${String(n).padStart(2, "0")}.webp`;
+const TOTAL = 12;
 
-/** fotos rasgadas de los muros, alrededor de la frase (x, y en %, w en vw, d = profundidad 1–3) */
-const CUTS = [
-  { src: I("mirada-para-ti"), x: 6, y: 9, w: 12, r: -7, d: 2 },
-  { src: I("mascara"), x: 85, y: 6, w: 9, r: 6, d: 3 },
-  { src: I("ojo-azul"), x: 74, y: 70, w: 9, r: -9, d: 1 },
-  { src: I("querubines"), x: 88, y: 44, w: 11, r: 4, d: 2 },
-  { src: I("bajo-llave"), x: 30, y: 84, w: 13, r: 3, d: 2 },
-  { src: I("help"), x: 4, y: 62, w: 10, r: 8, d: 3 },
+/** posiciones de reposo (% del escenario, centro de la foto) fuera de la zona de la frase */
+const SLOTS_DESK = [
+  { x: 9, y: 22, r: -8 }, { x: 20, y: 14, r: 5 }, { x: 8, y: 52, r: 6 }, { x: 18, y: 78, r: -5 },
+  { x: 33, y: 86, r: 4 }, { x: 52, y: 88, r: -3 }, { x: 70, y: 84, r: 7 }, { x: 88, y: 76, r: -6 },
+  { x: 91, y: 52, r: 4 }, { x: 31, y: 16, r: -4 },
 ];
-/** negativos que se revelan al tocarlos */
-const NEGS = [
-  { src: P("1-img_0114"), x: 62, y: 7, r: 5 },
-  { src: P("1-img_0122"), x: 72, y: 13, r: -4 },
-  { src: P("1-img_0115"), x: 82, y: 20, r: 7 },
+const SLOTS_MOB = [
+  { x: 14, y: 14, r: -7 }, { x: 38, y: 12, r: 5 }, { x: 18, y: 84, r: 6 }, { x: 50, y: 88, r: -4 },
+  { x: 82, y: 84, r: 7 }, { x: 58, y: 15, r: -5 },
 ];
+
+type Phase = "print" | "fly" | "rest" | "fade";
+interface Shot { key: number; n: number; slot: number; phase: Phase; revealed: boolean; zoom: boolean; jx: number; jr: number }
 
 export function Interlude({ quote, source, tone }: { quote: string; source: string; tone: "negro" | "papel" | "kraft" }) {
   const wrap = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
-  const sheet = useRef<HTMLDivElement>(null);
-  const [revealed, setRevealed] = useState<boolean[]>(() => NEGS.map(() => false));
+  const [shots, setShots] = useState<Shot[]>([]);
+  const [printing, setPrinting] = useState(false);
+  const [mobile, setMobile] = useState(false);
+  const seq = useRef(0);
+  const nextPhoto = useRef(1);
+  const timers = useRef<number[]>([]);
   const words = quote.split(" ");
+  const slots = mobile ? SLOTS_MOB : SLOTS_DESK;
+  const MAX = mobile ? 6 : 10;
 
+  const later = (fn: () => void, ms: number) => { timers.current.push(window.setTimeout(fn, ms)); };
+
+  /** expulsa una foto: sale por la ranura, luego vuela a un hueco libre */
+  const eject = useCallback(() => {
+    const key = ++seq.current;
+    const n = nextPhoto.current;
+    nextPhoto.current = (n % TOTAL) + 1;
+    setPrinting(true);
+    setShots((prev) => {
+      let list = prev;
+      const alive = list.filter((p) => p.phase !== "fade");
+      if (alive.length >= MAX) {
+        // retira primero la más vieja sin revelar (o la más vieja si todas están reveladas)
+        const victim = alive.find((p) => !p.revealed) ?? alive[0];
+        list = list.map((p) => (p.key === victim.key ? { ...p, phase: "fade" as Phase } : p));
+        later(() => setShots((l) => l.filter((p) => p.key !== victim.key)), 900);
+      }
+      const used = new Set(list.filter((p) => p.phase !== "fade").map((p) => p.slot));
+      const free = slots.map((_, i) => i).filter((i) => !used.has(i));
+      const slot = free.length ? free[Math.floor(Math.random() * free.length)] : key % slots.length;
+      return [...list, { key, n, slot, phase: "print", revealed: false, zoom: false, jx: Math.random() * 2 - 1, jr: Math.random() * 6 - 3 }];
+    });
+    sound.play("fotos-desplazamiento", { volume: 0.4 });
+    later(() => setShots((l) => l.map((p) => (p.key === key ? { ...p, phase: "fly" } : p))), 1100);
+    later(() => { setShots((l) => l.map((p) => (p.key === key ? { ...p, phase: "rest" } : p))); setPrinting(false); }, 2500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [MAX, slots]);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 760px)");
+    const on = () => setMobile(mq.matches);
+    on();
+    mq.addEventListener("change", on);
+    return () => mq.removeEventListener("change", on);
+  }, []);
+
+  /** ritmo de impresión: solo mientras la sección está visible y la pestaña activa */
   useEffect(() => {
     const el = wrap.current, st = stage.current;
     if (!el || !st) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) el.dataset.on = "1"; }, { threshold: 0.15 });
-    io.observe(el);
+    let visible = false;
+    let loop = 0;
+    const schedule = () => {
+      window.clearTimeout(loop);
+      if (!visible || document.hidden || reduced) return;
+      loop = window.setTimeout(() => { eject(); schedule(); }, (mobile ? 2200 : 1500) + Math.random() * 1000);
+    };
+    const io = new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      if (visible) {
+        el.dataset.on = "1";
+        if (reduced) {
+          // movimiento reducido: fotos ya expulsadas, quietas; el revelado por clic sigue
+          setShots((l) => l.length ? l : slots.slice(0, mobile ? 4 : 6).map((_, i) => ({ key: ++seq.current, n: i + 1, slot: i, phase: "rest" as Phase, revealed: false, zoom: false, jx: 0, jr: 0 })));
+        } else schedule();
+      } else window.clearTimeout(loop);
+    }, { threshold: 0.2 });
+    io.observe(st);
+    const onVis = () => schedule();
+    document.addEventListener("visibilitychange", onVis);
+
     let raf = 0;
     const onScroll = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const b = el.getBoundingClientRect();
-        const span = Math.max(1, b.height - innerHeight);
-        const p = Math.min(1, Math.max(0, -b.top / span));
+        const p = Math.min(1, Math.max(0, -b.top / Math.max(1, b.height - innerHeight)));
         el.style.setProperty("--p", reduced ? "1" : p.toFixed(3));
       });
     };
@@ -62,69 +121,67 @@ export function Interlude({ quote, source, tone }: { quote: string; source: stri
     addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     if (fine) st.addEventListener("pointermove", onMove);
-    return () => { io.disconnect(); removeEventListener("scroll", onScroll); st.removeEventListener("pointermove", onMove); cancelAnimationFrame(raf); };
-  }, []);
+    return () => {
+      io.disconnect(); window.clearTimeout(loop); cancelAnimationFrame(raf);
+      document.removeEventListener("visibilitychange", onVis);
+      removeEventListener("scroll", onScroll); st.removeEventListener("pointermove", onMove);
+    };
+  }, [eject, mobile, slots]);
 
-  /** lupa sobre la hoja de contacto */
-  const onSheetMove = (ev: React.PointerEvent<HTMLDivElement>) => {
-    const el = sheet.current;
-    if (!el) return;
-    const b = el.getBoundingClientRect();
-    el.style.setProperty("--lx", `${ev.clientX - b.left}px`);
-    el.style.setProperty("--ly", `${ev.clientY - b.top}px`);
-    el.style.setProperty("--bx", `${((ev.clientX - b.left) / b.width) * 100}%`);
-    el.style.setProperty("--by", `${((ev.clientY - b.top) / b.height) * 100}%`);
-    el.dataset.loupe = "1";
+  useEffect(() => () => timers.current.forEach((t) => window.clearTimeout(t)), []);
+
+  const reveal = (key: number) => {
+    setShots((l) => l.map((p) => {
+      if (p.key !== key) return p;
+      if (!p.revealed) sound.play("recorte-pegar");
+      return { ...p, revealed: true, zoom: true };
+    }));
+    later(() => setShots((l) => l.map((p) => (p.key === key ? { ...p, zoom: false } : p))), 1500);
   };
 
   const dark = tone === "negro";
   return (
     <div ref={wrap} data-on="0" className={`${s.wrap} ${dark ? s.dark : s.light}`}>
       <div ref={stage} className={s.stage}>
-        {/* capa trasera: hoja de contacto con lupa y tira de negativo */}
-        <div
-          ref={sheet}
-          className={`${s.layer} ${s.sheet}`}
-          style={{ "--d": 3 } as CSSProperties}
-          onPointerMove={onSheetMove}
-          onPointerLeave={() => { if (sheet.current) sheet.current.dataset.loupe = "0"; }}
-          aria-hidden="true"
-        >
-          <img src={F("hoja-contacto")} alt="" loading="lazy" decoding="async" />
-          <span className={s.loupe} style={{ backgroundImage: `url(${F("hoja-contacto")})` }} />
-        </div>
-        <img className={`${s.layer} ${s.strip}`} style={{ "--d": 2 } as CSSProperties} src={F("tira-negativo")} alt="" aria-hidden="true" loading="lazy" decoding="async" />
-
-        {/* fotos rasgadas de los muros */}
-        {CUTS.map((c, i) => (
-          <figure key={c.src} className={`${s.layer} ${s.cut}`} aria-hidden="true"
-            style={{ "--x": `${c.x}%`, "--y": `${c.y}%`, "--w": c.w, "--r": `${c.r}deg`, "--d": c.d, "--i": i } as CSSProperties}>
-            <img src={c.src} alt="" loading="lazy" decoding="async" />
-            {i % 2 === 0 && <span className={s.tape} />}
-          </figure>
-        ))}
-
-        {/* negativos: se revelan al tocarlos */}
-        {NEGS.map((n, i) => (
-          <button key={n.src} type="button" className={`${s.layer} ${s.neg} ${revealed[i] ? s.revealed : ""}`}
-            style={{ "--x": `${n.x}%`, "--y": `${n.y}%`, "--r": `${n.r}deg`, "--d": 1, "--i": i } as CSSProperties}
-            aria-pressed={revealed[i]} aria-label={revealed[i] ? "Fotografía revelada de una pared de la casa" : "Revelar este negativo"}
-            onClick={() => setRevealed((v) => v.map((x, k) => (k === i ? !x : x)))}>
-            <img src={n.src} alt="" loading="lazy" decoding="async" />
-          </button>
-        ))}
-
-        {/* cámara de papel: el lente mira las paredes y sigue el cursor */}
-        <div className={`${s.layer} ${s.camera}`} style={{ "--d": 1 } as CSSProperties} aria-hidden="true">
-          <svg viewBox="0 0 220 150" className={s.camBody}>
-            <path d="M18 38 L72 38 L84 20 L140 22 L150 38 L204 40 L206 136 L14 134 Z" fill="#2b2420" stroke="#f3eee3" strokeWidth="2" strokeDasharray="5 4" />
-            <rect x="160" y="24" width="30" height="12" rx="2" fill="#d4a12a" />
-            <rect x="26" y="50" width="34" height="14" rx="2" fill="#c9a878" />
-          </svg>
-          <span className={s.lens}><span style={{ backgroundImage: `url(${P("1-img_0122")})` }} /></span>
+        {/* impresora fotográfica en 3D (CSS) */}
+        <div className={s.printerWrap} aria-hidden="true">
+          <div className={`${s.printer} ${printing ? s.printing : ""}`}>
+            <div className={`${s.face} ${s.top}`}><span className={s.vent} /></div>
+            <div className={`${s.face} ${s.front}`}>
+              <span className={s.label}>Revelado · Sala 04</span>
+              <span className={s.led} />
+              <span className={s.slot}><span className={s.roller} /><span className={s.roller} /></span>
+            </div>
+            <div className={`${s.face} ${s.side}`} />
+            <div className={`${s.face} ${s.sideL}`} />
+            <div className={`${s.face} ${s.back}`} />
+            <div className={s.tray} />
+          </div>
+          <span className={s.floorShadow} />
         </div>
 
-        {/* la frase */}
+        {/* fotos en negativo */}
+        <div className={s.photos}>
+          {shots.map((p) => {
+            const sl = slots[p.slot];
+            return (
+              <button
+                key={p.key}
+                type="button"
+                className={`${s.shot} ${s[p.phase]} ${p.revealed ? s.revealed : ""} ${p.zoom ? s.zoom : ""}`}
+                style={{ "--tx": `${sl.x}%`, "--ty": `${sl.y}%`, "--tr": `${sl.r + p.jr}deg`, "--jx": p.jx } as CSSProperties}
+                onClick={() => reveal(p.key)}
+                aria-label={p.revealed ? "Fotografía revelada de una pared de la casa" : "Revelar esta fotografía en negativo"}
+                aria-pressed={p.revealed}
+                tabIndex={p.phase === "rest" ? 0 : -1}
+              >
+                <span className={s.film}><img src={F(p.n)} alt="" decoding="async" /></span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* la frase, en zona protegida */}
         <blockquote className={s.quote}>
           <p>
             «{words.map((w, i) => (
@@ -133,7 +190,7 @@ export function Interlude({ quote, source, tone }: { quote: string; source: stri
           </p>
           <StitchLine className={s.stitch} color={dark ? "var(--lima)" : "var(--bermellon)"} />
           <cite>— Abraxas · {source}</cite>
-          <span className={s.hint}>Toca los negativos para revelarlos</span>
+          <span className={s.hint}>Toca una foto en negativo para revelarla</span>
         </blockquote>
       </div>
     </div>

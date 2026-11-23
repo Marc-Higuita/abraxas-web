@@ -104,9 +104,9 @@ function Typewriter({ reduced }: { reduced: boolean }) {
         </mesh>
       ))}
       <mesh position={[0, 0.235, 0.33]}><boxGeometry args={[0.42, 0.025, 0.05]} /><meshStandardMaterial color="#efe6d2" roughness={0.5} /></mesh>
-      {hover && !open && (
-        <Html position={[0, 0.95, 0]} center zIndexRange={[20, 0]}>
-          <span className={s.tag}>Toca la máquina: una frase de Abraxas</span>
+      {!open && (
+        <Html position={[0, 0.98, 0]} center zIndexRange={[20, 0]}>
+          <span className={`${s.tag} ${hover ? s.tagOn : ""}`}>{hover ? "Toca la máquina: una frase de Abraxas" : "Toca la máquina"}</span>
         </Html>
       )}
     </group>
@@ -230,14 +230,17 @@ function LawBooks({ reduced }: { reduced: boolean }) {
 export function RoomObjects({ reduced }: { reduced: boolean; low?: boolean }) {
   return (
     <group>
-      {/* rincón de escritura: mesa, máquina y silla, al frente a la izquierda */}
-      <group position={[-3.4, F, 1.4]} rotation={[0, 0.42, 0]}>
+      {/* rincón de escritura en primer plano a la izquierda (el tocadiscos queda a la derecha, sin moverse):
+          mesa con la máquina, la pila de códigos sobre la mesa y la silla delante, girados hacia la cámara */}
+      <group position={[-1.95, F, 0.55]} rotation={[0, 0.48, 0]} scale={1.28}>
         <Table />
         <Typewriter reduced={reduced} />
-        <group position={[0.15, 0, 0.85]} rotation={[0, Math.PI, 0]}><Chair reduced={reduced} /></group>
+        <group position={[-0.58, 0.825, -0.12]} rotation={[0, 0.35, 0]} scale={0.62}><LawBooks reduced={reduced} /></group>
+        <group position={[-0.95, 0, 0.7]} rotation={[0, Math.PI * 0.82, 0]}><Chair reduced={reduced} /></group>
+        {/* luz propia del rincón: cálida, desde arriba y delante, más un relleno suave */}
+        <pointLight position={[0.4, 2.2, 1.3]} intensity={14} distance={5.5} decay={1.6} color="#ffd9a0" />
+        <pointLight position={[-0.9, 1.4, 1.1]} intensity={3.2} distance={3.5} decay={1.8} color="#f3e3c4" />
       </group>
-      {/* pila de códigos junto a la pared izquierda */}
-      <group position={[-5.6, F, -1.2]} rotation={[0, 0.9, 0]}><LawBooks reduced={reduced} /></group>
     </group>
   );
 }

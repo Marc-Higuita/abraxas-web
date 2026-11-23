@@ -299,6 +299,8 @@ function Scene({ progress, onPhase, onLoad, low, door: doorState, onDoor, onCurs
     // la presencia de Abraxas en el vidrio se revela al acercarse y se va al abrir
     holo.current.near = near; holo.current.open = o; holo.current.yaw = look.current.yaw; holo.current.pitch = look.current.pitch;
     veilMat.opacity = near * 0.3 * (1 - Math.min(1, o * 3));
+    // la puerta solo existe en el túnel: en la habitación (o mientras recargan las fotos) no debe asomar
+    if (doorGroup.current) doorGroup.current.visible = tb > 0.3;
     // refresca el reflejo del vidrio mientras la puerta está a la vista
     if (doorGroup.current && tb > 0.95 && p > 0.45) {
       cubeFrame.current++;
